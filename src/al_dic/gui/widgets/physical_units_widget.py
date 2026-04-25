@@ -80,7 +80,7 @@ class PhysicalUnitsWidget(QWidget):
         px_row.addWidget(QLabel(self.tr("/ px")))
         px_widget = QWidget()
         px_widget.setLayout(px_row)
-        layout.addRow("Pixel size", px_widget)
+        layout.addRow(self.tr("Pixel size"), px_widget)
 
         # Frame rate
         self._fps_spin = QDoubleSpinBox()
@@ -91,7 +91,7 @@ class PhysicalUnitsWidget(QWidget):
         self._fps_spin.setSuffix(" fps")
         self._fps_spin.setEnabled(self._state.use_physical_units)
         self._fps_spin.setToolTip(self.tr("Acquisition frame rate (used for velocity field)"))
-        layout.addRow("Frame rate", self._fps_spin)
+        layout.addRow(self.tr("Frame rate"), self._fps_spin)
 
         # Computed unit info label
         self._unit_label = QLabel()
@@ -154,8 +154,14 @@ class PhysicalUnitsWidget(QWidget):
         self._updating = False
 
     def _update_unit_label(self) -> None:
+        from al_dic.i18n import tr_args
         unit = self._unit_combo.currentText()
         if self._enabled_cb.isChecked():
-            self._unit_label.setText(f"Disp: {unit}  Velocity: {unit}/s")
+            self._unit_label.setText(
+                tr_args(
+                    self.tr("Disp: %1  Velocity: %2/s"),
+                    unit, unit,
+                )
+            )
         else:
             self._unit_label.setText(self.tr("Disp: px  Velocity: px/fr"))

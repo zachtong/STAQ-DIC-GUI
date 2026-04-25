@@ -4,37 +4,50 @@
 <context>
     <name>AdvancedTuningWidget</name>
     <message>
-        <location filename="../../gui/widgets/advanced_tuning_widget.py" line="39"/>
-        <source>ADMM Iterations</source>
-        <translation>ADMM 迭代次数</translation>
+        <location filename="../../gui/widgets/advanced_tuning_widget.py" line="44"/>
+        <source>AL-DIC Iterations</source>
+        <translation>AL-DIC 迭代次数</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/advanced_tuning_widget.py" line="50"/>
-        <source>Number of ADMM alternating minimization cycles for AL-DIC.
+        <location filename="../../gui/widgets/advanced_tuning_widget.py" line="55"/>
+        <source>Number of global refinement cycles for the AL-DIC solver.
 1 = single global pass (fastest), 3 = default,
 5+ = diminishing returns for most cases.</source>
-        <translation>AL-DIC 的 ADMM 交替最小化循环次数。
-1 = 单次全局迭代（最快），3 = 默认值，
-5 及以上对大多数场景收益递减。</translation>
+        <translation>AL-DIC 求解器的全局精修迭代次数。
+1 = 单次全局求解（最快），3 = 默认值，
+5 次以上大多数情况下收益递减。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/advanced_tuning_widget.py" line="56"/>
+        <location filename="../../gui/widgets/advanced_tuning_widget.py" line="61"/>
         <source>Only affects AL-DIC solver. Ignored by Local DIC.</source>
         <translation>仅对 AL-DIC 求解器生效，Local DIC 会忽略。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/advanced_tuning_widget.py" line="69"/>
+        <location filename="../../gui/widgets/advanced_tuning_widget.py" line="74"/>
         <source>Auto-expand FFT search on clipped peaks</source>
         <translation>峰值被截断时自动扩大 FFT 搜索范围</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/advanced_tuning_widget.py" line="75"/>
+        <location filename="../../gui/widgets/advanced_tuning_widget.py" line="80"/>
         <source>When the NCC peak reaches the edge of the search region, automatically retry with a larger region (up to image half-size, 6 retries with 2x growth).
 
 Only relevant for the FFT init-guess mode.</source>
         <translation>当 NCC 峰值触及搜索区域边缘时，自动以更大的搜索范围重试（最大到图像一半尺寸，每次放大 2 倍，共 6 次重试）。
 
 仅对 FFT 初始猜测模式有效。</translation>
+    </message>
+</context>
+<context>
+    <name>App</name>
+    <message>
+        <location filename="../../gui/app.py" line="759"/>
+        <source>Imported Region of Interest for %n frame(s)</source>
+        <translation>为 %n 帧导入了感兴趣区域</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="771"/>
+        <source>Run DIC first -- no displacement results to post-process.</source>
+        <translation>请先运行 DIC —— 当前没有可后处理的位移结果。</translation>
     </message>
 </context>
 <context>
@@ -272,150 +285,417 @@ Only relevant for the FFT init-guess mode.</source>
 <context>
     <name>ExportDialog</name>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="469"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="380"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="721"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="836"/>
+        <source>Auto</source>
+        <translation>自动</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="404"/>
+        <source>Opacity</source>
+        <translation>不透明度</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="408"/>
+        <source>Field opacity (0 = transparent, 1 = fully opaque)</source>
+        <translation>字段不透明度（0 = 透明，1 = 完全不透明）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="476"/>
         <source>All</source>
         <translation>全选</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="471"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="478"/>
         <source>None</source>
         <translation>全不选</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="500"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="507"/>
         <source>Export Results</source>
         <translation>导出结果</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="520"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="527"/>
         <source>OUTPUT FOLDER</source>
         <translation>输出文件夹</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="528"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="535"/>
         <source>Select output folder…</source>
         <translation>选择输出文件夹…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="532"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="539"/>
         <source>Browse…</source>
         <translation>浏览…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="537"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="544"/>
         <source>Open Folder</source>
         <translation>打开文件夹</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="545"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="552"/>
         <source>PHYSICAL UNITS</source>
         <translation>物理单位</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="549"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="556"/>
         <source>Enable physical units</source>
         <translation>启用物理单位</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="554"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="561"/>
         <source>Scale displacement values by pixel size and show physical units on colorbar labels. Strain is dimensionless and unaffected.</source>
         <translation>按像素尺寸缩放位移值，并在色条标签显示物理单位。应变为无量纲，不受影响。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="569"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="576"/>
         <source>/ pixel</source>
         <translation>/ 像素</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="571"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="578"/>
         <source>Pixel size</source>
         <translation>像素尺寸</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="580"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="587"/>
         <source>fps</source>
         <translation>fps</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="582"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="589"/>
         <source>Frame rate</source>
         <translation>帧率</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="590"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="597"/>
         <source>Data</source>
         <translation>数据</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="591"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="598"/>
         <source>Images</source>
         <translation>图像</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="592"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="599"/>
         <source>Animation</source>
         <translation>动画</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="593"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="600"/>
         <source>Report</source>
         <translation>报告</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="613"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="620"/>
         <source>FORMAT</source>
         <translation>格式</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="615"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="622"/>
         <source>NumPy Archive (.npz)</source>
         <translation>NumPy 归档 (.npz)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="617"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="624"/>
         <source>MATLAB (.mat)</source>
         <translation>MATLAB (.mat)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="619"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="626"/>
         <source>CSV (per frame)</source>
         <translation>CSV（逐帧）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="622"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="629"/>
         <source>NPZ: one file per frame (default: single merged file)</source>
         <translation>NPZ：逐帧一个文件（默认：合并为单个文件）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="630"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="637"/>
         <source>DISPLACEMENT</source>
         <translation>位移</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="639"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="666"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="646"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="673"/>
         <source>Select:</source>
         <translation>选择：</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="654"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="661"/>
         <source>STRAIN</source>
         <translation>应变</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="657"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="664"/>
         <source>Run Compute Strain first.</source>
         <translation>请先运行“计算应变”。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="684"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="691"/>
         <source>✓ Parameters file (JSON) always exported</source>
         <translation>✓ 参数文件（JSON）始终导出</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="690"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="697"/>
         <source>Export Data</source>
         <translation>导出数据</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="718"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="833"/>
+        <source>Export</source>
+        <translation>导出</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="719"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="834"/>
+        <source>Field</source>
+        <translation>字段</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="720"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="835"/>
+        <source>Colormap</source>
+        <translation>颜色映射</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="722"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="837"/>
+        <source>Min</source>
+        <translation>最小</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="723"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="838"/>
+        <source>Max</source>
+        <translation>最大</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="742"/>
+        <source>IMAGE SETTINGS</source>
+        <translation>图像设置</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="752"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="867"/>
+        <source>Format</source>
+        <translation>格式</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="761"/>
+        <source>DPI</source>
+        <translation>DPI</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="763"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="878"/>
+        <source>Include colorbar</source>
+        <translation>包含色条</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="768"/>
+        <source>Append a vertical colorbar strip to the right of each image.
+Tick labels update per frame when Auto range is enabled.</source>
+        <translation>在每张图像右侧添加一条垂直色条。
+启用自动范围时，刻度标签会按帧更新。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="773"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="888"/>
+        <source>Original (frame 1 background)</source>
+        <translation>原始配置（第 1 帧作背景）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="778"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="893"/>
+        <source>Field is drawn at the original (undeformed) node positions.
+Background image is always the first frame.</source>
+        <translation>字段绘制在原始（未变形）节点位置。
+背景图像始终是第一帧。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="781"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="896"/>
+        <source>Deformed (current frame background)</source>
+        <translation>变形配置（当前帧作背景）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="787"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="902"/>
+        <source>Field is drawn at the displaced node positions (reference + displacement).
+Background image follows each frame&apos;s own photo.</source>
+        <translation>字段绘制在位移后节点位置（参考位置 + 位移）。
+背景图像跟随每帧自身的照片。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="791"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="906"/>
+        <source>Render as</source>
+        <translation>绘制为</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="809"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="922"/>
+        <source>Cancel Export</source>
+        <translation>取消导出</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="814"/>
+        <source>Export Images</source>
+        <translation>导出图像</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="857"/>
+        <source>ANIMATION SETTINGS</source>
+        <translation>动画设置</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="876"/>
+        <source>FPS</source>
+        <translation>帧率</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="883"/>
+        <source>Append a vertical colorbar strip to the right of each frame.
+Tick labels update per frame when Auto range is enabled.</source>
+        <translation>在每一帧右侧添加一条垂直色条。
+启用自动范围时，刻度标签会按帧更新。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="927"/>
+        <source>Export Animation</source>
+        <translation>导出动画</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="944"/>
+        <source>CONTENT</source>
+        <translation>内容</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="946"/>
+        <source>Parameter summary table</source>
+        <translation>参数摘要表</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="950"/>
+        <source>Field statistics (min/max/mean/std per frame)</source>
+        <translation>字段统计（每帧 最小/最大/平均/标准差）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="952"/>
+        <source>Sample field images</source>
+        <translation>示例字段图像</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="959"/>
+        <source>Sample every</source>
+        <translation>每隔</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="965"/>
+        <source>frames</source>
+        <comment>Report: sample every N frames</comment>
+        <translation>帧</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="971"/>
+        <source>FIELDS</source>
+        <translation>字段</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="974"/>
+        <source>Displacement:</source>
+        <translation>位移：</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="989"/>
+        <source>Strain:</source>
+        <translation>应变：</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1012"/>
+        <source>Format: HTML (self-contained, view in any browser)</source>
+        <translation>格式：HTML（自包含，可在任意浏览器中查看）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1018"/>
+        <source>Generate Report</source>
+        <translation>生成报告</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1032"/>
+        <source>FRAME RANGE</source>
+        <translation>帧范围</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1035"/>
+        <source>All frames</source>
+        <translation>所有帧</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1041"/>
+        <source>From</source>
+        <comment>Frame range: starting frame</comment>
+        <translation>从</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1049"/>
+        <source>to</source>
+        <comment>Frame range: ending frame</comment>
+        <translation>到</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1080"/>
+        <source>Select Output Folder</source>
+        <translation>选择输出文件夹</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1139"/>
+        <source>Exported %1 files → %2</source>
+        <translation>已导出 %1 个文件 → %2</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1148"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1223"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1302"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1344"/>
+        <source>Error: %1</source>
+        <translation>错误：%1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1173"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1251"/>
+        <source>Starting…</source>
+        <translation>开始中…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1196"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1274"/>
+        <source>Rendering %1 (%2/%3)</source>
+        <translation>正在渲染 %1 (%2/%3)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1202"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1280"/>
+        <source>Frame %1/%2</source>
+        <translation>帧 %1/%2</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1212"/>
+        <source>Exported %1 images → %2</source>
+        <translation>已导出 %1 张图像 → %2</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1337"/>
+        <source>Report saved → %1</source>
+        <translation>报告已保存 → %1</translation>
     </message>
 </context>
 <context>
@@ -462,6 +742,7 @@ Only relevant for the FFT init-guess mode.</source>
     </message>
     <message>
         <location filename="../../gui/widgets/frame_navigator.py" line="98"/>
+        <location filename="../../gui/widgets/frame_navigator.py" line="194"/>
         <source>FRAME 0/0</source>
         <translation>第 0/0 帧</translation>
     </message>
@@ -475,35 +756,92 @@ Only relevant for the FFT init-guess mode.</source>
         <source>Pause animation</source>
         <translation>暂停动画</translation>
     </message>
+    <message>
+        <location filename="../../gui/widgets/frame_navigator.py" line="191"/>
+        <source>FRAME %1/%2</source>
+        <translation>帧 %1/%2</translation>
+    </message>
 </context>
 <context>
     <name>ImageList</name>
     <message>
-        <location filename="../../gui/widgets/image_list.py" line="186"/>
-        <location filename="../../gui/widgets/image_list.py" line="244"/>
+        <location filename="../../gui/widgets/image_list.py" line="95"/>
+        <source>#</source>
+        <comment>Image list column: frame index</comment>
+        <translation>#</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/image_list.py" line="96"/>
+        <source>Filename</source>
+        <translation>文件名</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/image_list.py" line="97"/>
+        <source>Region</source>
+        <comment>Image list column: ROI status</comment>
+        <translation>区域</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/image_list.py" line="190"/>
+        <location filename="../../gui/widgets/image_list.py" line="248"/>
         <source>Add</source>
         <translation>添加</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/image_list.py" line="238"/>
+        <location filename="../../gui/widgets/image_list.py" line="242"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/image_list.py" line="241"/>
+        <location filename="../../gui/widgets/image_list.py" line="245"/>
         <source>Need</source>
         <translation>待绘</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/image_list.py" line="368"/>
+        <source>Import Region of Interest for %n frame(s)</source>
+        <translation>为 %n 帧导入感兴趣区域</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/image_list.py" line="378"/>
+        <source>Clear Region of Interest (%1 with region)</source>
+        <translation>清除感兴趣区域（%1 帧已有区域）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/image_list.py" line="383"/>
+        <source>Clear Region of Interest</source>
+        <translation>清除感兴趣区域</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/image_list.py" line="396"/>
+        <source>Delete %n image(s)</source>
+        <translation>删除 %n 张图像</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/image_list.py" line="496"/>
+        <source>Images</source>
+        <translation>图像</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/image_list.py" line="497"/>
+        <source>All Files</source>
+        <translation>所有文件</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/image_list.py" line="508"/>
+        <source>Selected %1 files for %2 frames — count must match</source>
+        <translation>已选择 %1 个文件用于 %2 帧 — 数量必须匹配</translation>
     </message>
 </context>
 <context>
     <name>InitGuessWidget</name>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="111"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="80"/>
         <source>Starting Points</source>
         <translation>种子点</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="122"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="91"/>
         <source>Place a few points; pyALDIC bootstraps each with a single-point NCC and propagates the field along mesh neighbours.
 
 Best for:
@@ -522,49 +860,49 @@ Auto-placed per region when you draw or edit an ROI.</source>
 绘制或编辑 ROI 时会为每个区域自动放置。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="131"/>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="313"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="100"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="282"/>
         <source>Place Starting Points</source>
         <translation>放置种子点</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="136"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="105"/>
         <source>Enter placement mode on the canvas. Left-click to add, right-click to remove, Esc or click again to exit.</source>
         <translation>在画布上进入放置模式。左键添加、右键删除，按 Esc 或再次点击退出。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="138"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="107"/>
         <source>Auto-place</source>
         <translation>自动放置</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="142"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="111"/>
         <source>Fill empty regions with the highest-NCC node in each. Existing Starting Points are preserved.</source>
         <translation>在每个空区域填入 NCC 最高的节点。已有种子点会保留。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="144"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="113"/>
         <source>Clear</source>
         <translation>清除</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="148"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="117"/>
         <source>Remove every Starting Point. Faster than right-clicking each one individually.</source>
         <translation>移除所有种子点。比逐个右键删除快。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="153"/>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="323"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="122"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="292"/>
         <source>%1 / %2 regions ready</source>
         <translation>%1 / %2 区域就绪</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="172"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="141"/>
         <source>FFT (cross-correlation)</source>
         <translation>FFT（互相关）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="183"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="152"/>
         <source>Full-grid normalized cross-correlation. Robust within the search radius; the search auto-expands when peaks clip.
 
 Best for:
@@ -583,37 +921,37 @@ Cost grows with the search radius, so very large displacements become slow.</sou
 计算成本随搜索半径增长，极大位移会变慢。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="194"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="163"/>
         <source>Every</source>
         <translation>每</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="199"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="168"/>
         <source>Run FFT every N frames. N = 1 means FFT every frame (safest, slowest). N &gt; 1 uses warm-start between resets to limit error propagation to N frames.</source>
         <translation>每 N 帧运行一次 FFT。N = 1 表示每帧都做 FFT（最安全但最慢）。N &gt; 1 在两次重置之间使用热启动，将误差传播限制在 N 帧内。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="206"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="175"/>
         <source>(N=1 = every frame)</source>
         <translation>（N=1 即每帧）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="216"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="185"/>
         <source>Only when reference frame updates (incremental only)</source>
         <translation>仅在参考帧更新时（只对增量模式）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="220"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="189"/>
         <source>Run FFT whenever the reference frame changes; warm-start within each segment. Typical default for incremental mode.</source>
         <translation>参考帧变化时运行 FFT；每段内使用热启动。是增量模式的典型默认值。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="229"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="198"/>
         <source>Previous frame</source>
         <translation>上一帧</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="239"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="208"/>
         <source>Use the previous frame&apos;s converged displacement as the initial guess. No cross-correlation runs.
 
 Best for:
@@ -630,7 +968,7 @@ Errors can accumulate over long sequences. Prefer FFT or Starting Points on nois
 长序列中误差会累积。数据有噪声或运动较大时请选 FFT 或种子点。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="311"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="280"/>
         <source>Placing... (click to exit)</source>
         <translation>放置中…（再次点击退出）</translation>
     </message>
@@ -683,85 +1021,85 @@ Default (unchecked): lexicographic — best for zero-padded names</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../gui/app.py" line="194"/>
+        <location filename="../../gui/app.py" line="195"/>
         <source>&amp;File</source>
         <translation>文件</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="196"/>
+        <location filename="../../gui/app.py" line="197"/>
         <source>Open Session…</source>
         <translation>打开会话…</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="201"/>
+        <location filename="../../gui/app.py" line="202"/>
         <source>Save Session…</source>
         <translation>保存会话…</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="207"/>
+        <location filename="../../gui/app.py" line="208"/>
         <source>Quit</source>
         <translation>退出</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="215"/>
+        <location filename="../../gui/app.py" line="216"/>
         <source>&amp;Settings</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="216"/>
+        <location filename="../../gui/app.py" line="217"/>
         <source>Language</source>
         <translation>语言</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="245"/>
+        <location filename="../../gui/app.py" line="246"/>
         <source>Language changed</source>
         <translation>语言已切换</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="249"/>
+        <location filename="../../gui/app.py" line="250"/>
         <source>Language set to %1. Please restart pyALDIC for all widgets to pick up the new language.</source>
         <translation>语言已切换至 %1。请重启 pyALDIC 以让所有界面生效。</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="260"/>
+        <location filename="../../gui/app.py" line="261"/>
         <source>Save Session</source>
         <translation>保存会话</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="262"/>
-        <location filename="../../gui/app.py" line="289"/>
+        <location filename="../../gui/app.py" line="263"/>
+        <location filename="../../gui/app.py" line="290"/>
         <source>pyALDIC Session</source>
         <translation>pyALDIC 会话</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="263"/>
-        <location filename="../../gui/app.py" line="291"/>
+        <location filename="../../gui/app.py" line="264"/>
+        <location filename="../../gui/app.py" line="292"/>
         <source>All Files</source>
         <translation>全部文件</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="273"/>
+        <location filename="../../gui/app.py" line="274"/>
         <source>Save Session Failed</source>
         <translation>保存会话失败</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="287"/>
+        <location filename="../../gui/app.py" line="288"/>
         <source>Open Session</source>
         <translation>打开会话</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="290"/>
+        <location filename="../../gui/app.py" line="291"/>
         <source>JSON</source>
         <translation>JSON</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="299"/>
+        <location filename="../../gui/app.py" line="300"/>
         <source>Open Session Failed</source>
         <translation>打开会话失败</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="651"/>
-        <location filename="../../gui/app.py" line="704"/>
+        <location filename="../../gui/app.py" line="652"/>
+        <location filename="../../gui/app.py" line="705"/>
         <source>Load images first.</source>
         <translation>请先加载图像。</translation>
     </message>
@@ -871,7 +1209,42 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <translation>初始种子搜索</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/param_panel.py" line="241"/>
+        <location filename="../../gui/widgets/param_panel.py" line="218"/>
+        <source>Light</source>
+        <comment>Mesh refinement severity</comment>
+        <translation>轻度</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/param_panel.py" line="219"/>
+        <source>Medium</source>
+        <comment>Mesh refinement severity</comment>
+        <translation>中等</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/param_panel.py" line="220"/>
+        <source>Heavy</source>
+        <comment>Mesh refinement severity</comment>
+        <translation>强</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/param_panel.py" line="221"/>
+        <source>Extra Heavy</source>
+        <comment>Mesh refinement severity</comment>
+        <translation>超强</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/param_panel.py" line="222"/>
+        <source>Ultra</source>
+        <comment>Mesh refinement severity</comment>
+        <translation>极限</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/param_panel.py" line="228"/>
+        <source>%1 (L%2)</source>
+        <translation>%1 (L%2)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/param_panel.py" line="252"/>
         <source>min element size = %1 px  (subset_step=%2, level=%3)</source>
         <translation>最小单元尺寸 = %1 px  (子集步长=%2, 级别=%3)</translation>
     </message>
@@ -894,12 +1267,27 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <translation>/ px</translation>
     </message>
     <message>
+        <location filename="../../gui/widgets/physical_units_widget.py" line="83"/>
+        <source>Pixel size</source>
+        <translation>像素尺寸</translation>
+    </message>
+    <message>
         <location filename="../../gui/widgets/physical_units_widget.py" line="93"/>
         <source>Acquisition frame rate (used for velocity field)</source>
         <translation>采集帧率（用于速度场）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/physical_units_widget.py" line="161"/>
+        <location filename="../../gui/widgets/physical_units_widget.py" line="94"/>
+        <source>Frame rate</source>
+        <translation>帧率</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/physical_units_widget.py" line="162"/>
+        <source>Disp: %1  Velocity: %2/s</source>
+        <translation>位移：%1  速度：%2/s</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/physical_units_widget.py" line="167"/>
         <source>Disp: px  Velocity: px/fr</source>
         <translation>位移：px  速度：px/帧</translation>
     </message>
@@ -907,14 +1295,57 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
 <context>
     <name>PipelineController</name>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="348"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="359"/>
         <source>Building pipeline configuration...</source>
         <translation>正在构建流水线配置…</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="500"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="516"/>
         <source>Loading images...</source>
         <translation>正在加载图像…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="526"/>
+        <source>  Loaded %1 images, shape=%2</source>
+        <translation>  已加载 %1 张图像，尺寸=%2</translation>
+    </message>
+    <message>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="539"/>
+        <source>  ROI mask: %1, %2 pixels (%3%)</source>
+        <translation>  感兴趣区域蒙版：%1，%2 像素（%3%）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="567"/>
+        <source>Run cancelled: define per-frame Regions of Interest for the missing reference frames or accept the inherited frame-1 mask in the next run.</source>
+        <translation>已取消运行：请为缺失的参考帧定义逐帧感兴趣区域，或在下次运行时接受继承自第 1 帧的蒙版。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="588"/>
+        <source>  %n frame(s) with custom ROI masks</source>
+        <translation>  %n 帧使用自定义感兴趣区域蒙版</translation>
+    </message>
+    <message>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="719"/>
+        <source>Results received: %n frame(s)</source>
+        <translation>已收到结果：%n 帧</translation>
+    </message>
+</context>
+<context>
+    <name>PipelineWorker</name>
+    <message>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="189"/>
+        <source>Starting DIC analysis...</source>
+        <translation>开始 DIC 分析…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="222"/>
+        <source>Analysis complete in %1s</source>
+        <translation>分析完成，用时 %1 秒</translation>
+    </message>
+    <message>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="230"/>
+        <source>Analysis stopped by user.</source>
+        <translation>用户已停止分析。</translation>
     </message>
 </context>
 <context>
@@ -1228,7 +1659,7 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
     </message>
     <message>
         <location filename="../../gui/widgets/strain_navigator.py" line="114"/>
-        <location filename="../../gui/widgets/strain_navigator.py" line="222"/>
+        <location filename="../../gui/widgets/strain_navigator.py" line="228"/>
         <source>FRAME 0/0</source>
         <translation>第 0/0 帧</translation>
     </message>
@@ -1242,31 +1673,74 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <source>Pause animation</source>
         <translation>暂停动画</translation>
     </message>
+    <message>
+        <location filename="../../gui/widgets/strain_navigator.py" line="223"/>
+        <source>FRAME %1/%2</source>
+        <translation>帧 %1/%2</translation>
+    </message>
 </context>
 <context>
     <name>StrainParamPanel</name>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="69"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="79"/>
         <source>Plane fitting</source>
         <translation>平面拟合</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="70"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="80"/>
         <source>FEM nodal</source>
         <translation>有限元节点</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="72"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="82"/>
         <source>Method</source>
         <translation>方法</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="81"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="106"/>
+        <source>VSG (Virtual Strain Gauge) size is the diameter, in pixels, of the circular region around each mesh node used to fit a local displacement plane. Strain is then taken as the plane&apos;s slope.
+
+• Larger VSG → smoother strain, lower spatial resolution.
+• Smaller VSG → sharper strain, more noise.
+• Rule of thumb: VSG ≥ 2 × subset step + 1 (default: 41 px).
+
+Not used when Method = FEM nodal (there, mesh spacing itself sets the gauge size).</source>
+        <translation>VSG（虚拟应变计，Virtual Strain Gauge）尺寸指围绕每个网格节点、用于拟合局部位移平面的圆形区域的直径（像素）。应变由该平面的斜率给出。
+
+• VSG 越大 → 应变越平滑，空间分辨率越低。
+• VSG 越小 → 应变越锐利，但噪声越大。
+• 经验法则：VSG ≥ 2 × 子集步长 + 1（默认：41 px）。
+
+方法选择 FEM nodal 时不使用此参数（此时由网格间距决定虚拟应变计尺寸）。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="109"/>
         <source>VSG size</source>
         <translation>VSG 尺寸</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="97"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="139"/>
+        <source>Off</source>
+        <comment>Strain smoothing preset</comment>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="140"/>
+        <source>Light (σ = 0.5 × step)</source>
+        <translation>轻度（σ = 0.5 × step）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="141"/>
+        <source>Medium (σ = 1 × step)</source>
+        <translation>中等（σ = 1 × step）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="142"/>
+        <source>Strong (σ = 2 × step) ⚠</source>
+        <translation>强（σ = 2 × step）⚠</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="153"/>
         <source>Gaussian smoothing of the strain field after computation.
 σ is the Gaussian kernel width; &apos;step&apos; = DIC node spacing.
   Light  (0.5 × step):  subtle, preserves fine features.
@@ -1279,29 +1753,34 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
   Strong（2 × step）⚠：强平滑，可能模糊真实梯度。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="98"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="154"/>
         <source>Strain field smoothing</source>
         <translation>应变场平滑</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="103"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="159"/>
         <source>Infinitesimal</source>
         <translation>无穷小应变</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="104"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="160"/>
         <source>Eulerian</source>
         <translation>欧拉应变</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="105"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="161"/>
         <source>Green-Lagrangian</source>
         <translation>格林-拉格朗日应变</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="107"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="163"/>
         <source>Strain type</source>
         <translation>应变类型</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="256"/>
+        <source>⚠ VSG radius (%1 px) &lt; DIC node spacing (%2 px); plane fit will fail. Use VSG ≥ %3 px or switch Method to FEM nodal.</source>
+        <translation>⚠ VSG 半径（%1 px）&lt; DIC 节点间距（%2 px）；平面拟合将失败。请将 VSG ≥ %3 px 或将方法切换为 FEM nodal。</translation>
     </message>
 </context>
 <context>
@@ -1312,9 +1791,24 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <translation>在变形帧上显示</translation>
     </message>
     <message>
+        <location filename="../../gui/widgets/strain_viz_panel.py" line="64"/>
+        <source>Deformed</source>
+        <translation>变形后</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_viz_panel.py" line="71"/>
+        <source>Colormap</source>
+        <translation>颜色映射</translation>
+    </message>
+    <message>
         <location filename="../../gui/widgets/strain_viz_panel.py" line="74"/>
         <source>Auto</source>
         <translation>自动</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_viz_panel.py" line="76"/>
+        <source>Range</source>
+        <translation>范围</translation>
     </message>
     <message>
         <location filename="../../gui/widgets/strain_viz_panel.py" line="96"/>
@@ -1325,6 +1819,11 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <location filename="../../gui/widgets/strain_viz_panel.py" line="98"/>
         <source>Max</source>
         <translation>最大</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_viz_panel.py" line="108"/>
+        <source>Opacity</source>
+        <translation>不透明度</translation>
     </message>
 </context>
 <context>
@@ -1395,7 +1894,28 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <translation>日志</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="453"/>
+        <location filename="../../gui/strain_window.py" line="354"/>
+        <source>Strain compute failed: %1: %2</source>
+        <translation>应变计算失败：%1：%2</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="362"/>
+        <location filename="../../gui/strain_window.py" line="410"/>
+        <source>Strain computation complete.</source>
+        <translation>应变计算完成。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="374"/>
+        <source>Strain window: no displacement results to post-process.</source>
+        <translation>应变窗口：没有可后处理的位移结果。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="426"/>
+        <source>Strain compute failed: %1</source>
+        <translation>应变计算失败：%1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="463"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ 参数已变更 — 请点击“计算应变”</translation>
     </message>
@@ -1415,12 +1935,12 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <translation>导出结果</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="378"/>
+        <location filename="../../gui/strain_window.py" line="384"/>
         <source>Starting…</source>
         <translation>启动中…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="400"/>
+        <location filename="../../gui/strain_window.py" line="406"/>
         <source>Complete</source>
         <translation>完成</translation>
     </message>

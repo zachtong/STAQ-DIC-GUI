@@ -1,8 +1,13 @@
-"""Advanced numerical tuning knobs (ADMM iterations, FFT auto-expand).
+"""Advanced numerical tuning knobs (AL-DIC iterations, FFT auto-expand).
 
 Lives inside the ADVANCED collapsible section. These parameters rarely
 need to be changed — defaults work for most use cases — so they are
 tucked out of the primary workflow.
+
+Implementation note: the "AL-DIC Iterations" spin box is backed by
+``AppState.admm_max_iter`` — internally the AL-DIC algorithm runs an
+ADMM alternating-minimization loop, but the user-facing label hides
+that acronym because users don't need to know what ADMM is.
 """
 
 from __future__ import annotations
@@ -22,7 +27,7 @@ from al_dic.gui.theme import COLORS
 
 
 class AdvancedTuningWidget(QWidget):
-    """ADMM iteration count + FFT auto-expand checkbox."""
+    """AL-DIC iteration count + FFT auto-expand checkbox."""
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -33,10 +38,10 @@ class AdvancedTuningWidget(QWidget):
         layout.setContentsMargins(0, 4, 0, 4)
         layout.setSpacing(6)
 
-        # --- ADMM iterations (AL-DIC only) -----------------------------
+        # --- AL-DIC iterations (AL-DIC solver only) --------------------
         admm_row = QHBoxLayout()
         admm_row.setSpacing(6)
-        admm_lbl = QLabel(self.tr("ADMM Iterations"))
+        admm_lbl = QLabel(self.tr("AL-DIC Iterations"))
         admm_lbl.setFixedWidth(120)
         admm_row.addWidget(admm_lbl)
         self._admm_iter_spin = QSpinBox()
@@ -44,7 +49,7 @@ class AdvancedTuningWidget(QWidget):
         self._admm_iter_spin.setValue(self._state.admm_max_iter)
         self._admm_iter_spin.setFixedWidth(60)
         self._admm_iter_spin.setToolTip(self.tr(
-            "Number of ADMM alternating minimization cycles for AL-DIC.\n"
+            "Number of global refinement cycles for the AL-DIC solver.\n"
             "1 = single global pass (fastest), 3 = default,\n"
             "5+ = diminishing returns for most cases."
         ))

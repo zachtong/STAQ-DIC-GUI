@@ -4,37 +4,50 @@
 <context>
     <name>AdvancedTuningWidget</name>
     <message>
-        <location filename="../../gui/widgets/advanced_tuning_widget.py" line="39"/>
-        <source>ADMM Iterations</source>
-        <translation>ADMM 反復回数</translation>
+        <location filename="../../gui/widgets/advanced_tuning_widget.py" line="44"/>
+        <source>AL-DIC Iterations</source>
+        <translation>AL-DIC 反復回数</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/advanced_tuning_widget.py" line="50"/>
-        <source>Number of ADMM alternating minimization cycles for AL-DIC.
+        <location filename="../../gui/widgets/advanced_tuning_widget.py" line="55"/>
+        <source>Number of global refinement cycles for the AL-DIC solver.
 1 = single global pass (fastest), 3 = default,
 5+ = diminishing returns for most cases.</source>
-        <translation>AL-DIC の ADMM 交互最小化の反復回数。
-1 = 単一グローバルパス(最速)、3 = デフォルト、
-5 以上はほとんどのケースで収穫逓減。</translation>
+        <translation>AL-DIC ソルバーの全体的な精密化反復回数。
+1 = 単一パス（最速）、3 = デフォルト、
+5 以上はほとんどの場合で効果逓減。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/advanced_tuning_widget.py" line="56"/>
+        <location filename="../../gui/widgets/advanced_tuning_widget.py" line="61"/>
         <source>Only affects AL-DIC solver. Ignored by Local DIC.</source>
         <translation>AL-DIC ソルバーにのみ影響します。Local DIC では無視されます。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/advanced_tuning_widget.py" line="69"/>
+        <location filename="../../gui/widgets/advanced_tuning_widget.py" line="74"/>
         <source>Auto-expand FFT search on clipped peaks</source>
         <translation>ピークが打ち切られたら FFT 探索を自動拡大</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/advanced_tuning_widget.py" line="75"/>
+        <location filename="../../gui/widgets/advanced_tuning_widget.py" line="80"/>
         <source>When the NCC peak reaches the edge of the search region, automatically retry with a larger region (up to image half-size, 6 retries with 2x growth).
 
 Only relevant for the FFT init-guess mode.</source>
         <translation>NCC ピークが探索領域の端に達したら、より広い領域で自動的に再試行します(最大で画像半分まで、2 倍ずつ 6 回)。
 
 FFT 初期推定モードでのみ有効です。</translation>
+    </message>
+</context>
+<context>
+    <name>App</name>
+    <message>
+        <location filename="../../gui/app.py" line="759"/>
+        <source>Imported Region of Interest for %n frame(s)</source>
+        <translation>%n フレームに関心領域をインポートしました</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="771"/>
+        <source>Run DIC first -- no displacement results to post-process.</source>
+        <translation>先に DIC を実行してください —— 後処理する変位結果がありません。</translation>
     </message>
 </context>
 <context>
@@ -272,150 +285,417 @@ FFT 初期推定モードでのみ有効です。</translation>
 <context>
     <name>ExportDialog</name>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="469"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="380"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="721"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="836"/>
+        <source>Auto</source>
+        <translation>自動</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="404"/>
+        <source>Opacity</source>
+        <translation>不透明度</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="408"/>
+        <source>Field opacity (0 = transparent, 1 = fully opaque)</source>
+        <translation>フィールドの不透明度（0 = 透明、1 = 完全に不透明）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="476"/>
         <source>All</source>
         <translation>全選択</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="471"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="478"/>
         <source>None</source>
         <translation>全解除</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="500"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="507"/>
         <source>Export Results</source>
         <translation>結果をエクスポート</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="520"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="527"/>
         <source>OUTPUT FOLDER</source>
         <translation>出力フォルダ</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="528"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="535"/>
         <source>Select output folder…</source>
         <translation>出力フォルダを選択…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="532"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="539"/>
         <source>Browse…</source>
         <translation>参照…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="537"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="544"/>
         <source>Open Folder</source>
         <translation>フォルダを開く</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="545"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="552"/>
         <source>PHYSICAL UNITS</source>
         <translation>物理単位</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="549"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="556"/>
         <source>Enable physical units</source>
         <translation>物理単位を有効化</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="554"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="561"/>
         <source>Scale displacement values by pixel size and show physical units on colorbar labels. Strain is dimensionless and unaffected.</source>
         <translation>変位値をピクセルサイズでスケールし、カラーバーのラベルに物理単位を表示します。ひずみは無次元量のため影響を受けません。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="569"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="576"/>
         <source>/ pixel</source>
         <translation>/ ピクセル</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="571"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="578"/>
         <source>Pixel size</source>
         <translation>ピクセルサイズ</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="580"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="587"/>
         <source>fps</source>
         <translation>fps</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="582"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="589"/>
         <source>Frame rate</source>
         <translation>フレームレート</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="590"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="597"/>
         <source>Data</source>
         <translation>データ</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="591"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="598"/>
         <source>Images</source>
         <translation>画像</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="592"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="599"/>
         <source>Animation</source>
         <translation>アニメーション</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="593"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="600"/>
         <source>Report</source>
         <translation>レポート</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="613"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="620"/>
         <source>FORMAT</source>
         <translation>形式</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="615"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="622"/>
         <source>NumPy Archive (.npz)</source>
         <translation>NumPy アーカイブ (.npz)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="617"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="624"/>
         <source>MATLAB (.mat)</source>
         <translation>MATLAB (.mat)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="619"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="626"/>
         <source>CSV (per frame)</source>
         <translation>CSV(フレーム単位)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="622"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="629"/>
         <source>NPZ: one file per frame (default: single merged file)</source>
         <translation>NPZ: フレーム単位で 1 ファイル(デフォルト: 統合 1 ファイル)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="630"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="637"/>
         <source>DISPLACEMENT</source>
         <translation>変位</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="639"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="666"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="646"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="673"/>
         <source>Select:</source>
         <translation>選択:</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="654"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="661"/>
         <source>STRAIN</source>
         <translation>ひずみ</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="657"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="664"/>
         <source>Run Compute Strain first.</source>
         <translation>先に「ひずみを計算」を実行してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="684"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="691"/>
         <source>✓ Parameters file (JSON) always exported</source>
         <translation>✓ パラメータファイル (JSON) は常にエクスポートされます</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="690"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="697"/>
         <source>Export Data</source>
         <translation>データをエクスポート</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="718"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="833"/>
+        <source>Export</source>
+        <translation>エクスポート</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="719"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="834"/>
+        <source>Field</source>
+        <translation>フィールド</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="720"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="835"/>
+        <source>Colormap</source>
+        <translation>カラーマップ</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="722"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="837"/>
+        <source>Min</source>
+        <translation>最小</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="723"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="838"/>
+        <source>Max</source>
+        <translation>最大</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="742"/>
+        <source>IMAGE SETTINGS</source>
+        <translation>画像設定</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="752"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="867"/>
+        <source>Format</source>
+        <translation>形式</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="761"/>
+        <source>DPI</source>
+        <translation>DPI</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="763"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="878"/>
+        <source>Include colorbar</source>
+        <translation>カラーバーを含める</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="768"/>
+        <source>Append a vertical colorbar strip to the right of each image.
+Tick labels update per frame when Auto range is enabled.</source>
+        <translation>各画像の右側に垂直カラーバーを追加します。
+自動レンジ有効時、目盛りラベルはフレームごとに更新されます。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="773"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="888"/>
+        <source>Original (frame 1 background)</source>
+        <translation>原形（第 1 フレームを背景）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="778"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="893"/>
+        <source>Field is drawn at the original (undeformed) node positions.
+Background image is always the first frame.</source>
+        <translation>フィールドは元の（未変形の）ノード位置に描画されます。
+背景画像は常に最初のフレームです。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="781"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="896"/>
+        <source>Deformed (current frame background)</source>
+        <translation>変形後（現在のフレームを背景）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="787"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="902"/>
+        <source>Field is drawn at the displaced node positions (reference + displacement).
+Background image follows each frame&apos;s own photo.</source>
+        <translation>フィールドは変位後のノード位置（参照 + 変位）に描画されます。
+背景画像は各フレーム自身の写真を使用します。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="791"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="906"/>
+        <source>Render as</source>
+        <translation>描画方法</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="809"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="922"/>
+        <source>Cancel Export</source>
+        <translation>エクスポートをキャンセル</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="814"/>
+        <source>Export Images</source>
+        <translation>画像をエクスポート</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="857"/>
+        <source>ANIMATION SETTINGS</source>
+        <translation>アニメーション設定</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="876"/>
+        <source>FPS</source>
+        <translation>FPS</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="883"/>
+        <source>Append a vertical colorbar strip to the right of each frame.
+Tick labels update per frame when Auto range is enabled.</source>
+        <translation>各フレームの右側に垂直カラーバーを追加します。
+自動レンジ有効時、目盛りラベルはフレームごとに更新されます。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="927"/>
+        <source>Export Animation</source>
+        <translation>アニメーションをエクスポート</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="944"/>
+        <source>CONTENT</source>
+        <translation>内容</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="946"/>
+        <source>Parameter summary table</source>
+        <translation>パラメータ要約表</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="950"/>
+        <source>Field statistics (min/max/mean/std per frame)</source>
+        <translation>フィールド統計（フレームごとの最小/最大/平均/標準偏差）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="952"/>
+        <source>Sample field images</source>
+        <translation>フィールド画像のサンプル</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="959"/>
+        <source>Sample every</source>
+        <translation>抽出間隔</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="965"/>
+        <source>frames</source>
+        <comment>Report: sample every N frames</comment>
+        <translation>フレーム</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="971"/>
+        <source>FIELDS</source>
+        <translation>フィールド</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="974"/>
+        <source>Displacement:</source>
+        <translation>変位：</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="989"/>
+        <source>Strain:</source>
+        <translation>ひずみ：</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1012"/>
+        <source>Format: HTML (self-contained, view in any browser)</source>
+        <translation>形式：HTML（自己完結型、任意のブラウザで表示可能）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1018"/>
+        <source>Generate Report</source>
+        <translation>レポートを生成</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1032"/>
+        <source>FRAME RANGE</source>
+        <translation>フレーム範囲</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1035"/>
+        <source>All frames</source>
+        <translation>すべてのフレーム</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1041"/>
+        <source>From</source>
+        <comment>Frame range: starting frame</comment>
+        <translation>開始</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1049"/>
+        <source>to</source>
+        <comment>Frame range: ending frame</comment>
+        <translation>まで</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1080"/>
+        <source>Select Output Folder</source>
+        <translation>出力フォルダーを選択</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1139"/>
+        <source>Exported %1 files → %2</source>
+        <translation>%1 個のファイルをエクスポートしました → %2</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1148"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1223"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1302"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1344"/>
+        <source>Error: %1</source>
+        <translation>エラー：%1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1173"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1251"/>
+        <source>Starting…</source>
+        <translation>開始中…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1196"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1274"/>
+        <source>Rendering %1 (%2/%3)</source>
+        <translation>%1 を描画中 (%2/%3)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1202"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1280"/>
+        <source>Frame %1/%2</source>
+        <translation>フレーム %1/%2</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1212"/>
+        <source>Exported %1 images → %2</source>
+        <translation>%1 枚の画像をエクスポートしました → %2</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1337"/>
+        <source>Report saved → %1</source>
+        <translation>レポートを保存しました → %1</translation>
     </message>
 </context>
 <context>
@@ -462,6 +742,7 @@ FFT 初期推定モードでのみ有効です。</translation>
     </message>
     <message>
         <location filename="../../gui/widgets/frame_navigator.py" line="98"/>
+        <location filename="../../gui/widgets/frame_navigator.py" line="194"/>
         <source>FRAME 0/0</source>
         <translation>フレーム 0/0</translation>
     </message>
@@ -475,35 +756,92 @@ FFT 初期推定モードでのみ有効です。</translation>
         <source>Pause animation</source>
         <translation>アニメーションを一時停止</translation>
     </message>
+    <message>
+        <location filename="../../gui/widgets/frame_navigator.py" line="191"/>
+        <source>FRAME %1/%2</source>
+        <translation>フレーム %1/%2</translation>
+    </message>
 </context>
 <context>
     <name>ImageList</name>
     <message>
-        <location filename="../../gui/widgets/image_list.py" line="186"/>
-        <location filename="../../gui/widgets/image_list.py" line="244"/>
+        <location filename="../../gui/widgets/image_list.py" line="95"/>
+        <source>#</source>
+        <comment>Image list column: frame index</comment>
+        <translation>#</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/image_list.py" line="96"/>
+        <source>Filename</source>
+        <translation>ファイル名</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/image_list.py" line="97"/>
+        <source>Region</source>
+        <comment>Image list column: ROI status</comment>
+        <translation>領域</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/image_list.py" line="190"/>
+        <location filename="../../gui/widgets/image_list.py" line="248"/>
         <source>Add</source>
         <translation>追加</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/image_list.py" line="238"/>
+        <location filename="../../gui/widgets/image_list.py" line="242"/>
         <source>Edit</source>
         <translation>編集</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/image_list.py" line="241"/>
+        <location filename="../../gui/widgets/image_list.py" line="245"/>
         <source>Need</source>
         <translation>未設定</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/image_list.py" line="368"/>
+        <source>Import Region of Interest for %n frame(s)</source>
+        <translation>%n フレームに関心領域をインポート</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/image_list.py" line="378"/>
+        <source>Clear Region of Interest (%1 with region)</source>
+        <translation>関心領域をクリア（%1 フレームに領域あり）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/image_list.py" line="383"/>
+        <source>Clear Region of Interest</source>
+        <translation>関心領域をクリア</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/image_list.py" line="396"/>
+        <source>Delete %n image(s)</source>
+        <translation>%n 個の画像を削除</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/image_list.py" line="496"/>
+        <source>Images</source>
+        <translation>画像</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/image_list.py" line="497"/>
+        <source>All Files</source>
+        <translation>すべてのファイル</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/image_list.py" line="508"/>
+        <source>Selected %1 files for %2 frames — count must match</source>
+        <translation>%2 フレームに対し %1 個のファイルが選択されました — 数量が一致する必要があります</translation>
     </message>
 </context>
 <context>
     <name>InitGuessWidget</name>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="111"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="80"/>
         <source>Starting Points</source>
         <translation>シード点</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="122"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="91"/>
         <source>Place a few points; pyALDIC bootstraps each with a single-point NCC and propagates the field along mesh neighbours.
 
 Best for:
@@ -522,49 +860,49 @@ Auto-placed per region when you draw or edit an ROI.</source>
 ROI 作成/編集時に領域ごとに自動配置されます。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="131"/>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="313"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="100"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="282"/>
         <source>Place Starting Points</source>
         <translation>シード点を配置</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="136"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="105"/>
         <source>Enter placement mode on the canvas. Left-click to add, right-click to remove, Esc or click again to exit.</source>
         <translation>キャンバスで配置モードに入ります。左クリックで追加、右クリックで削除、Esc または再クリックで終了。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="138"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="107"/>
         <source>Auto-place</source>
         <translation>自動配置</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="142"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="111"/>
         <source>Fill empty regions with the highest-NCC node in each. Existing Starting Points are preserved.</source>
         <translation>各空領域に最高 NCC のノードを配置します。既存のシード点は保持されます。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="144"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="113"/>
         <source>Clear</source>
         <translation>クリア</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="148"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="117"/>
         <source>Remove every Starting Point. Faster than right-clicking each one individually.</source>
         <translation>すべてのシード点を削除します。1 つずつ右クリックするより高速です。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="153"/>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="323"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="122"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="292"/>
         <source>%1 / %2 regions ready</source>
         <translation>%1 / %2 領域 準備完了</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="172"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="141"/>
         <source>FFT (cross-correlation)</source>
         <translation>FFT(相互相関)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="183"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="152"/>
         <source>Full-grid normalized cross-correlation. Robust within the search radius; the search auto-expands when peaks clip.
 
 Best for:
@@ -583,37 +921,37 @@ Cost grows with the search radius, so very large displacements become slow.</sou
 コストが探索半径とともに増加するため、非常に大きな変位では遅くなります。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="194"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="163"/>
         <source>Every</source>
         <translation>毎</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="199"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="168"/>
         <source>Run FFT every N frames. N = 1 means FFT every frame (safest, slowest). N &gt; 1 uses warm-start between resets to limit error propagation to N frames.</source>
         <translation>N フレームごとに FFT を実行します。N = 1 で毎フレーム FFT(最も安全・低速)。N &gt; 1 ではリセット間でウォームスタートし、誤差伝播を N フレーム以内に抑えます。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="206"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="175"/>
         <source>(N=1 = every frame)</source>
         <translation>(N=1 は毎フレーム)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="216"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="185"/>
         <source>Only when reference frame updates (incremental only)</source>
         <translation>参照フレーム更新時のみ(逐次のみ)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="220"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="189"/>
         <source>Run FFT whenever the reference frame changes; warm-start within each segment. Typical default for incremental mode.</source>
         <translation>参照フレームが変わるたびに FFT を実行し、区間内ではウォームスタートします。逐次モードの標準設定です。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="229"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="198"/>
         <source>Previous frame</source>
         <translation>前フレーム</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="239"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="208"/>
         <source>Use the previous frame&apos;s converged displacement as the initial guess. No cross-correlation runs.
 
 Best for:
@@ -630,7 +968,7 @@ Errors can accumulate over long sequences. Prefer FFT or Starting Points on nois
 長いシーケンスでは誤差が累積します。ノイズの多いデータや動きが大きい場合は FFT またはシード点を推奨します。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_widget.py" line="311"/>
+        <location filename="../../gui/widgets/init_guess_widget.py" line="280"/>
         <source>Placing... (click to exit)</source>
         <translation>配置中…(クリックで終了)</translation>
     </message>
@@ -683,85 +1021,85 @@ Default (unchecked): lexicographic — best for zero-padded names</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../gui/app.py" line="194"/>
+        <location filename="../../gui/app.py" line="195"/>
         <source>&amp;File</source>
         <translation>ファイル</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="196"/>
+        <location filename="../../gui/app.py" line="197"/>
         <source>Open Session…</source>
         <translation>セッションを開く…</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="201"/>
+        <location filename="../../gui/app.py" line="202"/>
         <source>Save Session…</source>
         <translation>セッションを保存…</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="207"/>
+        <location filename="../../gui/app.py" line="208"/>
         <source>Quit</source>
         <translation>終了</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="215"/>
+        <location filename="../../gui/app.py" line="216"/>
         <source>&amp;Settings</source>
         <translation>設定</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="216"/>
+        <location filename="../../gui/app.py" line="217"/>
         <source>Language</source>
         <translation>言語</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="245"/>
+        <location filename="../../gui/app.py" line="246"/>
         <source>Language changed</source>
         <translation>言語を変更しました</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="249"/>
+        <location filename="../../gui/app.py" line="250"/>
         <source>Language set to %1. Please restart pyALDIC for all widgets to pick up the new language.</source>
         <translation>言語を %1 に変更しました。すべての画面に反映するには pyALDIC を再起動してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="260"/>
+        <location filename="../../gui/app.py" line="261"/>
         <source>Save Session</source>
         <translation>セッションを保存</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="262"/>
-        <location filename="../../gui/app.py" line="289"/>
+        <location filename="../../gui/app.py" line="263"/>
+        <location filename="../../gui/app.py" line="290"/>
         <source>pyALDIC Session</source>
         <translation>pyALDIC セッション</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="263"/>
-        <location filename="../../gui/app.py" line="291"/>
+        <location filename="../../gui/app.py" line="264"/>
+        <location filename="../../gui/app.py" line="292"/>
         <source>All Files</source>
         <translation>すべてのファイル</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="273"/>
+        <location filename="../../gui/app.py" line="274"/>
         <source>Save Session Failed</source>
         <translation>セッションの保存に失敗しました</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="287"/>
+        <location filename="../../gui/app.py" line="288"/>
         <source>Open Session</source>
         <translation>セッションを開く</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="290"/>
+        <location filename="../../gui/app.py" line="291"/>
         <source>JSON</source>
         <translation>JSON</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="299"/>
+        <location filename="../../gui/app.py" line="300"/>
         <source>Open Session Failed</source>
         <translation>セッションを開けませんでした</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="651"/>
-        <location filename="../../gui/app.py" line="704"/>
+        <location filename="../../gui/app.py" line="652"/>
+        <location filename="../../gui/app.py" line="705"/>
         <source>Load images first.</source>
         <translation>先に画像を読み込んでください。</translation>
     </message>
@@ -871,7 +1209,42 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <translation>初期シード探索</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/param_panel.py" line="241"/>
+        <location filename="../../gui/widgets/param_panel.py" line="218"/>
+        <source>Light</source>
+        <comment>Mesh refinement severity</comment>
+        <translation>軽度</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/param_panel.py" line="219"/>
+        <source>Medium</source>
+        <comment>Mesh refinement severity</comment>
+        <translation>中程度</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/param_panel.py" line="220"/>
+        <source>Heavy</source>
+        <comment>Mesh refinement severity</comment>
+        <translation>強</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/param_panel.py" line="221"/>
+        <source>Extra Heavy</source>
+        <comment>Mesh refinement severity</comment>
+        <translation>最強</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/param_panel.py" line="222"/>
+        <source>Ultra</source>
+        <comment>Mesh refinement severity</comment>
+        <translation>極限</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/param_panel.py" line="228"/>
+        <source>%1 (L%2)</source>
+        <translation>%1 (L%2)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/param_panel.py" line="252"/>
         <source>min element size = %1 px  (subset_step=%2, level=%3)</source>
         <translation>最小要素サイズ = %1 px  (サブセットステップ=%2, レベル=%3)</translation>
     </message>
@@ -894,12 +1267,27 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <translation>/ px</translation>
     </message>
     <message>
+        <location filename="../../gui/widgets/physical_units_widget.py" line="83"/>
+        <source>Pixel size</source>
+        <translation>ピクセルサイズ</translation>
+    </message>
+    <message>
         <location filename="../../gui/widgets/physical_units_widget.py" line="93"/>
         <source>Acquisition frame rate (used for velocity field)</source>
         <translation>取得フレームレート(速度場に使用)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/physical_units_widget.py" line="161"/>
+        <location filename="../../gui/widgets/physical_units_widget.py" line="94"/>
+        <source>Frame rate</source>
+        <translation>フレームレート</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/physical_units_widget.py" line="162"/>
+        <source>Disp: %1  Velocity: %2/s</source>
+        <translation>変位：%1  速度：%2/s</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/physical_units_widget.py" line="167"/>
         <source>Disp: px  Velocity: px/fr</source>
         <translation>変位: px  速度: px/fr</translation>
     </message>
@@ -907,14 +1295,57 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
 <context>
     <name>PipelineController</name>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="348"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="359"/>
         <source>Building pipeline configuration...</source>
         <translation>パイプライン設定を構築中…</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="500"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="516"/>
         <source>Loading images...</source>
         <translation>画像を読み込み中…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="526"/>
+        <source>  Loaded %1 images, shape=%2</source>
+        <translation>  %1 枚の画像を読み込みました、shape=%2</translation>
+    </message>
+    <message>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="539"/>
+        <source>  ROI mask: %1, %2 pixels (%3%)</source>
+        <translation>  ROI マスク：%1、%2 ピクセル（%3%）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="567"/>
+        <source>Run cancelled: define per-frame Regions of Interest for the missing reference frames or accept the inherited frame-1 mask in the next run.</source>
+        <translation>実行をキャンセルしました：欠けている参照フレームに対してフレーム別の関心領域を定義するか、次回実行時に第 1 フレームのマスクを継承してください。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="588"/>
+        <source>  %n frame(s) with custom ROI masks</source>
+        <translation>  %n 個のフレームでカスタム ROI マスクを使用</translation>
+    </message>
+    <message>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="719"/>
+        <source>Results received: %n frame(s)</source>
+        <translation>結果を受信：%n フレーム</translation>
+    </message>
+</context>
+<context>
+    <name>PipelineWorker</name>
+    <message>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="189"/>
+        <source>Starting DIC analysis...</source>
+        <translation>DIC 解析を開始します…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="222"/>
+        <source>Analysis complete in %1s</source>
+        <translation>解析が完了しました（%1 秒）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="230"/>
+        <source>Analysis stopped by user.</source>
+        <translation>ユーザーにより解析が停止されました。</translation>
     </message>
 </context>
 <context>
@@ -1228,7 +1659,7 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
     </message>
     <message>
         <location filename="../../gui/widgets/strain_navigator.py" line="114"/>
-        <location filename="../../gui/widgets/strain_navigator.py" line="222"/>
+        <location filename="../../gui/widgets/strain_navigator.py" line="228"/>
         <source>FRAME 0/0</source>
         <translation>フレーム 0/0</translation>
     </message>
@@ -1242,66 +1673,114 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <source>Pause animation</source>
         <translation>アニメーションを一時停止</translation>
     </message>
+    <message>
+        <location filename="../../gui/widgets/strain_navigator.py" line="223"/>
+        <source>FRAME %1/%2</source>
+        <translation>フレーム %1/%2</translation>
+    </message>
 </context>
 <context>
     <name>StrainParamPanel</name>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="69"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="79"/>
         <source>Plane fitting</source>
         <translation>平面フィッティング</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="70"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="80"/>
         <source>FEM nodal</source>
         <translation>FEM 節点</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="72"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="82"/>
         <source>Method</source>
         <translation>手法</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="81"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="106"/>
+        <source>VSG (Virtual Strain Gauge) size is the diameter, in pixels, of the circular region around each mesh node used to fit a local displacement plane. Strain is then taken as the plane&apos;s slope.
+
+• Larger VSG → smoother strain, lower spatial resolution.
+• Smaller VSG → sharper strain, more noise.
+• Rule of thumb: VSG ≥ 2 × subset step + 1 (default: 41 px).
+
+Not used when Method = FEM nodal (there, mesh spacing itself sets the gauge size).</source>
+        <translation>VSG（バーチャルひずみゲージ、Virtual Strain Gauge）サイズとは、各メッシュノード周辺で局所変位平面をフィットさせるために使う円形領域の直径（ピクセル）のことです。ひずみはこの平面の勾配として算出されます。
+
+• VSG が大きい → ひずみは平滑になるが、空間解像度は低下。
+• VSG が小さい → ひずみは鋭敏になるが、ノイズが増加。
+• 目安：VSG ≥ 2 × サブセットステップ + 1（既定：41 px）。
+
+方法が FEM nodal の場合は使用されません（そこではメッシュ間隔がゲージサイズを決定します）。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="109"/>
         <source>VSG size</source>
         <translation>VSG サイズ</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="97"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="139"/>
+        <source>Off</source>
+        <comment>Strain smoothing preset</comment>
+        <translation>オフ</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="140"/>
+        <source>Light (σ = 0.5 × step)</source>
+        <translation>軽度（σ = 0.5 × step）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="141"/>
+        <source>Medium (σ = 1 × step)</source>
+        <translation>中程度（σ = 1 × step）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="142"/>
+        <source>Strong (σ = 2 × step) ⚠</source>
+        <translation>強（σ = 2 × step）⚠</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="153"/>
         <source>Gaussian smoothing of the strain field after computation.
 σ is the Gaussian kernel width; &apos;step&apos; = DIC node spacing.
   Light  (0.5 × step):  subtle, preserves fine features.
   Medium (1 × step):    balanced, recommended for noisy data.
   Strong (2 × step) ⚠:  aggressive, may blur real gradients.</source>
         <translation>計算後のひずみ場にガウス平滑化を適用。
-σ はガウスカーネル幅、'step' は DIC ノード間隔。
+σ はガウスカーネル幅、&apos;step&apos; は DIC ノード間隔。
   Light  (0.5 × step): 穏やか、細部を保持。
   Medium (1 × step):    バランス型、ノイズデータに推奨。
   Strong (2 × step) ⚠: 強め、実勾配をぼかす可能性あり。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="98"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="154"/>
         <source>Strain field smoothing</source>
         <translation>ひずみ場の平滑化</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="103"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="159"/>
         <source>Infinitesimal</source>
         <translation>微小ひずみ</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="104"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="160"/>
         <source>Eulerian</source>
         <translation>オイラーひずみ</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="105"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="161"/>
         <source>Green-Lagrangian</source>
         <translation>グリーン-ラグランジュひずみ</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="107"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="163"/>
         <source>Strain type</source>
         <translation>ひずみ種別</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="256"/>
+        <source>⚠ VSG radius (%1 px) &lt; DIC node spacing (%2 px); plane fit will fail. Use VSG ≥ %3 px or switch Method to FEM nodal.</source>
+        <translation>⚠ VSG 半径（%1 px）&lt; DIC ノード間隔（%2 px）；平面フィットは失敗します。VSG ≥ %3 px にするか、方法を FEM nodal に切り替えてください。</translation>
     </message>
 </context>
 <context>
@@ -1312,9 +1791,24 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <translation>変形後フレームに表示</translation>
     </message>
     <message>
+        <location filename="../../gui/widgets/strain_viz_panel.py" line="64"/>
+        <source>Deformed</source>
+        <translation>変形後</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_viz_panel.py" line="71"/>
+        <source>Colormap</source>
+        <translation>カラーマップ</translation>
+    </message>
+    <message>
         <location filename="../../gui/widgets/strain_viz_panel.py" line="74"/>
         <source>Auto</source>
         <translation>自動</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_viz_panel.py" line="76"/>
+        <source>Range</source>
+        <translation>範囲</translation>
     </message>
     <message>
         <location filename="../../gui/widgets/strain_viz_panel.py" line="96"/>
@@ -1325,6 +1819,11 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <location filename="../../gui/widgets/strain_viz_panel.py" line="98"/>
         <source>Max</source>
         <translation>最大</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_viz_panel.py" line="108"/>
+        <source>Opacity</source>
+        <translation>不透明度</translation>
     </message>
 </context>
 <context>
@@ -1395,7 +1894,28 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <translation>ログ</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="453"/>
+        <location filename="../../gui/strain_window.py" line="354"/>
+        <source>Strain compute failed: %1: %2</source>
+        <translation>ひずみ計算に失敗しました：%1：%2</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="362"/>
+        <location filename="../../gui/strain_window.py" line="410"/>
+        <source>Strain computation complete.</source>
+        <translation>ひずみ計算が完了しました。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="374"/>
+        <source>Strain window: no displacement results to post-process.</source>
+        <translation>ひずみウィンドウ：後処理する変位結果がありません。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="426"/>
+        <source>Strain compute failed: %1</source>
+        <translation>ひずみ計算に失敗しました：%1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="463"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ パラメータが変更されました — 「ひずみを計算」をクリックしてください</translation>
     </message>
@@ -1415,12 +1935,12 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <translation>結果をエクスポート</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="378"/>
+        <location filename="../../gui/strain_window.py" line="384"/>
         <source>Starting…</source>
         <translation>開始中…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="400"/>
+        <location filename="../../gui/strain_window.py" line="406"/>
         <source>Complete</source>
         <translation>完了</translation>
     </message>

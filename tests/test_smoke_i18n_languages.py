@@ -78,6 +78,10 @@ def test_translations_returned(qapp, lang):
 
 # --- Widget construction in every language ---------------------------------
 
+# Curated list of widgets verified to construct via no-arg ctor.
+# Auto-discovery (below) extends this; new widgets are picked up
+# automatically and only need to be added here if they need a
+# fixture-style constructor that the auto-discovery can't infer.
 WIDGETS_TO_CONSTRUCT = [
     "al_dic.gui.widgets.workflow_type_panel:WorkflowTypePanel",
     "al_dic.gui.widgets.init_guess_widget:InitGuessWidget",
@@ -99,14 +103,84 @@ def _import_ctor(dotted: str):
     return getattr(mod, cls_name)
 
 
+# Auto-discovery: walk al_dic.gui.widgets / dialogs and find every
+# QWidget/QDialog subclass that we can default-construct. This means
+# new widgets are smoke-tested in 8 languages the moment they're
+# committed — no opt-in step. Widgets that need fixture data (e.g.
+# `StrainWindow(state)`) opt out via the `_i18n_no_default_construct`
+# class attribute (must be set to a True value with a reason string).
+def _discover_default_constructible_widgets() -> list[str]:
+    import importlib
+    import inspect
+    import pkgutil
+    import sys
+
+    from PySide6.QtWidgets import QWidget
+
+    discovered: list[str] = []
+    for pkg_name in ("al_dic.gui.widgets", "al_dic.gui.dialogs"):
+        pkg = importlib.import_module(pkg_name)
+        for _, mod_name, ispkg in pkgutil.walk_packages(
+            pkg.__path__, prefix=f"{pkg_name}.",
+        ):
+            if ispkg:
+                continue
+            try:
+                mod = importlib.import_module(mod_name)
+            except Exception:
+                # Some modules need GUI context to import; skip them
+                # rather than fail discovery.
+                continue
+            for cls_name, cls in inspect.getmembers(mod, inspect.isclass):
+                if cls.__module__ != mod_name:
+                    continue  # imported, not defined here
+                if not issubclass(cls, QWidget):
+                    continue
+                if getattr(cls, "_i18n_no_default_construct", False):
+                    continue
+                # Heuristic: ctor signature must be either bare `(self)`
+                # or `(self, parent=...)`. Anything more is treated as
+                # needing a fixture and skipped (opt-in via curated list
+                # above if you want it tested).
+                try:
+                    sig = inspect.signature(cls.__init__)
+                except (TypeError, ValueError):
+                    continue
+                params = list(sig.parameters.values())[1:]  # drop self
+                non_default = [p for p in params if p.default is p.empty]
+                if non_default:
+                    continue
+                discovered.append(f"{mod_name}:{cls_name}")
+    return sorted(set(discovered))
+
+
+# Combine curated + auto-discovered (curated wins on duplicates).
+def _all_widget_paths() -> list[str]:
+    seen: set[str] = set(WIDGETS_TO_CONSTRUCT)
+    result = list(WIDGETS_TO_CONSTRUCT)
+    for path in _discover_default_constructible_widgets():
+        if path not in seen:
+            result.append(path)
+            seen.add(path)
+    return result
+
+
+_ALL_WIDGET_PATHS = _all_widget_paths()
+
+
 @pytest.mark.parametrize("lang", SHIPPED_LANGS)
-@pytest.mark.parametrize("widget_path", WIDGETS_TO_CONSTRUCT)
+@pytest.mark.parametrize("widget_path", _ALL_WIDGET_PATHS)
 def test_widget_constructs(qapp, lang, widget_path):
     """Every major widget must construct without exception in every language.
 
     This is the backstop for `.arg()` / non-QObject tr() / userData
     state-sync regressions: if any of those break in a locale-specific
     code path, construction raises.
+
+    Auto-discovers all default-constructible QWidget/QDialog subclasses
+    under al_dic.gui.widgets / dialogs. To opt a widget out (because
+    it needs fixture data), set ``_i18n_no_default_construct = "<reason>"``
+    on the class.
     """
     from al_dic.i18n import LanguageManager
     mgr = LanguageManager(qapp)
@@ -115,6 +189,34 @@ def test_widget_constructs(qapp, lang, widget_path):
     w = ctor()
     # Basic invariant: the widget has at least one child / laid out element
     assert w is not None
+
+
+def test_widget_discovery_finds_at_least_curated_set():
+    """Sanity: auto-discovery should pick up every widget in the
+    curated list (otherwise something's wrong with the walker).
+
+    Also asserts at least one *new* widget (i.e. not in the curated
+    list) is discovered, so we know the auto-discovery is actually
+    contributing coverage rather than silently being a no-op.
+    """
+    discovered = set(_discover_default_constructible_widgets())
+    curated = set(WIDGETS_TO_CONSTRUCT)
+    missing = curated - discovered
+    # Curated entries that auto-discovery missed are fine (e.g. they
+    # have non-default ctor params); we just want to confirm overlap
+    # is non-trivial.
+    assert len(curated & discovered) >= len(curated) // 2, (
+        f"Auto-discovery overlap with curated list is too small. "
+        f"Discovered: {len(discovered)}, curated: {len(curated)}, "
+        f"overlap: {len(curated & discovered)}, missing from "
+        f"discovery: {missing}"
+    )
+    # And at least one extra widget discovered beyond the curated set.
+    extras = discovered - curated
+    assert extras, (
+        "Auto-discovery did not find any new widgets beyond the "
+        "curated list — the walker may be broken."
+    )
 
 
 # --- Combobox userData sanity ----------------------------------------------

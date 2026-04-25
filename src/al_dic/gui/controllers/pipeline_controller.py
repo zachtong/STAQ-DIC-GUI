@@ -185,7 +185,12 @@ class PipelineWorker(QThread):
         self._pause_event.set()  # not paused initially
 
     def run(self) -> None:
-        self.log.emit("Starting DIC analysis...", "info")
+        from al_dic.i18n import tr_args
+        self.log.emit(self.tr("Starting DIC analysis..."), "info")
+        # Raw parameter dumps mirror the key=value style used in log
+        # panels across the project; keep the English keys (images,
+        # shape, masks, …) literal and translate only the surrounding
+        # sentence so numeric values are unambiguous across locales.
         self.log.emit(
             f"  images={len(self._images)}, "
             f"shape={self._images[0].shape}, "
@@ -212,11 +217,17 @@ class PipelineWorker(QThread):
                 refinement_policy=self._refinement_policy,
             )
             elapsed = time.perf_counter() - t0
-            self.log.emit(f"Analysis complete in {elapsed:.1f}s", "success")
+            self.log.emit(
+                tr_args(
+                    self.tr("Analysis complete in %1s"),
+                    f"{elapsed:.1f}",
+                ),
+                "success",
+            )
             self.finished_result.emit(result)
         except RuntimeError as e:
             if "abort" in str(e).lower() or "stop" in str(e).lower():
-                self.log.emit("Analysis stopped by user.", "warn")
+                self.log.emit(self.tr("Analysis stopped by user."), "warn")
             else:
                 tb = traceback.format_exc()
                 self.log.emit(f"RuntimeError: {e}", "error")
@@ -351,7 +362,12 @@ class PipelineController:
             # Build DICPara from GUI state
             n_images = len(state.image_files)
             solver_label = "AL-DIC" if state.use_admm else "Local DIC"
-            admm_info = f", admm_iter={state.admm_max_iter}" if state.use_admm else ""
+            admm_info = (
+                f", admm_iter={state.admm_max_iter}" if state.use_admm else ""
+            )
+            # Parameter dump: key=value pairs stay literal (English keys
+            # are the canonical parameter names); only wrap the prose
+            # prefix when we add one.
             state.log_message.emit(
                 f"  {n_images} images, subset={state.subset_size}, "
                 f"step={state.subset_step}, search={state.search_range}, "
@@ -504,16 +520,27 @@ class PipelineController:
                 for i in range(n_images)
             ]
             state.log_message.emit(
-                f"  Loaded {len(images)} images, shape={images[0].shape}",
+                QCoreApplication.translate(
+                    "PipelineController",
+                    "  Loaded %1 images, shape=%2",
+                ).replace("%1", str(len(images))).replace(
+                    "%2", str(images[0].shape)
+                ),
                 "info",
             )
 
             # Build per-frame mask list
             mask_pixels = int(np.sum(roi_mask_0))
+            pct = 100 * mask_pixels / roi_mask_0.size
             state.log_message.emit(
-                f"  ROI mask: {roi_mask_0.shape}, "
-                f"{mask_pixels} pixels "
-                f"({100*mask_pixels/roi_mask_0.size:.1f}%)",
+                QCoreApplication.translate(
+                    "PipelineController",
+                    "  ROI mask: %1, %2 pixels (%3%)",
+                ).replace(
+                    "%1", str(roi_mask_0.shape)
+                ).replace(
+                    "%2", str(mask_pixels)
+                ).replace("%3", f"{pct:.1f}"),
                 "info",
             )
 
@@ -532,9 +559,12 @@ class PipelineController:
                 )
             ):
                 state.log_message.emit(
-                    "Run cancelled: define per-frame Regions of Interest "
-                    "for the missing reference frames or accept the "
-                    "inherited frame-1 mask in the next run.",
+                    QCoreApplication.translate(
+                        "PipelineController",
+                        "Run cancelled: define per-frame Regions of Interest "
+                        "for the missing reference frames or accept the "
+                        "inherited frame-1 mask in the next run.",
+                    ),
                     "warn",
                 )
                 return
@@ -550,7 +580,12 @@ class PipelineController:
             )
             if n_custom > 0:
                 state.log_message.emit(
-                    f"  {n_custom} frame(s) with custom ROI masks",
+                    QCoreApplication.translate(
+                        "PipelineController",
+                        "  %n frame(s) with custom ROI masks",
+                        "",
+                        n_custom,
+                    ),
                     "info",
                 )
 
@@ -670,10 +705,18 @@ class PipelineController:
         self._worker = None
         try:
             if result is not None:
-                self._state.log_message.emit(
-                    f"Results received: {len(result.result_disp)} frames",
-                    "success",
+                # pyside6-lupdate's Python parser can miss translate()
+                # calls whose count argument is a complex expression;
+                # bind `n` to a local first so the call's signature
+                # looks identical to the other numerus translate() sites.
+                n = len(result.result_disp)
+                _msg = QCoreApplication.translate(
+                    "PipelineController",
+                    "Results received: %n frame(s)",
+                    "",
+                    n,
                 )
+                self._state.log_message.emit(_msg, "success")
                 self._state.set_results(result)
                 self._state.set_run_state(RunState.DONE)
                 # Auto-navigate to frame 1 (first result frame) so user

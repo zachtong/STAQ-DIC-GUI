@@ -375,7 +375,9 @@ class _FieldRow(QWidget):
         self._cmap_combo.setFixedWidth(90)
         row.addWidget(self._cmap_combo)
 
-        self._auto_check = QCheckBox("Auto")
+        self._auto_check = QCheckBox(
+            QCoreApplication.translate("ExportDialog", "Auto")
+        )
         self._auto_check.setChecked(_field_auto)
         self._auto_check.setEnabled(has_data)
         self._auto_check.stateChanged.connect(self._on_auto_changed)
@@ -397,8 +399,13 @@ class _FieldRow(QWidget):
         self._vmax_spin.setEnabled(has_data and not _field_auto)
         row.addWidget(self._vmax_spin)
 
-        opacity_lbl = QLabel("Opacity")
-        opacity_lbl.setToolTip("Field opacity (0 = transparent, 1 = fully opaque)")
+        opacity_lbl = QLabel(
+            QCoreApplication.translate("ExportDialog", "Opacity")
+        )
+        opacity_lbl.setToolTip(QCoreApplication.translate(
+            "ExportDialog",
+            "Field opacity (0 = transparent, 1 = fully opaque)"
+        ))
         row.addWidget(opacity_lbl)
         self._alpha_spin = QDoubleSpinBox()
         self._alpha_spin.setRange(0.0, 1.0)
@@ -707,10 +714,16 @@ class ExportDialog(QDialog):
 
         # Field list header
         header_row = QHBoxLayout()
-        for text, width in [
-            ("Export", 50), ("Field", 100), ("Colormap", 90),
-            ("Auto", 45), ("Min", 70), ("Max", 70), ("α", 55),
-        ]:
+        header_defs = [
+            (self.tr("Export"), 50),
+            (self.tr("Field"), 100),
+            (self.tr("Colormap"), 90),
+            (self.tr("Auto"), 45),
+            (self.tr("Min"), 70),
+            (self.tr("Max"), 70),
+            ("\u03b1", 55),  # α — math symbol, keep literal
+        ]
+        for text, width in header_defs:
             lbl = QLabel(text)
             lbl.setFixedWidth(width)
             lbl.setStyleSheet(
@@ -726,16 +739,17 @@ class ExportDialog(QDialog):
         layout.addWidget(scroll)
 
         # IMAGE SETTINGS group
-        img_group = QGroupBox("IMAGE SETTINGS")
+        img_group = QGroupBox(self.tr("IMAGE SETTINGS"))
         img_form = QFormLayout(img_group)
         img_form.setSpacing(6)
 
         fmt_row = QHBoxLayout()
         self._img_fmt_combo = QComboBox()
+        # File-format names stay literal per glossary.
         self._img_fmt_combo.addItems(["PNG", "JPEG", "TIFF"])
         fmt_row.addWidget(self._img_fmt_combo)
         fmt_row.addStretch()
-        img_form.addRow("Format", fmt_row)
+        img_form.addRow(self.tr("Format"), fmt_row)
 
         dpi_row = QHBoxLayout()
         self._img_dpi_spin = QSpinBox()
@@ -744,34 +758,37 @@ class ExportDialog(QDialog):
         self._img_dpi_spin.setFixedWidth(70)
         dpi_row.addWidget(self._img_dpi_spin)
         dpi_row.addStretch()
-        img_form.addRow("DPI", dpi_row)
+        img_form.addRow(self.tr("DPI"), dpi_row)
 
-        self._img_colorbar_check = QCheckBox("Include colorbar")
+        self._img_colorbar_check = QCheckBox(self.tr("Include colorbar"))
         self._img_colorbar_check.setChecked(True)
-        self._img_colorbar_check.setToolTip(
+        self._img_colorbar_check.setToolTip(self.tr(
             "Append a vertical colorbar strip to the right of each image.\n"
             "Tick labels update per frame when Auto range is enabled."
-        )
+        ))
         img_form.addRow(self._img_colorbar_check)
 
         # Reference vs. deformed: couples background image + field node positions
         config_row = QHBoxLayout()
-        self._img_ref_rb = QRadioButton("Original (frame 1 background)")
+        self._img_ref_rb = QRadioButton(self.tr("Original (frame 1 background)"))
         self._img_ref_rb.setChecked(not self._hint.show_deformed)
-        self._img_ref_rb.setToolTip(
+        self._img_ref_rb.setToolTip(self.tr(
             "Field is drawn at the original (undeformed) node positions.\n"
             "Background image is always the first frame."
+        ))
+        self._img_def_rb = QRadioButton(
+            self.tr("Deformed (current frame background)")
         )
-        self._img_def_rb = QRadioButton("Deformed (current frame background)")
         self._img_def_rb.setChecked(self._hint.show_deformed)
-        self._img_def_rb.setToolTip(
-            "Field is drawn at the displaced node positions (reference + displacement).\n"
+        self._img_def_rb.setToolTip(self.tr(
+            "Field is drawn at the displaced node positions "
+            "(reference + displacement).\n"
             "Background image follows each frame's own photo."
-        )
+        ))
         config_row.addWidget(self._img_ref_rb)
         config_row.addWidget(self._img_def_rb)
         config_row.addStretch()
-        img_form.addRow("Render as", config_row)
+        img_form.addRow(self.tr("Render as"), config_row)
         layout.addWidget(img_group)
 
         # FRAME RANGE
@@ -789,12 +806,12 @@ class ExportDialog(QDialog):
         layout.addWidget(self._img_progress_lbl)
 
         img_btn_row = QHBoxLayout()
-        self._cancel_img_btn = QPushButton("Cancel Export")
+        self._cancel_img_btn = QPushButton(self.tr("Cancel Export"))
         self._cancel_img_btn.setVisible(False)
         self._cancel_img_btn.clicked.connect(self._on_cancel_images)
         img_btn_row.addWidget(self._cancel_img_btn)
         img_btn_row.addStretch()
-        self._export_img_btn = QPushButton("Export Images")
+        self._export_img_btn = QPushButton(self.tr("Export Images"))
         self._export_img_btn.setEnabled(False)
         self._export_img_btn.clicked.connect(self._on_export_images)
         img_btn_row.addWidget(self._export_img_btn)
@@ -812,10 +829,16 @@ class ExportDialog(QDialog):
         layout.setSpacing(8)
 
         header_row = QHBoxLayout()
-        for text, width in [
-            ("Export", 50), ("Field", 100), ("Colormap", 90),
-            ("Auto", 45), ("Min", 70), ("Max", 70), ("α", 55),
-        ]:
+        header_defs = [
+            (self.tr("Export"), 50),
+            (self.tr("Field"), 100),
+            (self.tr("Colormap"), 90),
+            (self.tr("Auto"), 45),
+            (self.tr("Min"), 70),
+            (self.tr("Max"), 70),
+            ("\u03b1", 55),  # α — math symbol, keep literal
+        ]
+        for text, width in header_defs:
             lbl = QLabel(text)
             lbl.setFixedWidth(width)
             lbl.setStyleSheet(
@@ -831,16 +854,17 @@ class ExportDialog(QDialog):
         layout.addWidget(scroll)
 
         # ANIMATION SETTINGS group
-        anim_group = QGroupBox("ANIMATION SETTINGS")
+        anim_group = QGroupBox(self.tr("ANIMATION SETTINGS"))
         anim_form = QFormLayout(anim_group)
         anim_form.setSpacing(6)
 
         fmt_row = QHBoxLayout()
         self._anim_fmt_combo = QComboBox()
+        # File-format names stay literal per glossary.
         self._anim_fmt_combo.addItems(["MP4", "GIF"])
         fmt_row.addWidget(self._anim_fmt_combo)
         fmt_row.addStretch()
-        anim_form.addRow("Format", fmt_row)
+        anim_form.addRow(self.tr("Format"), fmt_row)
 
         fps_row = QHBoxLayout()
         self._anim_fps_spin = QSpinBox()
@@ -849,34 +873,37 @@ class ExportDialog(QDialog):
         self._anim_fps_spin.setFixedWidth(60)
         fps_row.addWidget(self._anim_fps_spin)
         fps_row.addStretch()
-        anim_form.addRow("FPS", fps_row)
+        anim_form.addRow(self.tr("FPS"), fps_row)
 
-        self._anim_colorbar_check = QCheckBox("Include colorbar")
+        self._anim_colorbar_check = QCheckBox(self.tr("Include colorbar"))
         self._anim_colorbar_check.setChecked(True)
-        self._anim_colorbar_check.setToolTip(
+        self._anim_colorbar_check.setToolTip(self.tr(
             "Append a vertical colorbar strip to the right of each frame.\n"
             "Tick labels update per frame when Auto range is enabled."
-        )
+        ))
         anim_form.addRow(self._anim_colorbar_check)
 
         # Reference vs. deformed: couples background image + field node positions
         anim_config_row = QHBoxLayout()
-        self._anim_ref_rb = QRadioButton("Original (frame 1 background)")
+        self._anim_ref_rb = QRadioButton(self.tr("Original (frame 1 background)"))
         self._anim_ref_rb.setChecked(not self._hint.show_deformed)
-        self._anim_ref_rb.setToolTip(
+        self._anim_ref_rb.setToolTip(self.tr(
             "Field is drawn at the original (undeformed) node positions.\n"
             "Background image is always the first frame."
+        ))
+        self._anim_def_rb = QRadioButton(
+            self.tr("Deformed (current frame background)")
         )
-        self._anim_def_rb = QRadioButton("Deformed (current frame background)")
         self._anim_def_rb.setChecked(self._hint.show_deformed)
-        self._anim_def_rb.setToolTip(
-            "Field is drawn at the displaced node positions (reference + displacement).\n"
+        self._anim_def_rb.setToolTip(self.tr(
+            "Field is drawn at the displaced node positions "
+            "(reference + displacement).\n"
             "Background image follows each frame's own photo."
-        )
+        ))
         anim_config_row.addWidget(self._anim_ref_rb)
         anim_config_row.addWidget(self._anim_def_rb)
         anim_config_row.addStretch()
-        anim_form.addRow("Render as", anim_config_row)
+        anim_form.addRow(self.tr("Render as"), anim_config_row)
         layout.addWidget(anim_group)
 
         layout.addWidget(self._build_frame_range_widget("anim"))
@@ -892,12 +919,12 @@ class ExportDialog(QDialog):
         layout.addWidget(self._anim_progress_lbl)
 
         anim_btn_row = QHBoxLayout()
-        self._cancel_anim_btn = QPushButton("Cancel Export")
+        self._cancel_anim_btn = QPushButton(self.tr("Cancel Export"))
         self._cancel_anim_btn.setVisible(False)
         self._cancel_anim_btn.clicked.connect(self._on_cancel_animation)
         anim_btn_row.addWidget(self._cancel_anim_btn)
         anim_btn_row.addStretch()
-        self._export_anim_btn = QPushButton("Export Animation")
+        self._export_anim_btn = QPushButton(self.tr("Export Animation"))
         self._export_anim_btn.setEnabled(False)
         self._export_anim_btn.clicked.connect(self._on_export_animation)
         anim_btn_row.addWidget(self._export_anim_btn)
@@ -914,35 +941,37 @@ class ExportDialog(QDialog):
         layout = QVBoxLayout(w)
         layout.setSpacing(10)
 
-        content_group = QGroupBox("CONTENT")
+        content_group = QGroupBox(self.tr("CONTENT"))
         content_vl = QVBoxLayout(content_group)
-        self._report_params_check = QCheckBox("Parameter summary table")
+        self._report_params_check = QCheckBox(self.tr("Parameter summary table"))
         self._report_params_check.setChecked(True)
-        self._report_stats_check = QCheckBox("Field statistics (min/max/mean/std per frame)")
+        self._report_stats_check = QCheckBox(
+            self.tr("Field statistics (min/max/mean/std per frame)")
+        )
         self._report_stats_check.setChecked(True)
-        self._report_images_check = QCheckBox("Sample field images")
+        self._report_images_check = QCheckBox(self.tr("Sample field images"))
         self._report_images_check.setChecked(True)
         for chk in (self._report_params_check, self._report_stats_check,
                     self._report_images_check):
             content_vl.addWidget(chk)
 
         sample_row = QHBoxLayout()
-        sample_row.addWidget(QLabel("Sample every"))
+        sample_row.addWidget(QLabel(self.tr("Sample every")))
         self._report_sample_spin = QSpinBox()
         self._report_sample_spin.setRange(1, 100)
         self._report_sample_spin.setValue(5)
         self._report_sample_spin.setFixedWidth(60)
         sample_row.addWidget(self._report_sample_spin)
-        sample_row.addWidget(QLabel("frames"))
+        sample_row.addWidget(QLabel(self.tr("frames", "Report: sample every N frames")))
         sample_row.addStretch()
         content_vl.addLayout(sample_row)
         layout.addWidget(content_group)
 
         # FIELDS group
-        fields_group = QGroupBox("FIELDS")
+        fields_group = QGroupBox(self.tr("FIELDS"))
         fields_vl = QVBoxLayout(fields_group)
 
-        disp_lbl = QLabel("Displacement:")
+        disp_lbl = QLabel(self.tr("Displacement:"))
         disp_lbl.setStyleSheet(
             f"color: {COLORS.TEXT_SECONDARY}; font-size: 11px; font-weight: bold;"
         )
@@ -957,7 +986,7 @@ class ExportDialog(QDialog):
         disp_row.addStretch()
         fields_vl.addLayout(disp_row)
 
-        strain_lbl = QLabel("Strain:")
+        strain_lbl = QLabel(self.tr("Strain:"))
         strain_lbl.setStyleSheet(
             f"color: {COLORS.TEXT_SECONDARY}; font-size: 11px; font-weight: bold;"
         )
@@ -978,13 +1007,15 @@ class ExportDialog(QDialog):
         fields_vl.addLayout(strain_r2)
         layout.addWidget(fields_group)
 
-        format_note = QLabel("Format: HTML (self-contained, view in any browser)")
+        format_note = QLabel(self.tr(
+            "Format: HTML (self-contained, view in any browser)"
+        ))
         format_note.setStyleSheet(f"color: {COLORS.TEXT_MUTED}; font-size: 11px;")
         layout.addWidget(format_note)
 
         report_btn_row = QHBoxLayout()
         report_btn_row.addStretch()
-        self._generate_report_btn = QPushButton("Generate Report")
+        self._generate_report_btn = QPushButton(self.tr("Generate Report"))
         self._generate_report_btn.setEnabled(False)
         self._generate_report_btn.clicked.connect(self._on_generate_report)
         report_btn_row.addWidget(self._generate_report_btn)
@@ -998,16 +1029,16 @@ class ExportDialog(QDialog):
         return w
 
     def _build_frame_range_widget(self, prefix: str) -> QGroupBox:
-        group = QGroupBox("FRAME RANGE")
+        group = QGroupBox(self.tr("FRAME RANGE"))
         vl = QVBoxLayout(group)
 
-        all_chk = QCheckBox("All frames")
+        all_chk = QCheckBox(self.tr("All frames"))
         all_chk.setChecked(True)
         vl.addWidget(all_chk)
 
         n = len(self._results.result_disp)
         range_row = QHBoxLayout()
-        range_row.addWidget(QLabel("From"))
+        range_row.addWidget(QLabel(self.tr("From", "Frame range: starting frame")))
 
         start_spin = QSpinBox()
         start_spin.setRange(1, max(1, n))
@@ -1015,7 +1046,7 @@ class ExportDialog(QDialog):
         start_spin.setEnabled(False)
         range_row.addWidget(start_spin)
 
-        range_row.addWidget(QLabel("to"))
+        range_row.addWidget(QLabel(self.tr("to", "Frame range: ending frame")))
 
         end_spin = QSpinBox()
         end_spin.setRange(1, max(1, n))
@@ -1046,7 +1077,7 @@ class ExportDialog(QDialog):
         if not start and self._image_folder:
             start = str(self._image_folder)
         folder = QFileDialog.getExistingDirectory(
-            self, "Select Output Folder", start
+            self, self.tr("Select Output Folder"), start
         )
         if folder:
             self._folder_edit.setText(folder)
@@ -1102,13 +1133,20 @@ class ExportDialog(QDialog):
                            self._results, cfg.data_fields)
                 exported.append("csv/")
 
+            from al_dic.i18n import tr_args
             self._data_status_lbl.setText(
-                f"Exported {len(exported)} files → {cfg.dest_dir}"
+                tr_args(
+                    self.tr("Exported %1 files → %2"),
+                    len(exported), str(cfg.dest_dir),
+                )
             )
             self._data_status_lbl.setStyleSheet("color: #4ade80; font-size: 11px;")
             self._open_folder_btn.setEnabled(True)
         except Exception as exc:
-            self._data_status_lbl.setText(f"Error: {exc}")
+            from al_dic.i18n import tr_args
+            self._data_status_lbl.setText(
+                tr_args(self.tr("Error: %1"), str(exc))
+            )
             self._data_status_lbl.setStyleSheet(
                 f"color: {COLORS.ERROR}; font-size: 11px;"
             )
@@ -1132,7 +1170,7 @@ class ExportDialog(QDialog):
         self._img_progress.setVisible(True)
         self._img_progress.setValue(0)
         self._img_progress_lbl.setVisible(True)
-        self._img_progress_lbl.setText("Starting…")
+        self._img_progress_lbl.setText(self.tr("Starting…"))
 
         self._img_worker = ExportImagesWorker(
             cfg, self._results, self._image_files, self._roi_mask,
@@ -1149,23 +1187,41 @@ class ExportDialog(QDialog):
         self._reset_img_controls()
 
     def _on_img_progress(self, done: int, total: int, field: str) -> None:
+        from al_dic.i18n import tr_args
         if total > 0:
             self._img_progress.setValue(int(done / total * 100))
-        self._img_progress_lbl.setText(
-            f"Rendering {field} ({done}/{total})" if field else f"Frame {done}/{total}"
-        )
+        if field:
+            self._img_progress_lbl.setText(
+                tr_args(
+                    self.tr("Rendering %1 (%2/%3)"),
+                    field, done, total,
+                )
+            )
+        else:
+            self._img_progress_lbl.setText(
+                tr_args(self.tr("Frame %1/%2"), done, total)
+            )
 
     def _on_img_finished(self, paths: list) -> None:
+        from al_dic.i18n import tr_args
         self._reset_img_controls()
         self._img_progress.setValue(100)
         folder = self._folder_edit.text().strip()
-        self._img_status_lbl.setText(f"Exported {len(paths)} images → {folder}")
+        self._img_status_lbl.setText(
+            tr_args(
+                self.tr("Exported %1 images → %2"),
+                len(paths), folder,
+            )
+        )
         self._img_status_lbl.setStyleSheet("color: #4ade80; font-size: 11px;")
         self._open_folder_btn.setEnabled(True)
 
     def _on_img_error(self, msg: str) -> None:
+        from al_dic.i18n import tr_args
         self._reset_img_controls()
-        self._img_status_lbl.setText(f"Error: {msg}")
+        self._img_status_lbl.setText(
+            tr_args(self.tr("Error: %1"), msg)
+        )
         self._img_status_lbl.setStyleSheet(f"color: {COLORS.ERROR}; font-size: 11px;")
 
     def _reset_img_controls(self) -> None:
@@ -1192,7 +1248,7 @@ class ExportDialog(QDialog):
         self._anim_progress.setVisible(True)
         self._anim_progress.setValue(0)
         self._anim_progress_lbl.setVisible(True)
-        self._anim_progress_lbl.setText("Starting…")
+        self._anim_progress_lbl.setText(self.tr("Starting…"))
 
         self._anim_worker = ExportAnimationWorker(
             cfg, self._results, self._image_files, self._roi_mask,
@@ -1209,25 +1265,42 @@ class ExportDialog(QDialog):
         self._reset_anim_controls()
 
     def _on_anim_progress(self, done: int, total: int, field: str) -> None:
+        from al_dic.i18n import tr_args
         if total > 0:
             self._anim_progress.setValue(int(done / total * 100))
-        self._anim_progress_lbl.setText(
-            f"Rendering {field} ({done}/{total})" if field else f"Frame {done}/{total}"
-        )
+        if field:
+            self._anim_progress_lbl.setText(
+                tr_args(
+                    self.tr("Rendering %1 (%2/%3)"),
+                    field, done, total,
+                )
+            )
+        else:
+            self._anim_progress_lbl.setText(
+                tr_args(self.tr("Frame %1/%2"), done, total)
+            )
 
     def _on_anim_finished(self, paths: list) -> None:
         self._reset_anim_controls()
         self._anim_progress.setValue(100)
         folder = self._folder_edit.text().strip()
         self._anim_status_lbl.setText(
-            f"Exported {len(paths)} animation(s) → {folder}"
+            QCoreApplication.translate(
+                "ExportDialog",
+                "Exported %n animation(s) → %1",
+                "",
+                len(paths),
+            ).replace("%1", folder)
         )
         self._anim_status_lbl.setStyleSheet("color: #4ade80; font-size: 11px;")
         self._open_folder_btn.setEnabled(True)
 
     def _on_anim_error(self, msg: str) -> None:
+        from al_dic.i18n import tr_args
         self._reset_anim_controls()
-        self._anim_status_lbl.setText(f"Error: {msg}")
+        self._anim_status_lbl.setText(
+            tr_args(self.tr("Error: %1"), msg)
+        )
         self._anim_status_lbl.setStyleSheet(f"color: {COLORS.ERROR}; font-size: 11px;")
 
     def _reset_anim_controls(self) -> None:
@@ -1259,11 +1332,17 @@ class ExportDialog(QDialog):
                 sample_every=cfg.report_sample_every,
                 ref_image=None,
             )
-            self._report_status_lbl.setText(f"Report saved → {p}")
+            from al_dic.i18n import tr_args
+            self._report_status_lbl.setText(
+                tr_args(self.tr("Report saved → %1"), str(p))
+            )
             self._report_status_lbl.setStyleSheet("color: #4ade80; font-size: 11px;")
             self._open_folder_btn.setEnabled(True)
         except Exception as exc:
-            self._report_status_lbl.setText(f"Error: {exc}")
+            from al_dic.i18n import tr_args
+            self._report_status_lbl.setText(
+                tr_args(self.tr("Error: %1"), str(exc))
+            )
             self._report_status_lbl.setStyleSheet(
                 f"color: {COLORS.ERROR}; font-size: 11px;"
             )

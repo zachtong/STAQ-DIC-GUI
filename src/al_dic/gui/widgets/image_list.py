@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import QEvent, Qt, Signal
+from PySide6.QtCore import QCoreApplication, QEvent, Qt, Signal
 from PySide6.QtGui import QAction, QColor, QFont
 from PySide6.QtWidgets import (
     QHeaderView,
@@ -91,7 +91,11 @@ class ImageList(QWidget):
         # "Region" fits the narrow 50px column better than the full
         # "Region of Interest"; the button text inside the column
         # ("Need"/"Edit"/"Add") gives the unambiguous context.
-        self._tree.setHeaderLabels(["#", "Filename", "Region"])
+        self._tree.setHeaderLabels([
+            self.tr("#", "Image list column: frame index"),
+            self.tr("Filename"),
+            self.tr("Region", "Image list column: ROI status"),
+        ])
         self._tree.setSelectionMode(QTreeWidget.SelectionMode.ExtendedSelection)
         self._tree.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self._tree.customContextMenuRequested.connect(self._show_context_menu)
@@ -353,22 +357,29 @@ class ImageList(QWidget):
 
         # --- ROI batch operations (when frames are selected) ---
         if n_sel > 0:
-            import_action = QAction(
-                f"Import Region of Interest for {n_sel} "
-                f"frame{'s' if n_sel > 1 else ''}",
-                self,
+            # %n triggers Qt's numerusform machinery so translators can
+            # supply the right singular / plural form per locale.
+            import_label = QCoreApplication.translate(
+                "ImageList",
+                "Import Region of Interest for %n frame(s)",
+                "",
+                n_sel,
             )
+            import_action = QAction(import_label, self)
             import_action.triggered.connect(self._import_roi_selected)
             menu.addAction(import_action)
 
             n_with_roi = sum(
                 1 for f in sel_frames if f in self._state.per_frame_rois
             )
-            clear_label = (
-                f"Clear Region of Interest ({n_with_roi} with region)"
-                if n_with_roi
-                else "Clear Region of Interest"
-            )
+            if n_with_roi:
+                from al_dic.i18n import tr_args
+                clear_label = tr_args(
+                    self.tr("Clear Region of Interest (%1 with region)"),
+                    n_with_roi,
+                )
+            else:
+                clear_label = self.tr("Clear Region of Interest")
             clear_action = QAction(clear_label, self)
             clear_action.setEnabled(n_with_roi > 0)
             clear_action.triggered.connect(self._clear_roi_selected)
@@ -379,7 +390,9 @@ class ImageList(QWidget):
         # --- Delete option ---
         if selected:
             count = len(selected)
-            label = f"Delete {count} image{'s' if count > 1 else ''}"
+            label = QCoreApplication.translate(
+                "ImageList", "Delete %n image(s)", "", count,
+            )
             delete_action = QAction(label, self)
             delete_action.triggered.connect(self._delete_selected)
             menu.addAction(delete_action)
@@ -473,18 +486,28 @@ class ImageList(QWidget):
             return
         from PySide6.QtWidgets import QFileDialog
 
+        title = QCoreApplication.translate(
+            "ImageList", "Select %n Mask File(s)", "", len(frames),
+        )
         paths, _ = QFileDialog.getOpenFileNames(
             self,
-            f"Select {len(frames)} Mask File{'s' if len(frames) > 1 else ''}",
+            title,
             "",
-            "Images (*.png *.bmp *.tif *.tiff *.jpg *.jpeg);;All Files (*)",
+            self.tr("Images") + " (*.png *.bmp *.tif *.tiff *.jpg *.jpeg);;"
+            + self.tr("All Files") + " (*)",
         )
         if not paths:
             return
         if len(paths) != len(frames):
+            from al_dic.i18n import tr_args
             self._state.log_message.emit(
-                f"Selected {len(paths)} files for {len(frames)} frames"
-                " — count must match",
+                tr_args(
+                    self.tr(
+                        "Selected %1 files for %2 frames "
+                        "— count must match"
+                    ),
+                    len(paths), len(frames),
+                ),
                 "warn",
             )
             return

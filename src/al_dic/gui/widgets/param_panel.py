@@ -209,13 +209,24 @@ class ParamPanel(QWidget):
 
     def _rebuild_level_dropdown(self) -> None:
         """Repopulate the level combo to reflect the current max level."""
+        from al_dic.i18n import tr_args
         state = AppState.instance()
         max_level = state.compute_max_refinement_level()
-        labels = ["Light", "Medium", "Heavy", "Extra Heavy", "Ultra"]
-        items = [
-            f"{labels[i] if i < len(labels) else f'L{i + 1}'} (L{i + 1})"
-            for i in range(max_level)
+        # Translate the severity label; the "(Lk)" suffix stays literal
+        # so users can cross-reference with logs / param JSON.
+        labels = [
+            self.tr("Light", "Mesh refinement severity"),
+            self.tr("Medium", "Mesh refinement severity"),
+            self.tr("Heavy", "Mesh refinement severity"),
+            self.tr("Extra Heavy", "Mesh refinement severity"),
+            self.tr("Ultra", "Mesh refinement severity"),
         ]
+        items: list[str] = []
+        for i in range(max_level):
+            base = labels[i] if i < len(labels) else f"L{i + 1}"
+            items.append(
+                tr_args(self.tr("%1 (L%2)"), base, i + 1)
+            )
         target_level = max(1, min(state.refinement_level, max_level))
         if target_level != state.refinement_level:
             state.set_refinement_level(target_level)

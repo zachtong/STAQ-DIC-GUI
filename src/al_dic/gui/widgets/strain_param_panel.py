@@ -23,12 +23,14 @@ from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QComboBox,
     QFormLayout,
+    QHBoxLayout,
     QLabel,
     QSpinBox,
     QWidget,
 )
 
 from al_dic.gui.app_state import AppState
+from al_dic.gui.widgets.info_icon import InfoIcon
 from al_dic.i18n import tr_args
 
 
@@ -43,11 +45,15 @@ from al_dic.i18n import tr_args
 #   Strong (2x)    : nearest neighbors contribute ~96% (may blur real gradients)
 # Below sigma/step = 0.25 the Gaussian is too narrow to reach any neighbor
 # (neighbor weight ~0.03%), so smoothing effectively does nothing.
+# Smoothness presets. The labels are stored as raw English source keys
+# and translated at combo-population time via ``self.tr(...)``; that keeps
+# the preset->smoothness float lookup keyed on the source string, so
+# ``_resolve_smoothness`` works identically across locales.
 _SMOOTH_PRESETS: tuple[tuple[str, float], ...] = (
-    ("Off",                       0.0),
-    ("Light (\u03c3 = 0.5 \u00d7 step)",    1e-3),
-    ("Medium (\u03c3 = 1 \u00d7 step)",     2e-3),
-    ("Strong (\u03c3 = 2 \u00d7 step) ⚠", 4e-3),
+    ("Off",                              0.0),
+    ("Light (\u03c3 = 0.5 \u00d7 step)", 1e-3),
+    ("Medium (\u03c3 = 1 \u00d7 step)",  2e-3),
+    ("Strong (\u03c3 = 2 \u00d7 step) \u26a0", 4e-3),
 )
 
 # Default VSG size in pixels (must be odd).
@@ -82,7 +88,31 @@ class StrainParamPanel(QWidget):
         self._vsg_spin.setSingleStep(2)
         self._vsg_spin.setSuffix(" px")
         self._vsg_spin.setValue(_DEFAULT_VSG_PX)
-        layout.addRow(self.tr("VSG size"), self._vsg_spin)
+
+        # VSG label + ⓘ info icon explaining what VSG means, since
+        # "Virtual Strain Gauge" is DIC-specific jargon users may not
+        # know coming from a general mechanics background.
+        vsg_tip = self.tr(
+            "VSG (Virtual Strain Gauge) size is the diameter, in pixels, "
+            "of the circular region around each mesh node used to fit a "
+            "local displacement plane. Strain is then taken as the "
+            "plane's slope.\n\n"
+            "• Larger VSG → smoother strain, lower spatial resolution.\n"
+            "• Smaller VSG → sharper strain, more noise.\n"
+            "• Rule of thumb: VSG ≥ 2 × subset step + 1 (default: 41 px).\n\n"
+            "Not used when Method = FEM nodal (there, mesh spacing itself "
+            "sets the gauge size)."
+        )
+        vsg_label_row = QHBoxLayout()
+        vsg_label_row.setContentsMargins(0, 0, 0, 0)
+        vsg_label_row.setSpacing(2)
+        vsg_lbl = QLabel(self.tr("VSG size"))
+        vsg_label_row.addWidget(vsg_lbl)
+        vsg_label_row.addWidget(InfoIcon(vsg_tip))
+        vsg_label_row.addStretch()
+        vsg_label_widget = QWidget()
+        vsg_label_widget.setLayout(vsg_label_row)
+        layout.addRow(vsg_label_widget, self._vsg_spin)
 
         # Inline warning: plane fit needs VSG radius >= subset_step for
         # every node to find >= 3 neighbours; otherwise the strain
@@ -101,8 +131,18 @@ class StrainParamPanel(QWidget):
         # after differentiation (not to the displacement field).
         # Kernel width scales with local mesh spacing.
         self._smooth_combo = QComboBox()
-        for label, _ in _SMOOTH_PRESETS:
-            self._smooth_combo.addItem(self.tr(label))
+        # Literal tr() calls per preset — pyside6-lupdate only picks
+        # strings up when they appear as literal arguments to tr(),
+        # so iterating `self.tr(label)` over a variable would leave
+        # these four strings out of the .ts catalog.
+        _smooth_labels = (
+            self.tr("Off", "Strain smoothing preset"),
+            self.tr("Light (σ = 0.5 × step)"),
+            self.tr("Medium (σ = 1 × step)"),
+            self.tr("Strong (σ = 2 × step) ⚠"),
+        )
+        for lbl in _smooth_labels:
+            self._smooth_combo.addItem(lbl)
         self._smooth_combo.setCurrentIndex(0)   # default: Off
         self._smooth_combo.setToolTip(self.tr(
             "Gaussian smoothing of the strain field after computation.\n"

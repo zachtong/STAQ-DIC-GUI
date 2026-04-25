@@ -216,7 +216,13 @@ class StrainNavigator(QWidget):
         self._play_btn.setToolTip(self.tr("Play animation"))
 
     def _update_label(self) -> None:
+        from al_dic.i18n import tr_args
         if self._n_frames > 0:
-            self._label.setText(f"FRAME {self._current + 1}/{self._n_frames}")
+            self._label.setText(
+                tr_args(
+                    self.tr("FRAME %1/%2"),
+                    self._current + 1, self._n_frames,
+                )
+            )
         else:
             self._label.setText(self.tr("FRAME 0/0"))

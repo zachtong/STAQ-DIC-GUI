@@ -29,38 +29,7 @@ from PySide6.QtWidgets import (
 
 from al_dic.gui.app_state import AppState
 from al_dic.gui.theme import COLORS
-
-
-class _InfoIcon(QLabel):
-    """A small ⓘ glyph that surfaces its tooltip on hover OR click.
-
-    Tooltip alone is fragile: touchscreens never trigger hover, and
-    some users miss that the icon is interactive. A click also shows
-    the same tooltip, pinned at the cursor, so discoverability
-    doesn't depend on knowing the hover convention.
-    """
-
-    def __init__(self, tip: str, parent: QWidget | None = None) -> None:
-        super().__init__("ⓘ", parent)
-        self.setToolTip(tip)
-        self._tip_text = tip
-        self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.setStyleSheet(
-            f"color: {COLORS.TEXT_SECONDARY}; font-size: 13px; "
-            f"padding: 0 4px;"
-        )
-
-    def mousePressEvent(self, event):  # noqa: N802 (Qt override)
-        # Show the tooltip text at the cursor, same behaviour as hover.
-        # The global pos plus a small downward offset keeps the popup
-        # from sitting directly under the arrow cursor.
-        from PySide6.QtWidgets import QToolTip
-        QToolTip.showText(event.globalPos(), self._tip_text, self)
-        super().mousePressEvent(event)
-
-
-def _help_icon(tip: str) -> QLabel:
-    return _InfoIcon(tip)
+from al_dic.gui.widgets.info_icon import InfoIcon
 
 
 def _radio_row(radio: QRadioButton, info_tip: str) -> QHBoxLayout:
@@ -70,7 +39,7 @@ def _radio_row(radio: QRadioButton, info_tip: str) -> QHBoxLayout:
     row.setSpacing(2)
     row.addWidget(radio)
     row.addStretch()
-    row.addWidget(_help_icon(info_tip))
+    row.addWidget(InfoIcon(info_tip))
     return row
 
 

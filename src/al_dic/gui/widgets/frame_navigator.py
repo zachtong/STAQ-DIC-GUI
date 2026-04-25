@@ -185,4 +185,10 @@ class FrameNavigator(QWidget):
             self._timer.setInterval(ms)
 
     def _update_label(self, idx: int, total: int) -> None:
-        self._label.setText(f"FRAME {idx + 1}/{total}" if total > 0 else "FRAME 0/0")
+        from al_dic.i18n import tr_args
+        if total > 0:
+            self._label.setText(
+                tr_args(self.tr("FRAME %1/%2"), idx + 1, total)
+            )
+        else:
+            self._label.setText(self.tr("FRAME 0/0"))

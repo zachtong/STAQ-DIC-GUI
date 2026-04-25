@@ -4,6 +4,7 @@ import sys
 import traceback
 from pathlib import Path
 
+from PySide6.QtCore import QCoreApplication
 from PySide6.QtGui import QAction, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
@@ -750,8 +751,12 @@ class MainWindow(QMainWindow):
 
         if count:
             state.log_message.emit(
-                f"Imported Region of Interest for {count} "
-                f"frame{'s' if count > 1 else ''}",
+                QCoreApplication.translate(
+                    "App",
+                    "Imported Region of Interest for %n frame(s)",
+                    "",
+                    count,
+                ),
                 "success",
             )
             state.roi_changed.emit()
@@ -760,7 +765,10 @@ class MainWindow(QMainWindow):
         """Show the strain post-processing window (lazy singleton)."""
         if self._state.results is None:
             self._state.log_message.emit(
-                "Run DIC first -- no displacement results to post-process.",
+                QCoreApplication.translate(
+                    "App",
+                    "Run DIC first -- no displacement results to post-process.",
+                ),
                 "warn",
             )
             return

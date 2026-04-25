@@ -1,0 +1,963 @@
+"""One-shot helper: fill the current batch of unfinished translations.
+
+Usage:
+    python tools/fill_translations.py
+
+Reads src/al_dic/i18n/source/al_dic_<lang>.ts for every language in
+LANGUAGES, finds each <translation type="unfinished">…</translation>
+entry whose <source> matches a key in TRANSLATIONS[lang], and rewrites
+it as a finished <translation>.
+
+After running, invoke `python tools/i18n.py compile` to rebuild the
+.qm runtime catalogs.
+
+This script exists because we batch-translate a round of strings and
+want them committed together, not as interactive drive-bys from inside
+Qt Linguist.
+"""
+
+from __future__ import annotations
+
+import re
+import sys
+from pathlib import Path
+from xml.sax.saxutils import escape
+from xml.sax.saxutils import unescape as _xml_unescape
+
+
+def unescape(text: str) -> str:
+    """Stdlib's xml.sax.saxutils.unescape only handles &lt; &gt; &amp; by
+    default — add &apos; and &quot; so translation keys containing curly
+    quotes match our Python dict keys.
+    """
+    return _xml_unescape(text, {"&apos;": "'", "&quot;": '"'})
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+TS_DIR = PROJECT_ROOT / "src" / "al_dic" / "i18n" / "source"
+
+LANGUAGES = ("zh_CN", "zh_TW", "ja", "ko", "de", "fr", "es")
+
+
+# Translations keyed by English source string.
+# Each inner dict maps language code -> translated string.
+# Keep \n, %1, %2, %n placeholders literal.
+#
+# Short words / common UI labels
+TRANSLATIONS: dict[str, dict[str, str]] = {
+    # ========== AdvancedTuningWidget ==========
+    "AL-DIC Iterations": {
+        "zh_CN": "AL-DIC 迭代次数",
+        "zh_TW": "AL-DIC 迭代次數",
+        "ja":    "AL-DIC 反復回数",
+        "ko":    "AL-DIC 반복 횟수",
+        "de":    "AL-DIC-Iterationen",
+        "fr":    "Itérations AL-DIC",
+        "es":    "Iteraciones AL-DIC",
+    },
+    "Number of global refinement cycles for the AL-DIC solver.\n"
+    "1 = single global pass (fastest), 3 = default,\n"
+    "5+ = diminishing returns for most cases.": {
+        "zh_CN": "AL-DIC 求解器的全局精修迭代次数。\n"
+                 "1 = 单次全局求解（最快），3 = 默认值，\n"
+                 "5 次以上大多数情况下收益递减。",
+        "zh_TW": "AL-DIC 求解器的全域精修迭代次數。\n"
+                 "1 = 單次全域求解（最快），3 = 預設值，\n"
+                 "5 次以上大多數情況下收益遞減。",
+        "ja":    "AL-DIC ソルバーの全体的な精密化反復回数。\n"
+                 "1 = 単一パス（最速）、3 = デフォルト、\n"
+                 "5 以上はほとんどの場合で効果逓減。",
+        "ko":    "AL-DIC 솔버의 전역 세분화 반복 횟수.\n"
+                 "1 = 단일 패스(가장 빠름), 3 = 기본값,\n"
+                 "5 이상은 대부분의 경우 수익이 감소합니다.",
+        "de":    "Anzahl globaler Verfeinerungszyklen für den AL-DIC-Solver.\n"
+                 "1 = einmaliger Durchlauf (schnellste), 3 = Standard,\n"
+                 "5+ = abnehmender Ertrag in den meisten Fällen.",
+        "fr":    "Nombre de cycles de raffinement global du solveur AL-DIC.\n"
+                 "1 = passe unique (le plus rapide), 3 = par défaut,\n"
+                 "5+ = rendement décroissant dans la plupart des cas.",
+        "es":    "Número de ciclos de refinamiento global del solucionador AL-DIC.\n"
+                 "1 = pasada única (más rápido), 3 = predeterminado,\n"
+                 "5+ = rendimientos decrecientes en la mayoría de los casos.",
+    },
+
+    # ========== ExportDialog — column headers / short labels ==========
+    "Auto": {
+        "zh_CN": "自动", "zh_TW": "自動", "ja": "自動", "ko": "자동",
+        "de": "Auto", "fr": "Auto", "es": "Auto",
+    },
+    "Opacity": {
+        "zh_CN": "不透明度", "zh_TW": "不透明度", "ja": "不透明度",
+        "ko": "불투명도", "de": "Deckkraft", "fr": "Opacité", "es": "Opacidad",
+    },
+    "Field opacity (0 = transparent, 1 = fully opaque)": {
+        "zh_CN": "字段不透明度（0 = 透明，1 = 完全不透明）",
+        "zh_TW": "欄位不透明度（0 = 透明，1 = 完全不透明）",
+        "ja":    "フィールドの不透明度（0 = 透明、1 = 完全に不透明）",
+        "ko":    "필드 불투명도 (0 = 투명, 1 = 완전 불투명)",
+        "de":    "Feld-Deckkraft (0 = transparent, 1 = vollständig deckend)",
+        "fr":    "Opacité du champ (0 = transparent, 1 = opaque)",
+        "es":    "Opacidad del campo (0 = transparente, 1 = completamente opaco)",
+    },
+    "Export": {
+        "zh_CN": "导出", "zh_TW": "匯出", "ja": "エクスポート",
+        "ko": "내보내기", "de": "Exportieren", "fr": "Exporter", "es": "Exportar",
+    },
+    "Field": {
+        "zh_CN": "字段", "zh_TW": "欄位", "ja": "フィールド",
+        "ko": "필드", "de": "Feld", "fr": "Champ", "es": "Campo",
+    },
+    "Colormap": {
+        "zh_CN": "颜色映射", "zh_TW": "色彩對映", "ja": "カラーマップ",
+        "ko": "색상 맵", "de": "Farbskala", "fr": "Palette", "es": "Mapa de colores",
+    },
+    "Min": {
+        "zh_CN": "最小", "zh_TW": "最小", "ja": "最小",
+        "ko": "최소", "de": "Min", "fr": "Min", "es": "Mín",
+    },
+    "Max": {
+        "zh_CN": "最大", "zh_TW": "最大", "ja": "最大",
+        "ko": "최대", "de": "Max", "fr": "Max", "es": "Máx",
+    },
+    "IMAGE SETTINGS": {
+        "zh_CN": "图像设置", "zh_TW": "影像設定", "ja": "画像設定",
+        "ko": "이미지 설정", "de": "BILDEINSTELLUNGEN",
+        "fr": "PARAMÈTRES D'IMAGE", "es": "AJUSTES DE IMAGEN",
+    },
+    "Format": {
+        "zh_CN": "格式", "zh_TW": "格式", "ja": "形式",
+        "ko": "형식", "de": "Format", "fr": "Format", "es": "Formato",
+    },
+    "DPI": {
+        "zh_CN": "DPI", "zh_TW": "DPI", "ja": "DPI",
+        "ko": "DPI", "de": "DPI", "fr": "DPI", "es": "PPP",
+    },
+    "Include colorbar": {
+        "zh_CN": "包含色条", "zh_TW": "包含色條", "ja": "カラーバーを含める",
+        "ko": "컬러바 포함", "de": "Farbleiste einfügen",
+        "fr": "Inclure la barre de couleur", "es": "Incluir barra de color",
+    },
+    "Append a vertical colorbar strip to the right of each image.\n"
+    "Tick labels update per frame when Auto range is enabled.": {
+        "zh_CN": "在每张图像右侧添加一条垂直色条。\n"
+                 "启用自动范围时，刻度标签会按帧更新。",
+        "zh_TW": "在每張影像右側添加一條垂直色條。\n"
+                 "啟用自動範圍時，刻度標籤會依影格更新。",
+        "ja":    "各画像の右側に垂直カラーバーを追加します。\n"
+                 "自動レンジ有効時、目盛りラベルはフレームごとに更新されます。",
+        "ko":    "각 이미지 오른쪽에 수직 컬러바를 추가합니다.\n"
+                 "자동 범위가 활성화되면 눈금 레이블이 프레임별로 갱신됩니다.",
+        "de":    "Fügt rechts neben jedem Bild eine vertikale Farbleiste hinzu.\n"
+                 "Die Beschriftungen aktualisieren sich pro Bild, wenn Auto aktiv ist.",
+        "fr":    "Ajoute une barre de couleur verticale à droite de chaque image.\n"
+                 "Les étiquettes se mettent à jour par image quand la plage auto est activée.",
+        "es":    "Añade una barra de color vertical a la derecha de cada imagen.\n"
+                 "Las etiquetas se actualizan por fotograma cuando el rango auto está activo.",
+    },
+    "Append a vertical colorbar strip to the right of each frame.\n"
+    "Tick labels update per frame when Auto range is enabled.": {
+        "zh_CN": "在每一帧右侧添加一条垂直色条。\n"
+                 "启用自动范围时，刻度标签会按帧更新。",
+        "zh_TW": "在每一影格右側添加一條垂直色條。\n"
+                 "啟用自動範圍時，刻度標籤會依影格更新。",
+        "ja":    "各フレームの右側に垂直カラーバーを追加します。\n"
+                 "自動レンジ有効時、目盛りラベルはフレームごとに更新されます。",
+        "ko":    "각 프레임 오른쪽에 수직 컬러바를 추가합니다.\n"
+                 "자동 범위가 활성화되면 눈금 레이블이 프레임별로 갱신됩니다.",
+        "de":    "Fügt rechts neben jedem Bild eine vertikale Farbleiste hinzu.\n"
+                 "Die Beschriftungen aktualisieren sich pro Bild, wenn Auto aktiv ist.",
+        "fr":    "Ajoute une barre de couleur verticale à droite de chaque image.\n"
+                 "Les étiquettes se mettent à jour par image quand la plage auto est activée.",
+        "es":    "Añade una barra de color vertical a la derecha de cada fotograma.\n"
+                 "Las etiquetas se actualizan por fotograma cuando el rango auto está activo.",
+    },
+    "Original (frame 1 background)": {
+        "zh_CN": "原始配置（第 1 帧作背景）",
+        "zh_TW": "原始配置（第 1 影格作背景）",
+        "ja":    "原形（第 1 フレームを背景）",
+        "ko":    "원형 (1번 프레임을 배경으로)",
+        "de":    "Original (Bild 1 als Hintergrund)",
+        "fr":    "Original (image 1 en arrière-plan)",
+        "es":    "Original (fotograma 1 como fondo)",
+    },
+    "Field is drawn at the original (undeformed) node positions.\n"
+    "Background image is always the first frame.": {
+        "zh_CN": "字段绘制在原始（未变形）节点位置。\n"
+                 "背景图像始终是第一帧。",
+        "zh_TW": "欄位繪製在原始（未變形）節點位置。\n"
+                 "背景影像始終是第一影格。",
+        "ja":    "フィールドは元の（未変形の）ノード位置に描画されます。\n"
+                 "背景画像は常に最初のフレームです。",
+        "ko":    "필드는 원래(변형되지 않은) 노드 위치에 그려집니다.\n"
+                 "배경 이미지는 항상 첫 프레임입니다.",
+        "de":    "Feld wird an den ursprünglichen (unverformten) Knotenpositionen gezeichnet.\n"
+                 "Das Hintergrundbild ist immer das erste Bild.",
+        "fr":    "Le champ est tracé aux positions de nœud originales (non déformées).\n"
+                 "L'image de fond est toujours la première image.",
+        "es":    "El campo se dibuja en las posiciones originales (no deformadas) de los nodos.\n"
+                 "La imagen de fondo es siempre el primer fotograma.",
+    },
+    "Deformed (current frame background)": {
+        "zh_CN": "变形配置（当前帧作背景）",
+        "zh_TW": "變形配置（當前影格作背景）",
+        "ja":    "変形後（現在のフレームを背景）",
+        "ko":    "변형 후 (현재 프레임을 배경으로)",
+        "de":    "Verformt (aktuelles Bild als Hintergrund)",
+        "fr":    "Déformé (image actuelle en arrière-plan)",
+        "es":    "Deformado (fotograma actual como fondo)",
+    },
+    "Field is drawn at the displaced node positions "
+    "(reference + displacement).\n"
+    "Background image follows each frame's own photo.": {
+        "zh_CN": "字段绘制在位移后节点位置（参考位置 + 位移）。\n"
+                 "背景图像跟随每帧自身的照片。",
+        "zh_TW": "欄位繪製在位移後節點位置（參考位置 + 位移）。\n"
+                 "背景影像跟隨每影格自身的照片。",
+        "ja":    "フィールドは変位後のノード位置（参照 + 変位）に描画されます。\n"
+                 "背景画像は各フレーム自身の写真を使用します。",
+        "ko":    "필드는 변위된 노드 위치(참조 + 변위)에 그려집니다.\n"
+                 "배경 이미지는 각 프레임 자체의 사진을 따릅니다.",
+        "de":    "Feld wird an den verschobenen Knotenpositionen (Referenz + Verschiebung) gezeichnet.\n"
+                 "Das Hintergrundbild folgt dem Foto jedes Bildes.",
+        "fr":    "Le champ est tracé aux positions de nœud déplacées (référence + déplacement).\n"
+                 "L'image de fond suit la photo de chaque image.",
+        "es":    "El campo se dibuja en las posiciones de nodo desplazadas (referencia + desplazamiento).\n"
+                 "La imagen de fondo sigue la foto de cada fotograma.",
+    },
+    "Render as": {
+        "zh_CN": "绘制为", "zh_TW": "繪製為", "ja": "描画方法",
+        "ko": "렌더링 방식", "de": "Darstellen als",
+        "fr": "Rendu", "es": "Representar como",
+    },
+    "Cancel Export": {
+        "zh_CN": "取消导出", "zh_TW": "取消匯出",
+        "ja": "エクスポートをキャンセル", "ko": "내보내기 취소",
+        "de": "Export abbrechen", "fr": "Annuler l'export",
+        "es": "Cancelar exportación",
+    },
+    "Export Images": {
+        "zh_CN": "导出图像", "zh_TW": "匯出影像",
+        "ja": "画像をエクスポート", "ko": "이미지 내보내기",
+        "de": "Bilder exportieren", "fr": "Exporter les images",
+        "es": "Exportar imágenes",
+    },
+    "ANIMATION SETTINGS": {
+        "zh_CN": "动画设置", "zh_TW": "動畫設定",
+        "ja": "アニメーション設定", "ko": "애니메이션 설정",
+        "de": "ANIMATIONSEINSTELLUNGEN",
+        "fr": "PARAMÈTRES D'ANIMATION", "es": "AJUSTES DE ANIMACIÓN",
+    },
+    "FPS": {
+        "zh_CN": "帧率", "zh_TW": "影格率", "ja": "FPS",
+        "ko": "FPS", "de": "FPS", "fr": "FPS", "es": "FPS",
+    },
+    "Export Animation": {
+        "zh_CN": "导出动画", "zh_TW": "匯出動畫",
+        "ja": "アニメーションをエクスポート", "ko": "애니메이션 내보내기",
+        "de": "Animation exportieren", "fr": "Exporter l'animation",
+        "es": "Exportar animación",
+    },
+    "CONTENT": {
+        "zh_CN": "内容", "zh_TW": "內容", "ja": "内容",
+        "ko": "내용", "de": "INHALT", "fr": "CONTENU", "es": "CONTENIDO",
+    },
+    "Parameter summary table": {
+        "zh_CN": "参数摘要表", "zh_TW": "參數摘要表",
+        "ja": "パラメータ要約表", "ko": "매개변수 요약 표",
+        "de": "Parameter-Übersichtstabelle",
+        "fr": "Tableau récapitulatif des paramètres",
+        "es": "Tabla resumen de parámetros",
+    },
+    "Field statistics (min/max/mean/std per frame)": {
+        "zh_CN": "字段统计（每帧 最小/最大/平均/标准差）",
+        "zh_TW": "欄位統計（每影格 最小/最大/平均/標準差）",
+        "ja":    "フィールド統計（フレームごとの最小/最大/平均/標準偏差）",
+        "ko":    "필드 통계 (프레임별 최소/최대/평균/표준편차)",
+        "de":    "Feldstatistik (min/max/Mittelwert/Stdabw. pro Bild)",
+        "fr":    "Statistiques de champ (min/max/moyenne/écart-type par image)",
+        "es":    "Estadísticas de campo (mín/máx/media/desv.típ. por fotograma)",
+    },
+    "Sample field images": {
+        "zh_CN": "示例字段图像", "zh_TW": "範例欄位影像",
+        "ja": "フィールド画像のサンプル", "ko": "필드 이미지 샘플",
+        "de": "Beispiel-Feldbilder", "fr": "Exemples d'images de champ",
+        "es": "Imágenes de campo de muestra",
+    },
+    "Sample every": {
+        "zh_CN": "每隔", "zh_TW": "每隔",
+        "ja": "抽出間隔", "ko": "샘플 간격",
+        "de": "Alle", "fr": "Échantillonner toutes les", "es": "Muestrear cada",
+    },
+    "frames": {
+        "zh_CN": "帧", "zh_TW": "影格",
+        "ja": "フレーム", "ko": "프레임",
+        "de": "Bilder", "fr": "images", "es": "fotogramas",
+    },
+    "FIELDS": {
+        "zh_CN": "字段", "zh_TW": "欄位", "ja": "フィールド",
+        "ko": "필드", "de": "FELDER", "fr": "CHAMPS", "es": "CAMPOS",
+    },
+    "Displacement:": {
+        "zh_CN": "位移：", "zh_TW": "位移：",
+        "ja": "変位：", "ko": "변위:",
+        "de": "Verschiebung:", "fr": "Déplacement :", "es": "Desplazamiento:",
+    },
+    "Strain:": {
+        "zh_CN": "应变：", "zh_TW": "應變：",
+        "ja": "ひずみ：", "ko": "변형률:",
+        "de": "Dehnung:", "fr": "Déformation :", "es": "Deformación:",
+    },
+    "Format: HTML (self-contained, view in any browser)": {
+        "zh_CN": "格式：HTML（自包含，可在任意浏览器中查看）",
+        "zh_TW": "格式：HTML（自包含，可在任意瀏覽器中檢視）",
+        "ja":    "形式：HTML（自己完結型、任意のブラウザで表示可能）",
+        "ko":    "형식: HTML (자체 포함, 모든 브라우저에서 볼 수 있음)",
+        "de":    "Format: HTML (eigenständig, in jedem Browser anzeigbar)",
+        "fr":    "Format : HTML (autonome, consultable dans n'importe quel navigateur)",
+        "es":    "Formato: HTML (autocontenido, se puede ver en cualquier navegador)",
+    },
+    "Generate Report": {
+        "zh_CN": "生成报告", "zh_TW": "產生報告",
+        "ja": "レポートを生成", "ko": "보고서 생성",
+        "de": "Bericht erstellen", "fr": "Générer le rapport",
+        "es": "Generar informe",
+    },
+    "FRAME RANGE": {
+        "zh_CN": "帧范围", "zh_TW": "影格範圍",
+        "ja": "フレーム範囲", "ko": "프레임 범위",
+        "de": "BILDBEREICH", "fr": "PLAGE D'IMAGES",
+        "es": "RANGO DE FOTOGRAMAS",
+    },
+    "All frames": {
+        "zh_CN": "所有帧", "zh_TW": "所有影格",
+        "ja": "すべてのフレーム", "ko": "모든 프레임",
+        "de": "Alle Bilder", "fr": "Toutes les images",
+        "es": "Todos los fotogramas",
+    },
+    "From": {
+        "zh_CN": "从", "zh_TW": "從",
+        "ja": "開始", "ko": "시작",
+        "de": "Von", "fr": "De", "es": "Desde",
+    },
+    "to": {
+        "zh_CN": "到", "zh_TW": "到",
+        "ja": "まで", "ko": "끝",
+        "de": "bis", "fr": "à", "es": "a",
+    },
+    "Select Output Folder": {
+        "zh_CN": "选择输出文件夹", "zh_TW": "選擇輸出資料夾",
+        "ja": "出力フォルダーを選択", "ko": "출력 폴더 선택",
+        "de": "Ausgabeordner wählen",
+        "fr": "Sélectionner le dossier de sortie",
+        "es": "Seleccionar carpeta de salida",
+    },
+    "Exported %1 files → %2": {
+        "zh_CN": "已导出 %1 个文件 → %2",
+        "zh_TW": "已匯出 %1 個檔案 → %2",
+        "ja":    "%1 個のファイルをエクスポートしました → %2",
+        "ko":    "%1 개 파일 내보냄 → %2",
+        "de":    "%1 Dateien exportiert → %2",
+        "fr":    "%1 fichiers exportés → %2",
+        "es":    "Exportados %1 archivos → %2",
+    },
+    "Error: %1": {
+        "zh_CN": "错误：%1", "zh_TW": "錯誤：%1",
+        "ja": "エラー：%1", "ko": "오류: %1",
+        "de": "Fehler: %1", "fr": "Erreur : %1", "es": "Error: %1",
+    },
+    "Starting…": {
+        "zh_CN": "开始中…", "zh_TW": "開始中…",
+        "ja": "開始中…", "ko": "시작 중…",
+        "de": "Wird gestartet…", "fr": "Démarrage…",
+        "es": "Iniciando…",
+    },
+    "Rendering %1 (%2/%3)": {
+        "zh_CN": "正在渲染 %1 (%2/%3)",
+        "zh_TW": "正在繪製 %1 (%2/%3)",
+        "ja":    "%1 を描画中 (%2/%3)",
+        "ko":    "%1 렌더링 중 (%2/%3)",
+        "de":    "Rendere %1 (%2/%3)",
+        "fr":    "Rendu de %1 (%2/%3)",
+        "es":    "Renderizando %1 (%2/%3)",
+    },
+    "Frame %1/%2": {
+        "zh_CN": "帧 %1/%2", "zh_TW": "影格 %1/%2",
+        "ja": "フレーム %1/%2", "ko": "프레임 %1/%2",
+        "de": "Bild %1/%2", "fr": "Image %1/%2", "es": "Fotograma %1/%2",
+    },
+    "Exported %1 images → %2": {
+        "zh_CN": "已导出 %1 张图像 → %2",
+        "zh_TW": "已匯出 %1 張影像 → %2",
+        "ja":    "%1 枚の画像をエクスポートしました → %2",
+        "ko":    "%1 개 이미지 내보냄 → %2",
+        "de":    "%1 Bilder exportiert → %2",
+        "fr":    "%1 images exportées → %2",
+        "es":    "%1 imágenes exportadas → %2",
+    },
+    "Report saved → %1": {
+        "zh_CN": "报告已保存 → %1",
+        "zh_TW": "報告已儲存 → %1",
+        "ja":    "レポートを保存しました → %1",
+        "ko":    "보고서 저장됨 → %1",
+        "de":    "Bericht gespeichert → %1",
+        "fr":    "Rapport enregistré → %1",
+        "es":    "Informe guardado → %1",
+    },
+
+    # ========== FrameNavigator / StrainNavigator ==========
+    "FRAME %1/%2": {
+        "zh_CN": "帧 %1/%2", "zh_TW": "影格 %1/%2",
+        "ja": "フレーム %1/%2", "ko": "프레임 %1/%2",
+        "de": "BILD %1/%2", "fr": "IMAGE %1/%2", "es": "FOTOGRAMA %1/%2",
+    },
+
+    # ========== ImageList ==========
+    "#": {   # frame-index column — usually left as-is
+        "zh_CN": "#", "zh_TW": "#", "ja": "#", "ko": "#",
+        "de": "#", "fr": "#", "es": "#",
+    },
+    "Filename": {
+        "zh_CN": "文件名", "zh_TW": "檔名",
+        "ja": "ファイル名", "ko": "파일 이름",
+        "de": "Dateiname", "fr": "Nom de fichier", "es": "Nombre de archivo",
+    },
+    "Region": {
+        "zh_CN": "区域", "zh_TW": "區域",
+        "ja": "領域", "ko": "영역",
+        "de": "Bereich", "fr": "Région", "es": "Región",
+    },
+    "Clear Region of Interest": {
+        "zh_CN": "清除感兴趣区域",
+        "zh_TW": "清除感興趣區域",
+        "ja":    "関心領域をクリア",
+        "ko":    "관심 영역 지우기",
+        "de":    "Region of Interest löschen",
+        "fr":    "Effacer la région d'intérêt",
+        "es":    "Borrar región de interés",
+    },
+    "Clear Region of Interest (%1 with region)": {
+        "zh_CN": "清除感兴趣区域（%1 帧已有区域）",
+        "zh_TW": "清除感興趣區域（%1 影格已有區域）",
+        "ja":    "関心領域をクリア（%1 フレームに領域あり）",
+        "ko":    "관심 영역 지우기 (%1개 프레임에 영역 있음)",
+        "de":    "Region of Interest löschen (%1 mit Region)",
+        "fr":    "Effacer la région d'intérêt (%1 avec région)",
+        "es":    "Borrar región de interés (%1 con región)",
+    },
+    "Images": {
+        "zh_CN": "图像", "zh_TW": "影像",
+        "ja": "画像", "ko": "이미지",
+        "de": "Bilder", "fr": "Images", "es": "Imágenes",
+    },
+    "All Files": {
+        "zh_CN": "所有文件", "zh_TW": "所有檔案",
+        "ja": "すべてのファイル", "ko": "모든 파일",
+        "de": "Alle Dateien", "fr": "Tous les fichiers",
+        "es": "Todos los archivos",
+    },
+    "Selected %1 files for %2 frames — count must match": {
+        "zh_CN": "已选择 %1 个文件用于 %2 帧 — 数量必须匹配",
+        "zh_TW": "已選擇 %1 個檔案用於 %2 影格 — 數量必須相符",
+        "ja":    "%2 フレームに対し %1 個のファイルが選択されました — 数量が一致する必要があります",
+        "ko":    "%2 프레임에 대해 %1 개 파일 선택됨 — 개수가 일치해야 합니다",
+        "de":    "%1 Dateien für %2 Bilder ausgewählt — Anzahl muss übereinstimmen",
+        "fr":    "%1 fichiers sélectionnés pour %2 images — le nombre doit correspondre",
+        "es":    "Seleccionados %1 archivos para %2 fotogramas — las cantidades deben coincidir",
+    },
+
+    # ========== ParamPanel (refinement levels) ==========
+    "Light": {
+        "zh_CN": "轻度", "zh_TW": "輕度", "ja": "軽度",
+        "ko": "약함", "de": "Leicht", "fr": "Léger", "es": "Ligero",
+    },
+    "Medium": {
+        "zh_CN": "中等", "zh_TW": "中等", "ja": "中程度",
+        "ko": "중간", "de": "Mittel", "fr": "Moyen", "es": "Medio",
+    },
+    "Heavy": {
+        "zh_CN": "强", "zh_TW": "強", "ja": "強",
+        "ko": "강함", "de": "Stark", "fr": "Fort", "es": "Fuerte",
+    },
+    "Extra Heavy": {
+        "zh_CN": "超强", "zh_TW": "超強", "ja": "最強",
+        "ko": "매우 강함", "de": "Sehr stark", "fr": "Très fort",
+        "es": "Muy fuerte",
+    },
+    "Ultra": {
+        "zh_CN": "极限", "zh_TW": "極限", "ja": "極限",
+        "ko": "극강", "de": "Ultra", "fr": "Ultra", "es": "Ultra",
+    },
+    "%1 (L%2)": {
+        "zh_CN": "%1 (L%2)", "zh_TW": "%1 (L%2)",
+        "ja": "%1 (L%2)", "ko": "%1 (L%2)",
+        "de": "%1 (L%2)", "fr": "%1 (L%2)", "es": "%1 (L%2)",
+    },
+
+    # ========== PhysicalUnitsWidget ==========
+    "Pixel size": {
+        "zh_CN": "像素尺寸", "zh_TW": "像素尺寸",
+        "ja": "ピクセルサイズ", "ko": "픽셀 크기",
+        "de": "Pixelgröße", "fr": "Taille de pixel",
+        "es": "Tamaño de píxel",
+    },
+    "Frame rate": {
+        "zh_CN": "帧率", "zh_TW": "影格率",
+        "ja": "フレームレート", "ko": "프레임 속도",
+        "de": "Bildrate", "fr": "Fréquence d'images",
+        "es": "Velocidad de fotogramas",
+    },
+    "Disp: %1  Velocity: %2/s": {
+        "zh_CN": "位移：%1  速度：%2/s",
+        "zh_TW": "位移：%1  速度：%2/s",
+        "ja":    "変位：%1  速度：%2/s",
+        "ko":    "변위: %1  속도: %2/s",
+        "de":    "Verschiebung: %1  Geschwindigkeit: %2/s",
+        "fr":    "Dépl. : %1  Vitesse : %2/s",
+        "es":    "Despl.: %1  Velocidad: %2/s",
+    },
+
+    # ========== StrainParamPanel ==========
+    "VSG (Virtual Strain Gauge) size is the diameter, in pixels, "
+    "of the circular region around each mesh node used to fit a "
+    "local displacement plane. Strain is then taken as the "
+    "plane's slope.\n\n"
+    "• Larger VSG → smoother strain, lower spatial resolution.\n"
+    "• Smaller VSG → sharper strain, more noise.\n"
+    "• Rule of thumb: VSG ≥ 2 × subset step + 1 (default: 41 px).\n\n"
+    "Not used when Method = FEM nodal (there, mesh spacing itself "
+    "sets the gauge size).": {
+        "zh_CN": "VSG（虚拟应变计，Virtual Strain Gauge）尺寸指围绕每个网格节点、"
+                 "用于拟合局部位移平面的圆形区域的直径（像素）。"
+                 "应变由该平面的斜率给出。\n\n"
+                 "• VSG 越大 → 应变越平滑，空间分辨率越低。\n"
+                 "• VSG 越小 → 应变越锐利，但噪声越大。\n"
+                 "• 经验法则：VSG ≥ 2 × 子集步长 + 1（默认：41 px）。\n\n"
+                 "方法选择 FEM nodal 时不使用此参数（此时由网格间距决定虚拟应变计尺寸）。",
+        "zh_TW": "VSG（虛擬應變計，Virtual Strain Gauge）尺寸指圍繞每個網格節點、"
+                 "用於擬合局部位移平面的圓形區域的直徑（像素）。"
+                 "應變由該平面的斜率給出。\n\n"
+                 "• VSG 越大 → 應變越平滑，空間解析度越低。\n"
+                 "• VSG 越小 → 應變越銳利，但雜訊越大。\n"
+                 "• 經驗法則：VSG ≥ 2 × 子集步長 + 1（預設：41 px）。\n\n"
+                 "方法選擇 FEM nodal 時不使用此參數（此時由網格間距決定虛擬應變計尺寸）。",
+        "ja":    "VSG（バーチャルひずみゲージ、Virtual Strain Gauge）サイズとは、"
+                 "各メッシュノード周辺で局所変位平面をフィットさせるために使う"
+                 "円形領域の直径（ピクセル）のことです。ひずみはこの平面の勾配として算出されます。\n\n"
+                 "• VSG が大きい → ひずみは平滑になるが、空間解像度は低下。\n"
+                 "• VSG が小さい → ひずみは鋭敏になるが、ノイズが増加。\n"
+                 "• 目安：VSG ≥ 2 × サブセットステップ + 1（既定：41 px）。\n\n"
+                 "方法が FEM nodal の場合は使用されません（そこではメッシュ間隔がゲージサイズを決定します）。",
+        "ko":    "VSG(가상 변형률 게이지, Virtual Strain Gauge) 크기는 각 메시 노드 주위에서 "
+                 "국소 변위 평면을 피팅하는 데 사용되는 원형 영역의 지름(픽셀)입니다. "
+                 "변형률은 이 평면의 기울기로 얻어집니다.\n\n"
+                 "• VSG가 클수록 → 변형률이 매끄럽고 공간 해상도가 낮음.\n"
+                 "• VSG가 작을수록 → 변형률이 날카롭지만 노이즈 증가.\n"
+                 "• 경험 법칙: VSG ≥ 2 × 서브셋 스텝 + 1 (기본값: 41 px).\n\n"
+                 "Method = FEM nodal일 때는 사용되지 않습니다(그 경우 메시 간격 자체가 게이지 크기를 결정).",
+        "de":    "VSG (Virtual Strain Gauge) ist der Durchmesser in Pixel des kreisförmigen "
+                 "Bereichs um jeden Netzknoten, der zum Anpassen einer lokalen Verschiebungs-"
+                 "ebene verwendet wird. Die Dehnung ergibt sich aus der Steigung dieser Ebene.\n\n"
+                 "• Größeres VSG → glattere Dehnung, geringere räumliche Auflösung.\n"
+                 "• Kleineres VSG → schärfere Dehnung, mehr Rauschen.\n"
+                 "• Faustregel: VSG ≥ 2 × Subset-Schritt + 1 (Standard: 41 px).\n\n"
+                 "Nicht verwendet bei Methode = FEM nodal (dort bestimmt der Netzabstand die Größe).",
+        "fr":    "La taille VSG (Virtual Strain Gauge, jauge de déformation virtuelle) est le "
+                 "diamètre, en pixels, de la région circulaire autour de chaque nœud du maillage, "
+                 "utilisée pour ajuster un plan de déplacement local. La déformation est ensuite "
+                 "prise comme la pente de ce plan.\n\n"
+                 "• VSG plus grande → déformation plus lisse, résolution spatiale plus faible.\n"
+                 "• VSG plus petite → déformation plus fine, mais plus de bruit.\n"
+                 "• Règle empirique : VSG ≥ 2 × pas de subset + 1 (par défaut : 41 px).\n\n"
+                 "Non utilisée quand Méthode = FEM nodal (l'espacement du maillage fixe alors la taille).",
+        "es":    "El tamaño VSG (Virtual Strain Gauge, galga de deformación virtual) es el diámetro, "
+                 "en píxeles, de la región circular alrededor de cada nodo de malla utilizada para "
+                 "ajustar un plano de desplazamiento local. La deformación se toma como la pendiente "
+                 "de dicho plano.\n\n"
+                 "• VSG más grande → deformación más suave, menor resolución espacial.\n"
+                 "• VSG más pequeño → deformación más nítida, pero con más ruido.\n"
+                 "• Regla práctica: VSG ≥ 2 × paso del subset + 1 (predeterminado: 41 px).\n\n"
+                 "No se usa con Method = FEM nodal (allí el espaciado de la malla establece el tamaño).",
+    },
+
+    "\u26a0 VSG radius (%1 px) < DIC node spacing (%2 px); "
+    "plane fit will fail. Use VSG \u2265 %3 px or switch "
+    "Method to FEM nodal.": {
+        "zh_CN": "⚠ VSG 半径（%1 px）< DIC 节点间距（%2 px）；"
+                 "平面拟合将失败。请将 VSG ≥ %3 px 或将方法切换为 FEM nodal。",
+        "zh_TW": "⚠ VSG 半徑（%1 px）< DIC 節點間距（%2 px）；"
+                 "平面擬合將失敗。請將 VSG ≥ %3 px 或將方法切換為 FEM nodal。",
+        "ja":    "⚠ VSG 半径（%1 px）< DIC ノード間隔（%2 px）；"
+                 "平面フィットは失敗します。VSG ≥ %3 px にするか、方法を FEM nodal に切り替えてください。",
+        "ko":    "⚠ VSG 반경(%1 px) < DIC 노드 간격(%2 px); "
+                 "평면 피팅이 실패합니다. VSG ≥ %3 px로 설정하거나 Method를 FEM nodal로 전환하세요.",
+        "de":    "⚠ VSG-Radius (%1 px) < DIC-Knotenabstand (%2 px); "
+                 "Ebenenanpassung wird fehlschlagen. VSG ≥ %3 px verwenden oder Methode auf FEM nodal wechseln.",
+        "fr":    "⚠ Rayon VSG (%1 px) < espacement des nœuds DIC (%2 px) ; "
+                 "l'ajustement de plan échouera. Utilisez VSG ≥ %3 px ou passez la Méthode en FEM nodal.",
+        "es":    "⚠ Radio VSG (%1 px) < espaciado de nodos DIC (%2 px); "
+                 "el ajuste de plano fallará. Use VSG ≥ %3 px o cambie Método a FEM nodal.",
+    },
+
+    # ========== StrainVizPanel ==========
+    "Deformed": {
+        "zh_CN": "变形后", "zh_TW": "變形後",
+        "ja": "変形後", "ko": "변형 후",
+        "de": "Verformt", "fr": "Déformé", "es": "Deformado",
+    },
+    "Range": {
+        "zh_CN": "范围", "zh_TW": "範圍",
+        "ja": "範囲", "ko": "범위",
+        "de": "Bereich", "fr": "Plage", "es": "Rango",
+    },
+
+    # ========== StrainWindow ==========
+    "Strain compute failed: %1: %2": {
+        "zh_CN": "应变计算失败：%1：%2",
+        "zh_TW": "應變計算失敗：%1：%2",
+        "ja":    "ひずみ計算に失敗しました：%1：%2",
+        "ko":    "변형률 계산 실패: %1: %2",
+        "de":    "Dehnungsberechnung fehlgeschlagen: %1: %2",
+        "fr":    "Échec du calcul de déformation : %1 : %2",
+        "es":    "Fallo en el cálculo de deformación: %1: %2",
+    },
+    "Strain compute failed: %1": {
+        "zh_CN": "应变计算失败：%1",
+        "zh_TW": "應變計算失敗：%1",
+        "ja":    "ひずみ計算に失敗しました：%1",
+        "ko":    "변형률 계산 실패: %1",
+        "de":    "Dehnungsberechnung fehlgeschlagen: %1",
+        "fr":    "Échec du calcul de déformation : %1",
+        "es":    "Fallo en el cálculo de deformación: %1",
+    },
+    "Strain computation complete.": {
+        "zh_CN": "应变计算完成。",
+        "zh_TW": "應變計算完成。",
+        "ja":    "ひずみ計算が完了しました。",
+        "ko":    "변형률 계산 완료.",
+        "de":    "Dehnungsberechnung abgeschlossen.",
+        "fr":    "Calcul de déformation terminé.",
+        "es":    "Cálculo de deformación completado.",
+    },
+    "Strain window: no displacement results to post-process.": {
+        "zh_CN": "应变窗口：没有可后处理的位移结果。",
+        "zh_TW": "應變視窗：沒有可後處理的位移結果。",
+        "ja":    "ひずみウィンドウ：後処理する変位結果がありません。",
+        "ko":    "변형률 창: 후처리할 변위 결과가 없습니다.",
+        "de":    "Dehnungsfenster: Keine Verschiebungs-Ergebnisse zur Nachbearbeitung.",
+        "fr":    "Fenêtre de déformation : aucun résultat de déplacement à post-traiter.",
+        "es":    "Ventana de deformación: no hay resultados de desplazamiento para posprocesar.",
+    },
+
+    # ========== App (main window ROI import / strain window gate) ==========
+    "Run DIC first -- no displacement results to post-process.": {
+        "zh_CN": "请先运行 DIC —— 当前没有可后处理的位移结果。",
+        "zh_TW": "請先執行 DIC —— 目前沒有可後處理的位移結果。",
+        "ja":    "先に DIC を実行してください —— 後処理する変位結果がありません。",
+        "ko":    "DIC를 먼저 실행하세요 —— 후처리할 변위 결과가 없습니다.",
+        "de":    "DIC zuerst ausführen — keine Verschiebungs-Ergebnisse zur Nachbearbeitung.",
+        "fr":    "Exécutez d'abord le DIC — aucun résultat de déplacement à post-traiter.",
+        "es":    "Ejecute primero el DIC — no hay resultados de desplazamiento para posprocesar.",
+    },
+
+    # ========== PipelineController (start() + _on_finished()) ==========
+    "  Loaded %1 images, shape=%2": {
+        "zh_CN": "  已加载 %1 张图像，尺寸=%2",
+        "zh_TW": "  已載入 %1 張影像，尺寸=%2",
+        "ja":    "  %1 枚の画像を読み込みました、shape=%2",
+        "ko":    "  %1 개 이미지 로드됨, shape=%2",
+        "de":    "  %1 Bilder geladen, Form=%2",
+        "fr":    "  %1 images chargées, forme=%2",
+        "es":    "  %1 imágenes cargadas, forma=%2",
+    },
+    "  ROI mask: %1, %2 pixels (%3%)": {
+        "zh_CN": "  感兴趣区域蒙版：%1，%2 像素（%3%）",
+        "zh_TW": "  感興趣區域遮罩：%1，%2 像素（%3%）",
+        "ja":    "  ROI マスク：%1、%2 ピクセル（%3%）",
+        "ko":    "  ROI 마스크: %1, %2 픽셀 (%3%)",
+        "de":    "  ROI-Maske: %1, %2 Pixel (%3%)",
+        "fr":    "  Masque ROI : %1, %2 pixels (%3%)",
+        "es":    "  Máscara ROI: %1, %2 píxeles (%3%)",
+    },
+    "Run cancelled: define per-frame Regions of Interest "
+    "for the missing reference frames or accept the "
+    "inherited frame-1 mask in the next run.": {
+        "zh_CN": "已取消运行：请为缺失的参考帧定义逐帧感兴趣区域，"
+                 "或在下次运行时接受继承自第 1 帧的蒙版。",
+        "zh_TW": "已取消執行：請為缺失的參考影格定義逐影格感興趣區域，"
+                 "或在下次執行時接受繼承自第 1 影格的遮罩。",
+        "ja":    "実行をキャンセルしました：欠けている参照フレームに対して"
+                 "フレーム別の関心領域を定義するか、次回実行時に"
+                 "第 1 フレームのマスクを継承してください。",
+        "ko":    "실행 취소됨: 누락된 참조 프레임에 대해 프레임별 관심 영역을 "
+                 "정의하거나, 다음 실행 시 프레임 1의 마스크를 그대로 사용하도록 허용하세요.",
+        "de":    "Lauf abgebrochen: Definieren Sie pro Bild Regions of Interest "
+                 "für die fehlenden Referenzbilder, oder akzeptieren Sie beim "
+                 "nächsten Lauf die vom 1. Bild geerbte Maske.",
+        "fr":    "Exécution annulée : définissez les régions d'intérêt par image "
+                 "pour les images de référence manquantes, ou acceptez le "
+                 "masque hérité de l'image 1 au prochain lancement.",
+        "es":    "Ejecución cancelada: defina regiones de interés por fotograma "
+                 "para los fotogramas de referencia que faltan, o acepte la "
+                 "máscara heredada del fotograma 1 en la próxima ejecución.",
+    },
+
+    # ========== PipelineWorker.run() ==========
+    "Starting DIC analysis...": {
+        "zh_CN": "开始 DIC 分析…",
+        "zh_TW": "開始 DIC 分析…",
+        "ja":    "DIC 解析を開始します…",
+        "ko":    "DIC 분석 시작 중…",
+        "de":    "DIC-Analyse wird gestartet…",
+        "fr":    "Démarrage de l'analyse DIC…",
+        "es":    "Iniciando análisis DIC…",
+    },
+    "Analysis complete in %1s": {
+        "zh_CN": "分析完成，用时 %1 秒",
+        "zh_TW": "分析完成，耗時 %1 秒",
+        "ja":    "解析が完了しました（%1 秒）",
+        "ko":    "분석 완료 (%1초)",
+        "de":    "Analyse in %1 s abgeschlossen",
+        "fr":    "Analyse terminée en %1 s",
+        "es":    "Análisis completado en %1 s",
+    },
+    "Analysis stopped by user.": {
+        "zh_CN": "用户已停止分析。",
+        "zh_TW": "使用者已停止分析。",
+        "ja":    "ユーザーにより解析が停止されました。",
+        "ko":    "사용자가 분석을 중지했습니다.",
+        "de":    "Analyse wurde vom Benutzer gestoppt.",
+        "fr":    "Analyse arrêtée par l'utilisateur.",
+        "es":    "Análisis detenido por el usuario.",
+    },
+
+    # ========== StrainParamPanel smoothing presets ==========
+    "Off": {
+        "zh_CN": "关闭", "zh_TW": "關閉",
+        "ja": "オフ", "ko": "끔",
+        "de": "Aus", "fr": "Désactivé", "es": "Desactivado",
+    },
+    "Light (σ = 0.5 × step)": {
+        "zh_CN": "轻度（σ = 0.5 × step）",
+        "zh_TW": "輕度（σ = 0.5 × step）",
+        "ja":    "軽度（σ = 0.5 × step）",
+        "ko":    "약함 (σ = 0.5 × step)",
+        "de":    "Leicht (σ = 0,5 × step)",
+        "fr":    "Léger (σ = 0,5 × step)",
+        "es":    "Ligero (σ = 0,5 × step)",
+    },
+    "Medium (σ = 1 × step)": {
+        "zh_CN": "中等（σ = 1 × step）",
+        "zh_TW": "中等（σ = 1 × step）",
+        "ja":    "中程度（σ = 1 × step）",
+        "ko":    "중간 (σ = 1 × step)",
+        "de":    "Mittel (σ = 1 × step)",
+        "fr":    "Moyen (σ = 1 × step)",
+        "es":    "Medio (σ = 1 × step)",
+    },
+    "Strong (σ = 2 × step) ⚠": {
+        "zh_CN": "强（σ = 2 × step）⚠",
+        "zh_TW": "強（σ = 2 × step）⚠",
+        "ja":    "強（σ = 2 × step）⚠",
+        "ko":    "강함 (σ = 2 × step) ⚠",
+        "de":    "Stark (σ = 2 × step) ⚠",
+        "fr":    "Fort (σ = 2 × step) ⚠",
+        "es":    "Fuerte (σ = 2 × step) ⚠",
+    },
+}
+
+
+# -- Numerus-form translations (use <numerusform>…</numerusform>) ------------
+# Chinese/Japanese/Korean only need a single form; Romance/Germanic need two;
+# in principle some Slavic languages need three, but none of our target langs
+# are Slavic, so the two-form layout covers everything.
+NUMERUS_TRANSLATIONS: dict[str, dict[str, tuple[str, ...]]] = {
+    "Import Region of Interest for %n frame(s)": {
+        "zh_CN": ("为 %n 帧导入感兴趣区域",),
+        "zh_TW": ("為 %n 影格匯入感興趣區域",),
+        "ja":    ("%n フレームに関心領域をインポート",),
+        "ko":    ("%n 프레임에 관심 영역 가져오기",),
+        "de":    ("Region of Interest für %n Bild importieren",
+                  "Region of Interest für %n Bilder importieren"),
+        "fr":    ("Importer la région d'intérêt pour %n image",
+                  "Importer la région d'intérêt pour %n images"),
+        "es":    ("Importar región de interés para %n fotograma",
+                  "Importar región de interés para %n fotogramas"),
+    },
+    "Delete %n image(s)": {
+        "zh_CN": ("删除 %n 张图像",),
+        "zh_TW": ("刪除 %n 張影像",),
+        "ja":    ("%n 個の画像を削除",),
+        "ko":    ("%n 개 이미지 삭제",),
+        "de":    ("%n Bild löschen", "%n Bilder löschen"),
+        "fr":    ("Supprimer %n image", "Supprimer %n images"),
+        "es":    ("Eliminar %n imagen", "Eliminar %n imágenes"),
+    },
+    "Select %n Mask File(s)": {
+        "zh_CN": ("选择 %n 个蒙版文件",),
+        "zh_TW": ("選擇 %n 個遮罩檔案",),
+        "ja":    ("%n 個のマスクファイルを選択",),
+        "ko":    ("%n 개 마스크 파일 선택",),
+        "de":    ("%n Maskendatei auswählen", "%n Maskendateien auswählen"),
+        "fr":    ("Sélectionner %n fichier de masque",
+                  "Sélectionner %n fichiers de masque"),
+        "es":    ("Seleccionar %n archivo de máscara",
+                  "Seleccionar %n archivos de máscara"),
+    },
+    "Imported Region of Interest for %n frame(s)": {
+        "zh_CN": ("为 %n 帧导入了感兴趣区域",),
+        "zh_TW": ("為 %n 影格匯入了感興趣區域",),
+        "ja":    ("%n フレームに関心領域をインポートしました",),
+        "ko":    ("%n 프레임에 관심 영역 가져옴",),
+        "de":    ("Region of Interest für %n Bild importiert",
+                  "Region of Interest für %n Bilder importiert"),
+        "fr":    ("Région d'intérêt importée pour %n image",
+                  "Région d'intérêt importée pour %n images"),
+        "es":    ("Región de interés importada para %n fotograma",
+                  "Región de interés importada para %n fotogramas"),
+    },
+    "  %n frame(s) with custom ROI masks": {
+        "zh_CN": ("  %n 帧使用自定义感兴趣区域蒙版",),
+        "zh_TW": ("  %n 影格使用自訂感興趣區域遮罩",),
+        "ja":    ("  %n 個のフレームでカスタム ROI マスクを使用",),
+        "ko":    ("  %n 개 프레임에서 사용자 지정 ROI 마스크 사용",),
+        "de":    ("  %n Bild mit benutzerdefinierter ROI-Maske",
+                  "  %n Bilder mit benutzerdefinierten ROI-Masken"),
+        "fr":    ("  %n image avec un masque ROI personnalisé",
+                  "  %n images avec des masques ROI personnalisés"),
+        "es":    ("  %n fotograma con máscara ROI personalizada",
+                  "  %n fotogramas con máscaras ROI personalizadas"),
+    },
+    "Results received: %n frame(s)": {
+        "zh_CN": ("已收到结果：%n 帧",),
+        "zh_TW": ("已收到結果：%n 影格",),
+        "ja":    ("結果を受信：%n フレーム",),
+        "ko":    ("결과 수신: %n 프레임",),
+        "de":    ("Ergebnisse empfangen: %n Bild",
+                  "Ergebnisse empfangen: %n Bilder"),
+        "fr":    ("Résultats reçus : %n image",
+                  "Résultats reçus : %n images"),
+        "es":    ("Resultados recibidos: %n fotograma",
+                  "Resultados recibidos: %n fotogramas"),
+    },
+    "Exported %n animation(s) → %1": {
+        "zh_CN": ("已导出 %n 个动画 → %1",),
+        "zh_TW": ("已匯出 %n 個動畫 → %1",),
+        "ja":    ("%n 個のアニメーションをエクスポートしました → %1",),
+        "ko":    ("%n 개 애니메이션 내보냄 → %1",),
+        "de":    ("%n Animation exportiert → %1",
+                  "%n Animationen exportiert → %1"),
+        "fr":    ("%n animation exportée → %1",
+                  "%n animations exportées → %1"),
+        "es":    ("Exportada %n animación → %1",
+                  "Exportadas %n animaciones → %1"),
+    },
+}
+
+
+# ---------- .ts editing ----------------------------------------------------
+
+MESSAGE_BLOCK = re.compile(
+    r"(<message[^>]*>)(.*?)(</message>)", re.DOTALL
+)
+
+SOURCE_INNER = re.compile(r"<source>(.*?)</source>", re.DOTALL)
+
+UNFIN_TRANSLATION = re.compile(
+    r"<translation(?:\s+type=\"unfinished\")?\s*>(.*?)</translation>",
+    re.DOTALL,
+)
+UNFIN_NUMERUS = re.compile(
+    r"<translation\s+type=\"unfinished\">\s*((?:<numerusform></numerusform>\s*)+)</translation>",
+    re.DOTALL,
+)
+
+
+def fill_ts(lang: str) -> tuple[int, int]:
+    """Return (filled, skipped) count for a single language."""
+    ts_path = TS_DIR / f"al_dic_{lang}.ts"
+    text = ts_path.read_text(encoding="utf-8")
+    filled = 0
+    skipped = 0
+
+    def replace_block(match: re.Match[str]) -> str:
+        nonlocal filled, skipped
+        open_tag, body, close_tag = match.group(1), match.group(2), match.group(3)
+        src_m = SOURCE_INNER.search(body)
+        if src_m is None:
+            return match.group(0)
+        source = unescape(src_m.group(1))
+
+        # --- numerusform (plural) entries ---
+        if 'numerus="yes"' in open_tag and source in NUMERUS_TRANSLATIONS:
+            forms = NUMERUS_TRANSLATIONS[source].get(lang)
+            if forms is None:
+                skipped += 1
+                return match.group(0)
+            joined = "\n".join(
+                f"            <numerusform>{escape(f)}</numerusform>"
+                for f in forms
+            )
+            new_translation = (
+                f"<translation>\n{joined}\n        </translation>"
+            )
+            new_body = re.sub(
+                r"<translation[^>]*>\s*(?:<numerusform></numerusform>\s*)+</translation>",
+                new_translation,
+                body,
+                count=1,
+                flags=re.DOTALL,
+            )
+            if new_body == body:
+                skipped += 1
+                return match.group(0)
+            filled += 1
+            return open_tag + new_body + close_tag
+
+        # --- simple unfinished entries ---
+        if 'type="unfinished"' not in body:
+            return match.group(0)
+
+        entry = TRANSLATIONS.get(source)
+        # Fall back to the first numerusform if lupdate didn't tag the
+        # message as numerus="yes". Qt still substitutes %n → count,
+        # we just miss the plural-form branching — which is acceptable
+        # because %n is only interesting for >1 case anyway.
+        if entry is None and source in NUMERUS_TRANSLATIONS:
+            forms = NUMERUS_TRANSLATIONS[source].get(lang)
+            if forms:
+                entry = {lang: forms[-1]}  # plural form (or singular for CJK)
+        if entry is None:
+            skipped += 1
+            return match.group(0)
+        rendering = entry.get(lang)
+        if rendering is None:
+            skipped += 1
+            return match.group(0)
+
+        new_translation = f"<translation>{escape(rendering)}</translation>"
+        new_body = re.sub(
+            r'<translation\s+type="unfinished">.*?</translation>',
+            new_translation,
+            body,
+            count=1,
+            flags=re.DOTALL,
+        )
+        if new_body == body:
+            skipped += 1
+            return match.group(0)
+        filled += 1
+        return open_tag + new_body + close_tag
+
+    new_text = MESSAGE_BLOCK.sub(replace_block, text)
+    if filled:
+        ts_path.write_text(new_text, encoding="utf-8")
+    return filled, skipped
+
+
+def main() -> None:
+    for lang in LANGUAGES:
+        filled, skipped = fill_ts(lang)
+        print(f"  {lang:<6} filled={filled:<4} skipped={skipped}")
+
+
+if __name__ == "__main__":
+    main()

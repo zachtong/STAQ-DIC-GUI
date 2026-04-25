@@ -1,0 +1,131 @@
+name: i18n
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# i18n gates (see CLAUDE.md "ENFORCED CONTRACT" section).
+# These run independently of the test job so a regression in tr()
+# wrapping fails fast even if the unit tests still happen to pass.
+jobs:
+  i18n-gates:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Fetch enough history for the "no regression vs main" check
+          # in Gate B to compute the diff base.
+          fetch-depth: 0
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Qt system deps + project (with i18n tools)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libxkbcommon0 libdbus-1-3
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          # CI-local pin: pyside6-lupdate output format is version-
+          # sensitive (.ts attribute order, whitespace). Lockstep CI
+          # to the version the maintainer develops with so Gate A
+          # ("extract drift") doesn't flicker on PySide6 minor bumps.
+          # User-facing pyproject.toml stays loose (>=6.6.0).
+          pip install --force-reinstall "PySide6==6.8.3"
+
+      # ----------------------------------------------------------------
+      # Gate A: extract drift detection
+      # ----------------------------------------------------------------
+      # If a developer added/changed a tr() string but didn't run
+      # `python tools/i18n.py extract`, the .ts files diverge from
+      # the GUI source. Fail the build with an actionable message.
+      - name: Gate A — i18n extract drift
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          set -e
+          # Snapshot pre-extract state (binary-safe).
+          cp -r src/al_dic/i18n/source /tmp/ts_before
+          python tools/i18n.py extract
+          if ! diff -r /tmp/ts_before src/al_dic/i18n/source > /tmp/ts_diff.txt; then
+            echo "::error title=i18n drift::tr() strings changed but .ts files were not refreshed."
+            echo ""
+            echo "How to fix locally:"
+            echo "  1. python tools/i18n.py extract"
+            echo "  2. Update tools/fill_translations.py with new entries (zh_CN required)."
+            echo "  3. python tools/fill_translations.py"
+            echo "  4. python tools/i18n.py compile"
+            echo "  5. git add -p src/al_dic/i18n/ tools/fill_translations.py && git commit"
+            echo ""
+            echo "Diff preview (first 200 lines):"
+            head -200 /tmp/ts_diff.txt
+            exit 1
+          fi
+          echo "::notice::Gate A passed — .ts files are in sync with GUI source."
+
+      # ----------------------------------------------------------------
+      # Gate B: zh_CN must be 100%, others must not regress vs main
+      # ----------------------------------------------------------------
+      # We do NOT require all 7 languages at 100% because that would
+      # incentivize machine translation. Instead:
+      #   - zh_CN at 100% (project maintainer reads zh_CN)
+      #   - other languages: count of unfinished entries must not
+      #     increase relative to main branch (no silent regression)
+      - name: Gate B — zh_CN 100% + no regression for others
+        run: |
+          set -e
+          python tools/i18n.py stats | tee /tmp/stats.txt
+          if ! grep -E "^zh_CN[[:space:]]+[0-9]+[[:space:]]+0[[:space:]]" /tmp/stats.txt > /dev/null; then
+            echo "::error title=i18n incomplete::zh_CN must be at 100% (0 unfinished). See stats above."
+            echo "Fix: edit tools/fill_translations.py to add zh_CN entries, then run it."
+            exit 1
+          fi
+          echo "::notice::Gate B passed — zh_CN at 100%."
+
+          # Regression check: compare unfinished counts to main.
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin main:main_ref
+            git stash push --include-untracked -m "i18n_regression_check" || true
+            git checkout main_ref -- src/al_dic/i18n/source/ 2>/dev/null || true
+            python tools/i18n.py stats > /tmp/main_stats.txt 2>/dev/null || true
+            git checkout -- src/al_dic/i18n/source/ 2>/dev/null || true
+            git stash pop || true
+
+            python - <<'PY'
+import re, sys, pathlib
+def parse(path):
+    out = {}
+    if not pathlib.Path(path).is_file():
+        return out
+    for line in pathlib.Path(path).read_text().splitlines():
+        m = re.match(r"^(zh_CN|zh_TW|ja|ko|de|fr|es)\s+\d+\s+(\d+)", line)
+        if m:
+            out[m.group(1)] = int(m.group(2))
+    return out
+main = parse("/tmp/main_stats.txt")
+pr   = parse("/tmp/stats.txt")
+regressions = [(lang, main[lang], pr[lang]) for lang in main
+               if lang in pr and pr[lang] > main[lang]]
+if regressions:
+    print("::error title=i18n regression::Some languages have MORE unfinished entries than main:")
+    for lang, before, after in regressions:
+        print(f"  {lang}: {before} → {after} (+{after-before})")
+    print("Fix: add the missing entries to tools/fill_translations.py.")
+    sys.exit(1)
+print("::notice::No regression vs main for any language.")
+PY
+          fi
+
+      # ----------------------------------------------------------------
+      # Gate D: 8-language widget construction smoke test
+      # ----------------------------------------------------------------
+      - name: Gate D — 8-language widget smoke test
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          pytest tests/test_smoke_i18n_languages.py -q --tb=short

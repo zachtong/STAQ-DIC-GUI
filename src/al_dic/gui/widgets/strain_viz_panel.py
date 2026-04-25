@@ -61,19 +61,19 @@ class StrainVizPanel(QWidget):
         # --- Show on deformed (first: sets rendering mode before other controls) ---
         self._deformed_check = QCheckBox(self.tr("Show on deformed frame"))
         self._deformed_check.setChecked(True)
-        layout.addRow("Deformed", self._deformed_check)
+        layout.addRow(self.tr("Deformed"), self._deformed_check)
 
         # --- Colormap ---
         self._cmap_combo = QComboBox()
         for name in _COLORMAP_OPTIONS:
             self._cmap_combo.addItem(name)
         self._cmap_combo.setCurrentIndex(0)   # jet
-        layout.addRow("Colormap", self._cmap_combo)
+        layout.addRow(self.tr("Colormap"), self._cmap_combo)
 
         # --- Auto range ---
         self._auto_check = QCheckBox(self.tr("Auto"))
         self._auto_check.setChecked(True)
-        layout.addRow("Range", self._auto_check)
+        layout.addRow(self.tr("Range"), self._auto_check)
 
         # --- Manual Min / Max (disabled while auto is on) ---
         self._vmin_spin = QDoubleSpinBox()
@@ -105,7 +105,7 @@ class StrainVizPanel(QWidget):
         self._opacity_slider = QSlider(Qt.Orientation.Horizontal)
         self._opacity_slider.setRange(0, 100)
         self._opacity_slider.setValue(70)
-        layout.addRow("Opacity", self._opacity_slider)
+        layout.addRow(self.tr("Opacity"), self._opacity_slider)
 
         # Wire signals
         self._cmap_combo.currentIndexChanged.connect(self._emit_changed)

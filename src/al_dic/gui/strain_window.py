@@ -348,14 +348,18 @@ class StrainWindow(QMainWindow):
                 override=self._param_panel.get_override(),
             )
         except Exception as exc:
+            from al_dic.i18n import tr_args
             self._log(
-                f"Strain compute failed: {type(exc).__name__}: {exc}",
+                tr_args(
+                    self.tr("Strain compute failed: %1: %2"),
+                    type(exc).__name__, str(exc),
+                ),
                 "error",
             )
             return
         self._param_panel.mark_clean()
         self._stale_label.setText("")
-        self._log("Strain computation complete.", "success")
+        self._log(self.tr("Strain computation complete."), "success")
         self._export_strain_btn.setEnabled(True)
 
     # ------------------------------------------------------------------
@@ -365,7 +369,9 @@ class StrainWindow(QMainWindow):
     def _on_compute_clicked(self) -> None:
         if self._state.results is None:
             self._log(
-                "Strain window: no displacement results to post-process.",
+                self.tr(
+                    "Strain window: no displacement results to post-process."
+                ),
                 "warn",
             )
             return
@@ -401,7 +407,7 @@ class StrainWindow(QMainWindow):
         self._compute_btn.setEnabled(True)
         self._param_panel.mark_clean()
         self._stale_label.setText("")
-        self._log("Strain computation complete.", "success")
+        self._log(self.tr("Strain computation complete."), "success")
         self._export_strain_btn.setEnabled(True)
         QTimer.singleShot(
             2000,
@@ -412,10 +418,14 @@ class StrainWindow(QMainWindow):
         )
 
     def _on_strain_error(self, message: str) -> None:
+        from al_dic.i18n import tr_args
         self._strain_progress.setVisible(False)
         self._strain_progress_label.setVisible(False)
         self._compute_btn.setEnabled(True)
-        self._log(f"Strain compute failed: {message}", "error")
+        self._log(
+            tr_args(self.tr("Strain compute failed: %1"), message),
+            "error",
+        )
 
     def _on_export_strain(self) -> None:
         """Open the export dialog pre-filled with this window's viz settings."""
