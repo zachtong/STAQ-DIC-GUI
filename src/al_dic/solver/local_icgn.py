@@ -86,6 +86,7 @@ def local_icgn(
     para: DICPara,
     tol: float,
     n_workers: int | None = None,
+    ctx: LocalICGNContext | None = None,
 ) -> tuple[
     NDArray[np.float64],
     NDArray[np.float64],
@@ -110,13 +111,21 @@ def local_icgn(
         para: DIC parameters.
         tol: Convergence tolerance.
         n_workers: Unused (kept for API compatibility).
+        ctx: Optional pre-built context (caller-cached). When supplied, the
+            6-DOF reference precompute is reused instead of rebuilt — this
+            saves ~6 × N × winsize² × float64 of allocation per call when
+            multiple frames share a reference. Pipeline keys this cache on
+            (ref_idx, mesh_hash) the same way it does for the 2-DOF subpb1
+            cache. When None (default), behaviour is unchanged: build,
+            use once, drop.
 
     Returns:
         (U, F, local_time, conv_iter, bad_pt_num, mark_hole_strain)
     """
     t0 = time.perf_counter()
 
-    ctx = local_icgn_precompute(coordinates_fem, Df, f_img, para)
+    if ctx is None:
+        ctx = local_icgn_precompute(coordinates_fem, Df, f_img, para)
     U0_2d = U0.reshape(-1, 2)
 
     U_2d, F_2d, conv_iter = local_icgn_solve_subset(

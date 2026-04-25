@@ -16,6 +16,8 @@ MATLAB/Python differences:
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 from numpy.typing import NDArray
 from scipy.ndimage import binary_dilation
@@ -143,7 +145,16 @@ def _nan_neighbor_mean(field: NDArray[np.float64]) -> NDArray[np.float64]:
         padded[1:-1, 2:],    # right
     ], axis=0)
 
-    with np.errstate(all="ignore"):
+    # When a pixel has 4 NaN neighbors (deep in a NaN region during the
+    # first iteration of _iterative_fill), np.nanmean emits
+    # RuntimeWarning: "Mean of empty slice". The result there is still
+    # NaN (correct — caller fills it on the next iteration), but the
+    # warning floods user logs on large images. np.errstate doesn't
+    # cover RuntimeWarning, so we use catch_warnings explicitly.
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore",
+                                category=RuntimeWarning,
+                                message="Mean of empty slice")
         result = np.nanmean(neighbors, axis=0)
 
     return result

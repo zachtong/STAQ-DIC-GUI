@@ -62,6 +62,8 @@ al-dic = "al_dic.gui.app:main"
 dev = [
     "pytest>=7.0",
     "pytest-xdist>=3.0",
+    "hypothesis>=6.0",   # property-based fuzz tests (tests/test_fuzz_*.py)
+    "psutil>=5.9",        # RAM-availability guard in perf tests
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -95,6 +97,8 @@ addopts = "-v --tb=short"
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "perf: performance/throughput tests -- excluded from CI (runner CPU varies)",
+    "fuzz: hypothesis-based fuzz tests -- run pre-release locally only",
+    "large: large-data perf tests -- maintainer machine only (>1 GB RAM)",
 ]
 
 [tool.coverage.run]

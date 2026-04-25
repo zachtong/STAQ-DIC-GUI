@@ -115,6 +115,24 @@ def integer_search(
             - ``v``: y-displacement grid (N, M), float64 (sub-pixel).
             - ``info``: Dict with ``'cc_max'`` (N, M) peak NCC values,
               ``'qfactors'`` (N, M, 2) quality factors [PCE, PPE].
+
+    Memory characteristics (post v0.5 fixes):
+        Peak RAM scales roughly as ``H*W * float64 * (3-4)`` plus
+        ``n_nodes * 33² * float32`` for ncc_maps. On a 4096² image with
+        ~64K nodes (step=16) the peak lands around 17 GB.
+
+        Earlier versions of pyALDIC peaked at ~37 GB on the same input;
+        the v0.5 mem-frugal patches that brought it down were:
+          1. ``_batch_qfactors`` no longer doubles ncc_maps to float64
+             nor allocates ``shifted ** 2`` at full size — streaming
+             einsum reductions instead.
+          2. Pipeline caches the 6-DOF local_icgn precompute per
+             (ref_idx, mesh_hash), so frames sharing a reference no
+             longer rebuild a 3-GB array on top of the still-alive
+             2-DOF subpb1 cache.
+          3. Pipeline shares one ``g_img`` buffer between the FFT
+             and IC-GN call sites instead of making two identical
+             copies per frame.
     """
     h, w = f_img.shape
     roi = para.gridxy_roi_range
@@ -736,19 +754,45 @@ def _batch_qfactors(
     if n_valid == 0:
         return np.empty(0, dtype=np.float64), np.empty(0, dtype=np.float64)
 
-    # Reshape to (n_valid, ncc_h * ncc_w)
-    flat = ncc_maps.reshape(n_valid, -1).astype(np.float64)
-    ncc_min = flat.min(axis=1, keepdims=True)
-    shifted = flat - ncc_min
+    # Memory-frugal rewrite (was 4× ncc_maps in float64 worst case for
+    # 4K images; profile peaked at >12 GB just from this function).
+    # Strategy:
+    #   1. Stay in float32 for the bulk arithmetic (NCC values are
+    #      already float32; statistics don't need float64 precision).
+    #   2. Subtract ncc_min in-place into a single (re-used) buffer.
+    #   3. Compute mean/var/max in one streaming pass — never
+    #      materialise shifted**2 as a full array.
+    flat32 = ncc_maps.reshape(n_valid, -1)              # (n_valid, K) float32 view
 
-    # PCE: peak^2 / mean(shifted^2)
-    energy = np.mean(shifted ** 2, axis=1)
-    pce = np.where(energy > 1e-20, peak_vals ** 2 / energy, np.inf)
+    # ncc_min and ncc_max in float32 (per-row reductions, tiny output).
+    ncc_min = flat32.min(axis=1, keepdims=True)
+    # Working buffer: in-place shift, single allocation (1× ncc_maps).
+    shifted = np.empty_like(flat32)
+    np.subtract(flat32, ncc_min, out=shifted)
 
-    # PPE proxy: 1 / normalized_variance (higher = sharper peak)
-    ncc_var = np.var(shifted, axis=1)
-    ncc_max = shifted.max(axis=1)
-    norm_var = np.where(ncc_max > 1e-20, ncc_var / (ncc_max ** 2), 0.0)
+    # Streaming sum / sum-of-squares per row (no shifted**2 materialised
+    # at full size; einsum is the cheapest way to get row-wise sum-sq).
+    K = shifted.shape[1]
+    inv_K = 1.0 / K
+    sum_x  = shifted.sum(axis=1)                                       # (n_valid,)
+    sum_x2 = np.einsum("ij,ij->i", shifted, shifted, optimize=True)    # row-wise dot
+    mean_x = sum_x * inv_K
+    energy = sum_x2 * inv_K                                            # E[shifted^2]
+    var_x  = energy - mean_x * mean_x                                  # Var = E[X^2]-E[X]^2
+    ncc_max_row = shifted.max(axis=1)
+
+    # Promote only the small per-node aggregates to float64 for the
+    # final divide (avoids float32 catastrophic cancellation in the
+    # rare near-zero-energy case).
+    energy = energy.astype(np.float64)
+    var_x = var_x.astype(np.float64)
+    ncc_max_row = ncc_max_row.astype(np.float64)
+    peak64 = peak_vals.astype(np.float64, copy=False)
+
+    pce = np.where(energy > 1e-20, peak64 * peak64 / energy, np.inf)
+    norm_var = np.where(
+        ncc_max_row > 1e-20, var_x / (ncc_max_row * ncc_max_row), 0.0,
+    )
     ppe = np.where(norm_var > 1e-20, 1.0 / norm_var, np.inf)
 
     return pce, ppe

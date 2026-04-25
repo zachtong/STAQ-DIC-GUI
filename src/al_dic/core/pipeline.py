@@ -680,6 +680,16 @@ def run_aldic(
     # subpb1_cache[ref_idx] = precomputed subpb1 data (depends on ref image)
     subpb1_precompute_cache: dict[int, object] = {}
 
+    # local_icgn 6-DOF context cache, keyed by ref_idx + mesh hash. The
+    # 6-DOF precompute (ref_all, gx_all, gy_all, ... at every node) is
+    # heavy — at 4096² with step=16 it's ~3 GB. Without this cache,
+    # Section 4 rebuilds it every frame, and on frames 2+ the new 6-DOF
+    # cache stacks on top of the still-alive 2-DOF subpb1 cache,
+    # doubling the per-frame peak. With this cache, frames sharing a
+    # reference reuse the same arrays. Invalidated on ref switch +
+    # whenever the mesh changes (mid-run refinement).
+    icgn_ctx_cache: dict[tuple[int, int], object] = {}
+
     # Cross-frame FFT search-radius memo: once auto-expand grows the
     # search radius to cover a frame's actual displacement, subsequent
     # frames on the SAME reference reuse that radius as their starting
@@ -750,14 +760,14 @@ def run_aldic(
 
         # --- Load deformed image ---
         g_mask = masks[frame_idx].astype(np.float64)
-        # Raw (unmasked) image for FFT search: masked images zero out
-        # regions that differ between ref/deformed masks, which corrupts
-        # NCC more than the uniform-gray bubble interior does.
+        # FFT search and IC-GN both want the unmasked deformed frame
+        # (masking zeros corrupts NCC near ROI boundaries). They both
+        # treat the input as read-only — verified: integer_search casts
+        # to float32 internally, IC-GN samples via map_coordinates.
+        # Share a single copy instead of allocating two identical
+        # buffers per frame (saves ~134 MB per frame at 4096²).
         g_img_fft = img_normalized[frame_idx].copy()
-        # Unmasked deformed image for IC-GN: boundary nodes may have
-        # displaced positions outside the mask region, and sampling
-        # zeros there corrupts the IC-GN correlation.
-        g_img_icgn = img_normalized[frame_idx].copy()
+        g_img_icgn = g_img_fft
         para = replace(para, img_ref_mask=f_mask)
 
         # Per-frame mesh independence when refinement policy is active.
@@ -774,6 +784,11 @@ def run_aldic(
             prev_mask_hash = None  # Force re-trim from base_mesh
             # Invalidate subpb1 precompute cache since mesh will change
             subpb1_precompute_cache.pop(ref_idx, None)
+            # Drop any matching 6-DOF entries: the mesh hash changes
+            # after re-trim/refine, so stale entries become unreachable
+            # but still hold memory. Rebuild the cache from scratch.
+            for _k in [k for k in icgn_ctx_cache if k[0] == ref_idx]:
+                icgn_ctx_cache.pop(_k, None)
 
         # Force FFT for every frame when init_guess_mode == "fft"
         # (keep the mesh, only reset the initial guess).
@@ -1162,11 +1177,27 @@ def run_aldic(
         logger.info("--- Section 4 Start ---")
 
         tol = para.tol
+        # Look up cached 6-DOF context (matches the 2-DOF subpb1 cache
+        # pattern). Key includes a stable mesh fingerprint so mid-run
+        # refinement / re-trim invalidates the entry automatically.
+        from ..solver.local_icgn import local_icgn_precompute
+        _mesh_key = (
+            int(dic_mesh.coordinates_fem.shape[0]),
+            int(dic_mesh.elements_fem.shape[0]),
+        )
+        _icgn_key = (ref_idx, hash(_mesh_key))
+        icgn_ctx = icgn_ctx_cache.get(_icgn_key)
+        if icgn_ctx is None:
+            icgn_ctx = local_icgn_precompute(
+                dic_mesh.coordinates_fem, Df, f_img_raw, para,
+            )
+            icgn_ctx_cache[_icgn_key] = icgn_ctx
         (
             U_subpb1, F_subpb1, local_time, conv_iter_s4,
             bad_pt_num_s4, mark_hole_strain,
         ) = local_icgn(
             current_U0, dic_mesh.coordinates_fem, Df, f_img_raw, g_img_icgn, para, tol,
+            ctx=icgn_ctx,
         )
 
         assert not np.all(np.isnan(U_subpb1)), "Section 4: USubpb1 is entirely NaN"

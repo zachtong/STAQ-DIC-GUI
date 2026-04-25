@@ -62,6 +62,15 @@ Figma_design_files/
 # Sample datasets (large binary files)
 examples/
 
+# Validation / benchmark / fuzz datasets (downloaded or generated locally)
+datasets/
+reports/perf_*.csv
+reports/perf_*.png
+.hypothesis/
+
+# Maintainer task / planning docs (not public)
+tasks/
+
 # OS files
 Thumbs.db
 .DS_Store
