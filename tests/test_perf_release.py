@@ -251,6 +251,10 @@ PERF_CASES_LARGE = [
     ("xlarge_4096_3frames",  4096, 4096,  3, 31, 16, 16),
     ("long_seq_50frames",    512,  512,   50, 31, 16, 16),
     ("dense_1024_step4",     1024, 1024,  3, 31, 4,  16),  # 64x node count
+    # 5472×3648 OOM regression baseline: large image, normal search.
+    # Verifies basic large-image handling (no auto-expand needed for
+    # the synthetic small-shear case).
+    ("oom_repro_5472x3648",  3648, 5472, 3, 41, 16, 20),
 ]
 
 

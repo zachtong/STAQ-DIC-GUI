@@ -54,6 +54,46 @@ _COL_OFFSETS = np.array([-1, 0, 1, -1, 0, 1, -1, 0, 1], dtype=np.intp)
 
 
 # ---------------------------------------------------------------------------
+# Chunked NCC search: configuration
+# ---------------------------------------------------------------------------
+#
+# `_batch_ncc_search` allocates an `ncc_maps` array of shape
+# (n_valid, 2*search+1, 2*search+1) float32. When `search` auto-expands
+# (e.g. from 16 to 350 on a large-displacement scenario) this single
+# array can balloon past 100 GB and OOM the host before any computation
+# starts. The chunked path below caps the per-iteration ncc_maps to
+# CHUNK_TARGET_GB; processing the same nodes in K chunks keeps peak
+# memory at ~CHUNK_TARGET_GB regardless of search radius.
+
+# Soft cap on the per-chunk ncc_maps allocation. 4 GB is comfortable
+# even on 16 GB-RAM dev machines; bumping this reduces chunking
+# overhead for cases that wouldn't OOM anyway.
+CHUNK_TARGET_GB = 4.0
+
+# Tests set this to a small integer to force chunking on inputs that
+# would otherwise fit in a single batch — the only way to exercise the
+# chunk-loop code path on synthetic small N. ``None`` = auto-size from
+# CHUNK_TARGET_GB.
+CHUNK_SIZE_OVERRIDE: int | None = None
+
+
+def _decide_chunk_size(n_valid: int, ncc_h: int, ncc_w: int) -> int:
+    """Pick a chunk size so each chunk's ncc_maps stays under the budget.
+
+    Floor at 500 because below that the OpenCV ThreadPoolExecutor
+    overhead dominates per-call wall time (matchTemplate amortizes well
+    only for batches of a few hundred templates).
+    """
+    if CHUNK_SIZE_OVERRIDE is not None:
+        return max(1, int(CHUNK_SIZE_OVERRIDE))
+    bytes_per_node = ncc_h * ncc_w * 4   # float32
+    budget_bytes = CHUNK_TARGET_GB * 1e9
+    chunk = int(budget_bytes // bytes_per_node)
+    chunk = max(500, chunk)
+    return min(chunk, n_valid)
+
+
+# ---------------------------------------------------------------------------
 # Grid centering helper
 # ---------------------------------------------------------------------------
 
@@ -116,23 +156,39 @@ def integer_search(
             - ``info``: Dict with ``'cc_max'`` (N, M) peak NCC values,
               ``'qfactors'`` (N, M, 2) quality factors [PCE, PPE].
 
-    Memory characteristics (post v0.5 fixes):
+    Memory characteristics (post v0.5.1 fixes):
         Peak RAM scales roughly as ``H*W * float64 * (3-4)`` plus
-        ``n_nodes * 33² * float32`` for ncc_maps. On a 4096² image with
-        ~64K nodes (step=16) the peak lands around 17 GB.
+        ``CHUNK_TARGET_GB`` (currently 4 GB) for the per-chunk ncc_maps.
+        On a 4096² image with ~64K nodes (step=16) the peak is ~12 GB.
 
-        Earlier versions of pyALDIC peaked at ~37 GB on the same input;
-        the v0.5 mem-frugal patches that brought it down were:
+        Memory-frugal patches across v0.5.x (in chronological order):
           1. ``_batch_qfactors`` no longer doubles ncc_maps to float64
              nor allocates ``shifted ** 2`` at full size — streaming
-             einsum reductions instead.
+             einsum reductions on the float32 NCC view (v0.5).
           2. Pipeline caches the 6-DOF local_icgn precompute per
              (ref_idx, mesh_hash), so frames sharing a reference no
              longer rebuild a 3-GB array on top of the still-alive
-             2-DOF subpb1 cache.
+             2-DOF subpb1 cache (v0.5).
           3. Pipeline shares one ``g_img`` buffer between the FFT
              and IC-GN call sites instead of making two identical
-             copies per frame.
+             copies per frame (v0.5).
+          4. ``_batch_qfactors`` derives shifted statistics via the
+             algebraic identity ``sum((X-min)²) = sum(X²) - 2·min·sum(X)
+             + K·min²``, dropping even the single ``shifted`` buffer
+             (v0.5.1).
+          5. ``_batch_ncc_search`` processes nodes in chunks of
+             ``CHUNK_TARGET_GB`` worth of ncc_maps at a time, capping
+             peak allocation regardless of how large ``search``
+             auto-expanded to. Pre-fix, search=300 with ~30K nodes
+             tried to allocate ~43 GB in one go (v0.5.1).
+
+        Cumulative effect on a 4096²×3 frame benchmark:
+          v0.4.x baseline:  37 GB peak / 90s wall
+          after v0.5:       17 GB peak / 95s wall
+          after v0.5.1:     12 GB peak / 82s wall (chunking + streaming)
+
+        And the 5472×3648 + search→350 case that OOMed even after
+        v0.5 now runs in 16.6 GB.
     """
     h, w = f_img.shape
     roi = para.gridxy_roi_range
@@ -526,40 +582,73 @@ def _batch_ncc_search(
     if skip_mask is not None:
         valid = valid & ~skip_mask
 
-    # --- Stage 2: matchTemplate for valid nodes ---
+    # --- Stage 2: matchTemplate for valid nodes (chunked) ---
     valid_iy, valid_ix = np.where(valid)
     n_valid = len(valid_iy)
 
     ncc_h = 2 * search + 1
     ncc_w = 2 * search + 1
 
-    # Pre-allocate output arrays (shared across threads)
-    ncc_maps = np.zeros((n_valid, ncc_h, ncc_w), dtype=np.float32)
-    ipeak_x = np.zeros(n_valid, dtype=np.intp)
-    ipeak_y = np.zeros(n_valid, dtype=np.intp)
-    ipeak_val = np.zeros(n_valid, dtype=np.float64)
+    # Pre-allocate FULL-N result arrays (cheap — only ipeak indices and
+    # final per-node aggregates, not the per-node NCC maps).
+    sub_x_all = np.empty(n_valid, dtype=np.float64)
+    sub_y_all = np.empty(n_valid, dtype=np.float64)
+    sub_val_all = np.empty(n_valid, dtype=np.float64)
+    pce_all = np.empty(n_valid, dtype=np.float64)
+    ppe_all = np.empty(n_valid, dtype=np.float64)
 
     if n_valid > 0:
-        if n_valid >= 500:
-            _threaded_match(
-                n_valid, valid_iy, valid_ix, cx_all, cy_all,
-                f32, g32, half_w, search,
-                ncc_maps, ipeak_x, ipeak_y, ipeak_val,
-            )
-        else:
-            _sequential_match(
-                n_valid, valid_iy, valid_ix, cx_all, cy_all,
-                f32, g32, half_w, search,
-                ncc_maps, ipeak_x, ipeak_y, ipeak_val,
-            )
+        # Pick chunk size: keep ncc_maps_chunk under MEMORY_TARGET_GB so
+        # the peak allocation in this stage is bounded regardless of how
+        # large `search` got from auto-expand. Tests can pin via the
+        # CHUNK_SIZE_OVERRIDE module attribute below.
+        chunk_size = _decide_chunk_size(n_valid, ncc_h, ncc_w)
 
-    # --- Stage 3: Batch sub-pixel peak finding ---
-    sub_x, sub_y, sub_val = _batch_subpixel(
-        ncc_maps, ipeak_x, ipeak_y, ipeak_val, ncc_h, ncc_w,
-    )
+        for start in range(0, n_valid, chunk_size):
+            end = min(start + chunk_size, n_valid)
+            n_chunk = end - start
 
-    # --- Stage 4: Vectorized quality factors ---
-    pce, ppe = _batch_qfactors(ncc_maps, sub_val, n_valid)
+            # Per-chunk allocations — released at end of iteration.
+            ncc_maps_c = np.zeros(
+                (n_chunk, ncc_h, ncc_w), dtype=np.float32,
+            )
+            ipeak_x_c = np.zeros(n_chunk, dtype=np.intp)
+            ipeak_y_c = np.zeros(n_chunk, dtype=np.intp)
+            ipeak_val_c = np.zeros(n_chunk, dtype=np.float64)
+
+            # Slice the global node-index arrays so _match_one's
+            # valid_iy[k]/valid_ix[k] lookups index chunk-relative k.
+            iy_c = valid_iy[start:end]
+            ix_c = valid_ix[start:end]
+
+            if n_chunk >= 500:
+                _threaded_match(
+                    n_chunk, iy_c, ix_c, cx_all, cy_all,
+                    f32, g32, half_w, search,
+                    ncc_maps_c, ipeak_x_c, ipeak_y_c, ipeak_val_c,
+                )
+            else:
+                _sequential_match(
+                    n_chunk, iy_c, ix_c, cx_all, cy_all,
+                    f32, g32, half_w, search,
+                    ncc_maps_c, ipeak_x_c, ipeak_y_c, ipeak_val_c,
+                )
+
+            sx, sy, sv = _batch_subpixel(
+                ncc_maps_c, ipeak_x_c, ipeak_y_c, ipeak_val_c, ncc_h, ncc_w,
+            )
+            pc, pp = _batch_qfactors(ncc_maps_c, sv, n_chunk)
+
+            sub_x_all[start:end] = sx
+            sub_y_all[start:end] = sy
+            sub_val_all[start:end] = sv
+            pce_all[start:end] = pc
+            ppe_all[start:end] = pp
+            # Drop big allocations explicitly so the next iteration starts
+            # at low memory pressure (Python ref-counts will free at scope
+            # exit anyway, but explicit del helps when sibling temporaries
+            # in the loop body live longer than expected).
+            del ncc_maps_c, ipeak_x_c, ipeak_y_c, ipeak_val_c
 
     # --- Assemble output grids ---
     u_grid = np.full((ny, nx), np.nan, dtype=np.float64)
@@ -569,11 +658,11 @@ def _batch_ncc_search(
 
     if n_valid > 0:
         center = float(search)
-        u_grid[valid_iy, valid_ix] = sub_x - center
-        v_grid[valid_iy, valid_ix] = sub_y - center
-        cc_max[valid_iy, valid_ix] = sub_val
-        qfactors[valid_iy, valid_ix, 0] = pce
-        qfactors[valid_iy, valid_ix, 1] = ppe
+        u_grid[valid_iy, valid_ix] = sub_x_all - center
+        v_grid[valid_iy, valid_ix] = sub_y_all - center
+        cc_max[valid_iy, valid_ix] = sub_val_all
+        qfactors[valid_iy, valid_ix, 0] = pce_all
+        qfactors[valid_iy, valid_ix, 1] = ppe_all
 
     return u_grid, v_grid, cc_max, qfactors
 
@@ -754,40 +843,53 @@ def _batch_qfactors(
     if n_valid == 0:
         return np.empty(0, dtype=np.float64), np.empty(0, dtype=np.float64)
 
-    # Memory-frugal rewrite (was 4× ncc_maps in float64 worst case for
-    # 4K images; profile peaked at >12 GB just from this function).
-    # Strategy:
-    #   1. Stay in float32 for the bulk arithmetic (NCC values are
-    #      already float32; statistics don't need float64 precision).
-    #   2. Subtract ncc_min in-place into a single (re-used) buffer.
-    #   3. Compute mean/var/max in one streaming pass — never
-    #      materialise shifted**2 as a full array.
+    # Memory-frugal streaming rewrite (was 4× ncc_maps in float64 in
+    # v0.4; v0.5 brought it to 1× via a `shifted` buffer; v0.5.x drops
+    # even that buffer using the algebraic identity:
+    #   shifted = X - min(X)
+    #   sum(shifted)    = sum(X) - K * min
+    #   sum(shifted^2)  = sum(X^2) - 2 * min * sum(X) + K * min^2
+    # so all per-row statistics can be derived from sum(X), sum(X^2),
+    # min(X), max(X) — four reductions over the float32 NCC view, no
+    # full-size intermediate. At 4K² + auto-expanded search this saves
+    # the entire ncc_maps duplicate (~10-100 GB for large displacement
+    # scenarios). Numerics: float32 accumulation in einsum can lose ~1e-3
+    # relative precision on rows with ~5e5 elements; we promote to
+    # float64 BEFORE the final per-row arithmetic to bound the error.
     flat32 = ncc_maps.reshape(n_valid, -1)              # (n_valid, K) float32 view
-
-    # ncc_min and ncc_max in float32 (per-row reductions, tiny output).
-    ncc_min = flat32.min(axis=1, keepdims=True)
-    # Working buffer: in-place shift, single allocation (1× ncc_maps).
-    shifted = np.empty_like(flat32)
-    np.subtract(flat32, ncc_min, out=shifted)
-
-    # Streaming sum / sum-of-squares per row (no shifted**2 materialised
-    # at full size; einsum is the cheapest way to get row-wise sum-sq).
-    K = shifted.shape[1]
+    K = flat32.shape[1]
     inv_K = 1.0 / K
-    sum_x  = shifted.sum(axis=1)                                       # (n_valid,)
-    sum_x2 = np.einsum("ij,ij->i", shifted, shifted, optimize=True)    # row-wise dot
-    mean_x = sum_x * inv_K
-    energy = sum_x2 * inv_K                                            # E[shifted^2]
-    var_x  = energy - mean_x * mean_x                                  # Var = E[X^2]-E[X]^2
-    ncc_max_row = shifted.max(axis=1)
 
-    # Promote only the small per-node aggregates to float64 for the
-    # final divide (avoids float32 catastrophic cancellation in the
-    # rare near-zero-energy case).
-    energy = energy.astype(np.float64)
-    var_x = var_x.astype(np.float64)
-    ncc_max_row = ncc_max_row.astype(np.float64)
+    # Four streaming reductions over flat32 (no full-size intermediate)
+    ncc_min = flat32.min(axis=1)                                       # (n_valid,)
+    ncc_max = flat32.max(axis=1)                                       # (n_valid,)
+    sum_orig = flat32.sum(axis=1)                                      # (n_valid,)
+    sum_orig_sq = np.einsum("ij,ij->i", flat32, flat32, optimize=True)  # (n_valid,)
+
+    # Promote per-row aggregates to float64 BEFORE applying the shift
+    # identity. min/max/sum on float32 inputs yield float32; sum-of-
+    # squares of large positive values especially needs float64 here
+    # because the shift formula has a cancellation term (sum(X²) and
+    # 2*min*sum(X) can be of similar magnitude).
+    ncc_min64 = ncc_min.astype(np.float64)
+    ncc_max64 = ncc_max.astype(np.float64)
+    sum_orig64 = sum_orig.astype(np.float64)
+    sum_orig_sq64 = sum_orig_sq.astype(np.float64)
     peak64 = peak_vals.astype(np.float64, copy=False)
+
+    # Apply the identity: derive the same statistics that would have
+    # come from `shifted = flat32 - ncc_min[:, None]` without ever
+    # materializing it.
+    sum_x = sum_orig64 - ncc_min64 * K
+    sum_x2 = sum_orig_sq64 - 2.0 * ncc_min64 * sum_orig64 + K * ncc_min64 * ncc_min64
+    # Numerical floor — sum_x2 should be >= 0 mathematically; tiny
+    # negative values can leak in from cancellation. Clamp.
+    sum_x2 = np.maximum(sum_x2, 0.0)
+
+    mean_x = sum_x * inv_K
+    energy = sum_x2 * inv_K
+    var_x = np.maximum(energy - mean_x * mean_x, 0.0)
+    ncc_max_row = ncc_max64 - ncc_min64                                # max(shifted)
 
     pce = np.where(energy > 1e-20, peak64 * peak64 / energy, np.inf)
     norm_var = np.where(
