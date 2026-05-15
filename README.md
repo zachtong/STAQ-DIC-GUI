@@ -149,6 +149,8 @@ The AL-DIC method was also independently evaluated in the community benchmark **
 
 †**Solver Time** = IC-GN + ADMM (3 iterations), excluding precomputation. **Pipeline FPS** = full per-frame pipeline (FFT init + IC-GN + ADMM), excluding strain. Numba JIT, post-warmup; first run adds ~0.5 s for compilation. **Using Local DIC mode (no ADMM) is ~3× faster.**
 
+**Memory.** Peak RAM at 4096² × 3 frames is ~12 GB (down from 37 GB in v0.4.x). A chunked NCC search bounds the working buffer at ~4 GB per chunk, preventing out-of-memory failures at large search ranges; tested up to 5472 × 3648 with search range = 350 px.
+
 ---
 
 ## Quick Start
@@ -242,7 +244,7 @@ src/al_dic/
 ├── strain/         Strain computation, deformation gradient, smoothing
 └── utils/          Interpolation, outlier detection, mask warping
 
-tests/              86 test files, 800+ tests
+tests/              106 test files, 1300+ tests
 ```
 
 </details>
