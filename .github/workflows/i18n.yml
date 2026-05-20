@@ -88,6 +88,11 @@ jobs:
           echo "::notice::Gate B passed — zh_CN at 100%."
 
           # Regression check: compare unfinished counts to main.
+          # The Python logic lives in tools/ci_check_i18n_regression.py
+          # because YAML block scalars require every line to match the
+          # run-step base indent, but Python module-level statements
+          # cannot carry leading whitespace — an inline heredoc forces
+          # the two rules to collide.
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             git fetch origin main:main_ref
             git stash push --include-untracked -m "i18n_regression_check" || true
@@ -95,30 +100,7 @@ jobs:
             python tools/i18n.py stats > /tmp/main_stats.txt 2>/dev/null || true
             git checkout -- src/al_dic/i18n/source/ 2>/dev/null || true
             git stash pop || true
-
-            python - <<'PY'
-import re, sys, pathlib
-def parse(path):
-    out = {}
-    if not pathlib.Path(path).is_file():
-        return out
-    for line in pathlib.Path(path).read_text().splitlines():
-        m = re.match(r"^(zh_CN|zh_TW|ja|ko|de|fr|es)\s+\d+\s+(\d+)", line)
-        if m:
-            out[m.group(1)] = int(m.group(2))
-    return out
-main = parse("/tmp/main_stats.txt")
-pr   = parse("/tmp/stats.txt")
-regressions = [(lang, main[lang], pr[lang]) for lang in main
-               if lang in pr and pr[lang] > main[lang]]
-if regressions:
-    print("::error title=i18n regression::Some languages have MORE unfinished entries than main:")
-    for lang, before, after in regressions:
-        print(f"  {lang}: {before} → {after} (+{after-before})")
-    print("Fix: add the missing entries to tools/fill_translations.py.")
-    sys.exit(1)
-print("::notice::No regression vs main for any language.")
-PY
+            python tools/ci_check_i18n_regression.py /tmp/main_stats.txt /tmp/stats.txt
           fi
 
       # ----------------------------------------------------------------
