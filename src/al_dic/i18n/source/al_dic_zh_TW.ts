@@ -53,112 +53,112 @@ Only relevant for the FFT init-guess mode.</source>
 <context>
     <name>BatchImportDialog</name>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="62"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="365"/>
         <source>Batch Import Region of Interest Masks</source>
         <translation>批量匯入感興趣區域掩模</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="99"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="405"/>
         <source>Mask Folder:</source>
         <translation>掩模資料夾：</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="100"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="406"/>
         <source>(none)</source>
         <translation>（無）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="105"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="411"/>
         <source>Browse...</source>
         <translation>瀏覽…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="124"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="430"/>
         <source>Available Masks</source>
         <translation>可用掩模</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="131"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="441"/>
         <source>Auto-Match by Name</source>
         <translation>按檔案名自動匹配</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="133"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="443"/>
         <source>Match mask files to frames by number in filename</source>
         <translation>根據檔案名中的數字把掩模檔案匹配到對應幀</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="137"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="447"/>
         <source>Assign Sequential</source>
         <translation>順序分配</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="139"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="449"/>
         <source>Assign masks to frames in order starting from frame 0</source>
         <translation>從第 0 幀起按順序把掩模分配給各幀</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="147"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="457"/>
         <source>Frame Assignments</source>
         <translation>幀分配</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="150"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="460"/>
         <source>Frame</source>
         <translation>幀</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="150"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="460"/>
         <source>Image</source>
         <translation>影像</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="150"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="460"/>
         <source>Mask</source>
         <translation>掩模</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="160"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="471"/>
         <source>Assign Selected -&gt;</source>
         <translation>分配所選 -&gt;</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="162"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="473"/>
         <source>Pair selected mask(s) with selected frame(s)</source>
         <translation>將所選掩模與所選幀配對</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="166"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="477"/>
         <source>Clear All</source>
         <translation>全部清除</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="207"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="523"/>
         <source>Select Mask Folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="260"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="576"/>
         <source>Failed to read mask file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="265"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="581"/>
         <source>Mismatched shape: %1×%2 (expected %3×%4)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="289"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="659"/>
         <source>%n mask(s) have mismatched sizes and are disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="342"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="712"/>
         <source>Invalid assignment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="347"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="717"/>
         <source>A frame can only have one mask. Select exactly one mask, or select multiple frames to assign one mask to many.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2128,6 +2128,89 @@ or Browse</source>
         <location filename="../../gui/panels/left_sidebar.py" line="130"/>
         <source>Select Image Folder</source>
         <translation>選擇影像資料夾</translation>
+    </message>
+</context>
+<context>
+    <name>_MaskPreviewPanel</name>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="130"/>
+        <source>Preview</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="134"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="260"/>
+        <source>(no image)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="154"/>
+        <source>Image only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="155"/>
+        <source>Image + Mask</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="156"/>
+        <source>Mask only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="159"/>
+        <source>View:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="165"/>
+        <source>Alpha:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="173"/>
+        <source>Blue</source>
+        <comment>Mask overlay color</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="177"/>
+        <source>Red</source>
+        <comment>Mask overlay color</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="181"/>
+        <source>Green</source>
+        <comment>Mask overlay color</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="185"/>
+        <source>Yellow</source>
+        <comment>Mask overlay color</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="189"/>
+        <source>Mask color:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="267"/>
+        <source>No mask assigned</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="272"/>
+        <source>Frame %1 — %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="287"/>
+        <source>Failed to load image</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

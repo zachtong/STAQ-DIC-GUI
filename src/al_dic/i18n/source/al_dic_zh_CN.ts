@@ -53,112 +53,112 @@ Only relevant for the FFT init-guess mode.</source>
 <context>
     <name>BatchImportDialog</name>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="62"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="365"/>
         <source>Batch Import Region of Interest Masks</source>
         <translation>批量导入感兴趣区域掩模</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="99"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="405"/>
         <source>Mask Folder:</source>
         <translation>掩模文件夹：</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="100"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="406"/>
         <source>(none)</source>
         <translation>（无）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="105"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="411"/>
         <source>Browse...</source>
         <translation>浏览…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="124"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="430"/>
         <source>Available Masks</source>
         <translation>可用掩模</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="131"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="441"/>
         <source>Auto-Match by Name</source>
         <translation>按文件名自动匹配</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="133"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="443"/>
         <source>Match mask files to frames by number in filename</source>
         <translation>根据文件名中的数字把掩模文件匹配到对应帧</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="137"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="447"/>
         <source>Assign Sequential</source>
         <translation>顺序分配</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="139"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="449"/>
         <source>Assign masks to frames in order starting from frame 0</source>
         <translation>从第 0 帧起按顺序把掩模分配给各帧</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="147"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="457"/>
         <source>Frame Assignments</source>
         <translation>帧分配</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="150"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="460"/>
         <source>Frame</source>
         <translation>帧</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="150"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="460"/>
         <source>Image</source>
         <translation>图像</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="150"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="460"/>
         <source>Mask</source>
         <translation>掩模</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="160"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="471"/>
         <source>Assign Selected -&gt;</source>
         <translation>分配所选 -&gt;</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="162"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="473"/>
         <source>Pair selected mask(s) with selected frame(s)</source>
         <translation>将所选掩模与所选帧配对</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="166"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="477"/>
         <source>Clear All</source>
         <translation>全部清除</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="207"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="523"/>
         <source>Select Mask Folder</source>
         <translation>选择掩模文件夹</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="260"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="576"/>
         <source>Failed to read mask file.</source>
         <translation>无法读取掩模文件。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="265"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="581"/>
         <source>Mismatched shape: %1×%2 (expected %3×%4)</source>
         <translation>尺寸不匹配：%1×%2（期望 %3×%4）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="289"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="659"/>
         <source>%n mask(s) have mismatched sizes and are disabled.</source>
         <translation>%n 个掩模尺寸不匹配，已禁用。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="342"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="712"/>
         <source>Invalid assignment</source>
         <translation>无效的分配</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="347"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="717"/>
         <source>A frame can only have one mask. Select exactly one mask, or select multiple frames to assign one mask to many.</source>
         <translation>一个帧只能对应一个掩模。请选择恰好一个掩模，或者选择多个帧以把同一个掩模应用到多个帧。</translation>
     </message>
@@ -2128,6 +2128,89 @@ or Browse</source>
         <location filename="../../gui/panels/left_sidebar.py" line="130"/>
         <source>Select Image Folder</source>
         <translation>选择图像文件夹</translation>
+    </message>
+</context>
+<context>
+    <name>_MaskPreviewPanel</name>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="130"/>
+        <source>Preview</source>
+        <translation>预览</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="134"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="260"/>
+        <source>(no image)</source>
+        <translation>（无图像）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="154"/>
+        <source>Image only</source>
+        <translation>仅图像</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="155"/>
+        <source>Image + Mask</source>
+        <translation>图像 + 掩模</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="156"/>
+        <source>Mask only</source>
+        <translation>仅掩模</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="159"/>
+        <source>View:</source>
+        <translation>视图：</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="165"/>
+        <source>Alpha:</source>
+        <translation>透明度：</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="173"/>
+        <source>Blue</source>
+        <comment>Mask overlay color</comment>
+        <translation>蓝色</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="177"/>
+        <source>Red</source>
+        <comment>Mask overlay color</comment>
+        <translation>红色</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="181"/>
+        <source>Green</source>
+        <comment>Mask overlay color</comment>
+        <translation>绿色</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="185"/>
+        <source>Yellow</source>
+        <comment>Mask overlay color</comment>
+        <translation>黄色</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="189"/>
+        <source>Mask color:</source>
+        <translation>掩模颜色：</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="267"/>
+        <source>No mask assigned</source>
+        <translation>未分配掩模</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="272"/>
+        <source>Frame %1 — %2</source>
+        <translation>帧 %1 — %2</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="287"/>
+        <source>Failed to load image</source>
+        <translation>无法加载图像</translation>
     </message>
 </context>
 </TS>

@@ -786,6 +786,54 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
     "  Imported mask for frame %1": {
         "zh_CN": "  已导入帧 %1 的掩模",
     },
+
+    # ========== BatchImportDialog — live mask preview panel ==========
+    # zh_CN only; non-zh_CN locales await contributor translation.
+    "Preview": {
+        "zh_CN": "预览",
+    },
+    "(no image)": {
+        "zh_CN": "（无图像）",
+    },
+    "Image only": {
+        "zh_CN": "仅图像",
+    },
+    "Image + Mask": {
+        "zh_CN": "图像 + 掩模",
+    },
+    "Mask only": {
+        "zh_CN": "仅掩模",
+    },
+    "View:": {
+        "zh_CN": "视图：",
+    },
+    "Alpha:": {
+        "zh_CN": "透明度：",
+    },
+    "Mask color:": {
+        "zh_CN": "掩模颜色：",
+    },
+    "No mask assigned": {
+        "zh_CN": "未分配掩模",
+    },
+    "Frame %1 — %2": {
+        "zh_CN": "帧 %1 — %2",
+    },
+    "Failed to load image": {
+        "zh_CN": "无法加载图像",
+    },
+    "Blue": {
+        "zh_CN": "蓝色",
+    },
+    "Red": {
+        "zh_CN": "红色",
+    },
+    "Green": {
+        "zh_CN": "绿色",
+    },
+    "Yellow": {
+        "zh_CN": "黄色",
+    },
 }
 
 
