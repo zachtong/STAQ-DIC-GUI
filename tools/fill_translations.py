@@ -762,6 +762,30 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "fr":    "Fort (σ = 2 × step) ⚠",
         "es":    "Fuerte (σ = 2 × step) ⚠",
     },
+
+    # ========== BatchImportDialog — size pre-scan & 1:N assignment ==========
+    # zh_CN only; other languages await contributor translation per the
+    # project i18n contract (no AI-translation for non-zh_CN locales).
+    "Select Mask Folder": {
+        "zh_CN": "选择掩模文件夹",
+    },
+    "Failed to read mask file.": {
+        "zh_CN": "无法读取掩模文件。",
+    },
+    "Mismatched shape: %1×%2 (expected %3×%4)": {
+        "zh_CN": "尺寸不匹配：%1×%2（期望 %3×%4）",
+    },
+    "Invalid assignment": {
+        "zh_CN": "无效的分配",
+    },
+    "A frame can only have one mask. Select exactly one mask, or "
+    "select multiple frames to assign one mask to many.": {
+        "zh_CN": "一个帧只能对应一个掩模。请选择恰好一个掩模，"
+                 "或者选择多个帧以把同一个掩模应用到多个帧。",
+    },
+    "  Imported mask for frame %1": {
+        "zh_CN": "  已导入帧 %1 的掩模",
+    },
 }
 
 
@@ -849,6 +873,15 @@ NUMERUS_TRANSLATIONS: dict[str, dict[str, tuple[str, ...]]] = {
                   "%n animations exportées → %1"),
         "es":    ("Exportada %n animación → %1",
                   "Exportadas %n animaciones → %1"),
+    },
+
+    # zh_CN-only numerus entries for batch-import dialog (size pre-scan
+    # warning + completion log). Other languages await contributors.
+    "%n mask(s) have mismatched sizes and are disabled.": {
+        "zh_CN": ("%n 个掩模尺寸不匹配，已禁用。",),
+    },
+    "Batch import: %n mask(s) loaded": {
+        "zh_CN": ("批量导入：已加载 %n 个掩模",),
     },
 }
 

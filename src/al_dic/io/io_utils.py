@@ -78,6 +78,20 @@ def _to_uint8(img: NDArray) -> NDArray[np.uint8]:
     return (img.astype(np.float64) / info.max * 255).astype(np.uint8)
 
 
+def _threshold_mask(gray_u8: NDArray[np.uint8]) -> NDArray[np.bool_]:
+    """Binarize a uint8 mask supporting both 0/1 and 0/255 encodings.
+
+    Detects the encoding by the maximum pixel value after uint8
+    conversion:
+      * ``max <= 1``  -> treat as 0/1 mask, binarize via ``> 0``.
+      * ``max  > 1``  -> treat as 0/255 (or grayscale) mask,
+                         binarize via ``> 127``.
+    """
+    if gray_u8.max() <= 1:
+        return gray_u8 > 0
+    return gray_u8 > 127
+
+
 # ──────────────────────────────────────────────────────────────────
 # Public API
 # ──────────────────────────────────────────────────────────────────
@@ -122,7 +136,9 @@ def load_masks(
     """Load binary masks from a directory.
 
     Masks are read at their native bit depth, converted to grayscale
-    uint8, and thresholded at 127 (midpoint).
+    uint8, then binarized.  Two encodings are supported (auto-detected):
+      * 0/1 masks (e.g. NumPy bool saved as uint8) -> ``> 0``.
+      * 0/255 masks (standard B&W) -> ``> 127``.
 
     Args:
         mask_dir: Directory containing mask images.
@@ -143,7 +159,7 @@ def load_masks(
         raw = _read_unchanged(p)
         gray = _to_grayscale(raw)
         gray_u8 = _to_uint8(gray)
-        masks.append(gray_u8 > 127)
+        masks.append(_threshold_mask(gray_u8))
     return masks
 
 
@@ -154,7 +170,7 @@ def read_mask_as_bool(
     """Read a single mask image as a boolean array.
 
     Supports all bit depths and file formats.  Unicode-safe on Windows.
-    Pixels brighter than 50% become True.
+    Auto-detects 0/1 vs 0/255 encoding (see :func:`_threshold_mask`).
 
     Args:
         path: Path to the mask image file.
@@ -177,4 +193,4 @@ def read_mask_as_bool(
             (target_shape[1], target_shape[0]),
             interpolation=cv2.INTER_NEAREST,
         )
-    return gray_u8 > 127
+    return _threshold_mask(gray_u8)

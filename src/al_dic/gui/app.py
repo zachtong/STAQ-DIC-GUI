@@ -705,27 +705,65 @@ class MainWindow(QMainWindow):
             state.log_message.emit(self.tr("Load images first."), "warn")
             return
 
-        from al_dic.gui.dialogs.batch_import_dialog import BatchImportDialog
-
-        dialog = BatchImportDialog(state.image_files, parent=self)
-        if dialog.exec() != BatchImportDialog.DialogCode.Accepted:
-            return
-
         # Ensure ROI controller is initialized so we can get image dimensions
         if self._roi_ctrl is None:
             self._init_roi_controller()
         if self._roi_ctrl is None:
             return
-
         img_shape = self._roi_ctrl.shape
+
+        # Determine which frames will actually consume a mask in the
+        # pipeline: only the reference-frame set under the current
+        # tracking schedule.  Non-reference frames are hidden from the
+        # dialog because the solver never reads their masks (see
+        # pipeline.py — only `masks[ref_idx]` enters `para.img_ref_mask`).
+        from al_dic.core.data_structures import FrameSchedule
+        n_images = len(state.image_files)
+        if state.tracking_mode == "accumulative" or n_images < 2:
+            required_frames = {0}
+        else:
+            if state.inc_ref_mode == "every_n":
+                schedule = FrameSchedule.from_every_n(
+                    state.inc_ref_interval, n_images
+                )
+            elif state.inc_ref_mode == "custom":
+                schedule = FrameSchedule.from_custom(
+                    state.inc_custom_refs, n_images
+                )
+            else:  # every_frame (default) or unknown
+                schedule = FrameSchedule.from_mode("incremental", n_images)
+            required_frames = schedule.ref_frame_set
+
+        from al_dic.gui.dialogs.batch_import_dialog import BatchImportDialog
+        from al_dic.i18n import tr_args
+
+        dialog = BatchImportDialog(
+            state.image_files,
+            parent=self,
+            required_frames=required_frames,
+            img_shape=img_shape,
+        )
+        if dialog.exec() != BatchImportDialog.DialogCode.Accepted:
+            return
+
         masks = dialog.load_masks(img_shape)
         for frame_idx, mask in masks.items():
             state.per_frame_rois[frame_idx] = mask
             state.log_message.emit(
-                f"  Imported mask for frame {frame_idx}", "info"
+                tr_args(
+                    self.tr("  Imported mask for frame %1"), frame_idx
+                ),
+                "info",
             )
+        n_masks = len(masks)
         state.log_message.emit(
-            f"Batch import: {len(masks)} masks loaded", "success"
+            QCoreApplication.translate(
+                "MainWindow",
+                "Batch import: %n mask(s) loaded",
+                "",
+                n_masks,
+            ),
+            "success",
         )
         state.roi_changed.emit()
 

@@ -40,12 +40,12 @@ Nur relevant für den FFT-Startschätzungsmodus.</translation>
 <context>
     <name>App</name>
     <message>
-        <location filename="../../gui/app.py" line="759"/>
+        <location filename="../../gui/app.py" line="797"/>
         <source>Imported Region of Interest for %n frame(s)</source>
         <translation>Region of Interest für %n Bilder importiert</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="771"/>
+        <location filename="../../gui/app.py" line="809"/>
         <source>Run DIC first -- no displacement results to post-process.</source>
         <translation>DIC zuerst ausführen — keine Verschiebungs-Ergebnisse zur Nachbearbeitung.</translation>
     </message>
@@ -53,84 +53,114 @@ Nur relevant für den FFT-Startschätzungsmodus.</translation>
 <context>
     <name>BatchImportDialog</name>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="45"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="62"/>
         <source>Batch Import Region of Interest Masks</source>
         <translation>Masken des Interessenbereichs stapelweise importieren</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="64"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="99"/>
         <source>Mask Folder:</source>
         <translation>Maskenordner:</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="65"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="100"/>
         <source>(none)</source>
         <translation>(keine)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="70"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="105"/>
         <source>Browse...</source>
         <translation>Durchsuchen…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="80"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="124"/>
         <source>Available Masks</source>
         <translation>Verfügbare Masken</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="87"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="131"/>
         <source>Auto-Match by Name</source>
         <translation>Automatisch nach Name zuordnen</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="89"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="133"/>
         <source>Match mask files to frames by number in filename</source>
         <translation>Maskendateien anhand der Zahl im Dateinamen Frames zuordnen</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="93"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="137"/>
         <source>Assign Sequential</source>
         <translation>Sequentiell zuweisen</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="95"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="139"/>
         <source>Assign masks to frames in order starting from frame 0</source>
         <translation>Masken den Frames der Reihe nach ab Frame 0 zuweisen</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="103"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="147"/>
         <source>Frame Assignments</source>
         <translation>Frame-Zuweisungen</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="106"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="150"/>
         <source>Frame</source>
         <translation>Frame</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="106"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="150"/>
         <source>Image</source>
         <translation>Bild</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="106"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="150"/>
         <source>Mask</source>
         <translation>Maske</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="116"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="160"/>
         <source>Assign Selected -&gt;</source>
         <translation>Auswahl zuweisen -&gt;</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="118"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="162"/>
         <source>Pair selected mask(s) with selected frame(s)</source>
         <translation>Ausgewählte Maske(n) mit ausgewähltem/ausgewählten Frame(s) koppeln</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/batch_import_dialog.py" line="122"/>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="166"/>
         <source>Clear All</source>
         <translation>Alle leeren</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="207"/>
+        <source>Select Mask Folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="260"/>
+        <source>Failed to read mask file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="265"/>
+        <source>Mismatched shape: %1×%2 (expected %3×%4)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="289"/>
+        <source>%n mask(s) have mismatched sizes and are disabled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="342"/>
+        <source>Invalid assignment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/batch_import_dialog.py" line="347"/>
+        <source>A frame can only have one mask. Select exactly one mask, or select multiple frames to assign one mask to many.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1102,6 +1132,16 @@ Standard (nicht aktiviert): lexikographisch — ideal für nullgefüllte Namen</
         <location filename="../../gui/app.py" line="705"/>
         <source>Load images first.</source>
         <translation>Bitte zuerst Bilder laden.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="754"/>
+        <source>  Imported mask for frame %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="765"/>
+        <source>Batch import: %n mask(s) loaded</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
