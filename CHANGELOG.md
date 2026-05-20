@@ -4,6 +4,87 @@ All notable user-facing changes to pyALDIC are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.4.2] — 2026-05-20
+
+This release focuses on the **batch ROI import** workflow used by
+incremental tracking, plus a layout fix for the strain
+post-processing window on small laptop screens.
+
+### Added
+
+- **Live preview panel in the batch-import dialog.** A third column
+  in `BatchImportDialog` shows the currently focused frame's image,
+  optionally with the assigned mask drawn as a coloured semi-
+  transparent overlay. Three view modes (image only, image + mask,
+  mask only), an α slider 0–100%, and four overlay colours
+  (Blue / Red / Green / Yellow). Scroll wheel zooms (cursor anchored)
+  and left-drag pans. Image and mask buffers are LRU-cached so
+  flipping through frames is responsive.
+- **1:N mask-to-frame broadcast.** In the batch-import dialog,
+  selecting one mask plus several frames now assigns the same mask
+  to every selected frame. The reverse (multiple masks → one frame)
+  is rejected with a warning dialog because the relationship is
+  one-mask-per-frame only.
+- **Frame-list filtering by reference schedule.** The batch-import
+  dialog now lists only the frames the pipeline will actually
+  consume a mask for: `{0}` in accumulative mode, and
+  `FrameSchedule.ref_frame_set` (under your Reference Update
+  setting) in incremental mode. Non-reference frames in every-N /
+  custom incremental modes no longer appear, because the solver
+  only reads `para.img_ref_mask = masks[ref_idx]` per pair.
+- **Pre-flight mask size check.** After picking a mask folder, every
+  file is pre-scanned for size match against the loaded images.
+  Mismatched files are disabled in the list (greyed, unselectable,
+  tooltip explains the mismatch) and excluded from every assignment
+  path. A warning bar above the panels summarises the count.
+- **0/1 mask encoding support.** Mask files written as NumPy bool
+  arrays cast to uint8 (values in `{0, 1}`) are now correctly
+  binarised. Previously the hardcoded `> 127` threshold reduced
+  every nonzero pixel to background, silently producing an all-False
+  ROI. Both 0/1 and 0/255 encodings are now auto-detected.
+- **Collapsible right column in the strain window.** Each of the
+  five panels (`Strain Parameters`, `Field`, `Visualization`,
+  `Physical Units`, `Log`) is now a `CollapsibleSection`. Default
+  expansion: parameters / field / visualization expanded; physical
+  units and log collapsed. Action buttons (Compute Strain, Export
+  Results) sit outside the sections so they stay accessible no
+  matter which sections are folded.
+
+### Fixed
+
+- **Strain window no longer overflows small laptop screens.** The
+  right column previously stacked all five panels in a flat
+  ~950 px pile, and the bottom panels (`Log`, `Physical Units`)
+  sat off-screen on 1366×768 / 1280×800 laptops. The column is now
+  wrapped in a `QScrollArea` and the default window size is reduced
+  from 1340×960 to 1280×800, so the most-used controls remain on
+  screen and a scrollbar takes over for any smaller resolution.
+- **Mismatched mask sizes no longer silently resized at batch-import
+  time.** Previously a mask whose on-disk dimensions did not match
+  the loaded images was silently `cv2.resize`-d (nearest neighbour)
+  to the image shape. This could turn a 256×256 mask into a 2048×2048
+  ROI without warning. The dialog now flags every mismatched mask
+  up front and excludes them from every assignment path.
+- **i18n leaks in batch-import success log.** The per-frame
+  "Imported mask for frame …" notice and the loaded-count summary
+  now route through `tr()` / `tr_args` instead of bare f-strings,
+  so localisations display the translated text.
+- **`test_perf_init_mode_compare[seed_propagation]` no longer fails
+  on bare synthetic data.** The graceful-skip path was broken when
+  the `seed_set` requirement check moved from solver runtime into
+  `validate_dicpara`, which fires inside `dicpara_default()` and
+  raised before the test's `try/except` could catch it. The
+  `_build_para()` call now sits inside the guarded block, restoring
+  the original skip-on-missing-seed behaviour.
+
+### i18n
+
+- **15 new GUI strings**, all filled for `zh_CN` (100% coverage).
+  Other six locales (`zh_TW`, `ja`, `ko`, `de`, `fr`, `es`) leave
+  the new strings as `<translation type="unfinished">` per the
+  project's i18n contract; Qt falls back to the English source so
+  the UI remains usable in every locale.
+
 ## [0.4.1] — 2026-04-22
 
 ### Fixed
