@@ -212,9 +212,14 @@ def test_perf_init_mode_compare(init_mode, perf_recorder, request):
     """Compare wall time across init-guess modes on a fixed dataset."""
     h, w, n_frames = 512, 512, 5
     images, masks = _make_synthetic_run(h, w, n_frames, shear=0.003)
-    para = _build_para(h, w, 31, 16, 16, init_mode=init_mode)
 
     try:
+        # Build para *inside* the try block: seed_propagation enforces
+        # a non-None seed_set at validate_dicpara time, which would
+        # raise here (before _measure) for a bare synthetic dataset
+        # with no user-placed seeds. Keep that failure on the graceful-
+        # skip path along with any solver-time failure below.
+        para = _build_para(h, w, 31, 16, 16, init_mode=init_mode)
         result, wall, peak = _measure(run_aldic, para, images, masks,
                                       compute_strain=False)
     except Exception as exc:  # noqa: BLE001
