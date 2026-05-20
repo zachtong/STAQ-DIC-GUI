@@ -34,11 +34,14 @@ from dataclasses import replace as _dc_replace
 from PySide6.QtCore import QEvent, QThread, QTimer, Qt, Signal
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
+    QFrame,
     QHBoxLayout,
     QLabel,
     QMainWindow,
     QProgressBar,
     QPushButton,
+    QScrollArea,
+    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
@@ -50,6 +53,7 @@ from al_dic.gui.controllers.strain_controller import StrainController
 from al_dic.gui.controllers.viz_controller import VizController
 from al_dic.gui.panels.canvas_area import visible_values
 from al_dic.gui.panels.strain_canvas import StrainCanvas
+from al_dic.gui.widgets.collapsible_section import CollapsibleSection
 from al_dic.gui.widgets.colorbar_overlay import ColorbarOverlay
 from al_dic.gui.widgets.console_log import ConsoleLog
 from al_dic.gui.widgets.strain_field_selector import (
@@ -125,11 +129,11 @@ class StrainWindow(QMainWindow):
         # share one visual frame.
         from al_dic.gui.window_chrome import enable_dark_title_bar
         enable_dark_title_bar(self)
-        # Default size chosen for a roughly square canvas area: 320 px
-        # right panel + ~1000 px canvas width, with ~880 px canvas
-        # height. Matches the common square-ish DIC image aspect
-        # without letterboxing.
-        self.resize(1340, 960)
+        # Default size chosen to fit common 1366×768 / 1280×800 laptop
+        # screens (after taskbar + title bar reserve ~70 px).  The
+        # right column is wrapped in a QScrollArea so even smaller
+        # screens still reach every control.
+        self.resize(1280, 800)
 
         self._state = state
         self._strain_ctrl = StrainController(state)
@@ -212,20 +216,35 @@ class StrainWindow(QMainWindow):
 
         root.addLayout(left, 1)
 
-        # Right pane
-        right = QVBoxLayout()
+        # --- Right pane: scrollable column with collapsible sections ---
+        # Previously a flat QVBoxLayout — on 1366×768 / 1280×800 screens
+        # the PHYSICAL UNITS and LOG sections sat below the visible
+        # area. Wrapping in QScrollArea + folding low-priority sections
+        # by default keeps the most-used controls (parameters, field,
+        # viz) on-screen and provides a scrollbar fallback otherwise.
+        right_container = QWidget()
+        # Ignored horizontal sizePolicy lets the QScrollArea below
+        # constrain width to its viewport even when a collapsed section
+        # reports an unusual sizeHint — same pattern as left_sidebar.
+        right_container.setSizePolicy(
+            QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred,
+        )
+        right = QVBoxLayout(right_container)
+        right.setContentsMargins(0, 0, 0, 0)
         right.setSpacing(6)
-        right_widget = QWidget()
-        right_widget.setLayout(right)
-        right_widget.setFixedWidth(320)
 
-        # Strain parameters (first: user computes before viewing)
-        right.addWidget(_sec_label(self.tr("STRAIN PARAMETERS")))
+        # Strain parameters (first thing users tweak — expanded).
+        self._params_section = CollapsibleSection(
+            self.tr("STRAIN PARAMETERS"), expanded=True,
+        )
         self._param_panel = StrainParamPanel()
         self._param_panel.params_dirty.connect(self._on_params_dirty)
-        right.addWidget(self._param_panel)
+        self._params_section.add_widget(self._param_panel)
+        right.addWidget(self._params_section)
 
-        # Prominent compute button (matches main window "Run DIC Analysis" style)
+        # Action buttons stay OUTSIDE collapsible sections so users
+        # can trigger Compute / Export even when STRAIN PARAMETERS is
+        # folded.
         self._compute_btn = QPushButton(self.tr("Compute Strain"))
         self._compute_btn.setProperty("class", "btn-primary")
         self._compute_btn.setFixedHeight(40)
@@ -266,31 +285,58 @@ class StrainWindow(QMainWindow):
         )
         right.addWidget(self._stale_label)
 
-        # Field selector (second: choose what to display after compute)
-        right.addWidget(_sec_label(self.tr("FIELD")))
+        # Field selector (switched often — expanded).
+        self._field_section = CollapsibleSection(
+            self.tr("FIELD"), expanded=True,
+        )
         self._field_selector = StrainFieldSelector()
         self._field_selector.field_changed.connect(self._on_field_changed)
-        right.addWidget(self._field_selector)
+        self._field_section.add_widget(self._field_selector)
+        right.addWidget(self._field_section)
 
-        # Visualization controls
-        right.addWidget(_sec_label(self.tr("VISUALIZATION")))
+        # Visualization controls (touched on every render — expanded).
+        self._viz_section = CollapsibleSection(
+            self.tr("VISUALIZATION"), expanded=True,
+        )
         self._viz_panel = StrainVizPanel()
         self._viz_panel.viz_changed.connect(self._on_viz_panel_changed)
         self._viz_panel.auto_disabled.connect(self._on_auto_range_disabled)
-        right.addWidget(self._viz_panel)
+        self._viz_section.add_widget(self._viz_panel)
+        right.addWidget(self._viz_section)
 
-        # Physical units
-        right.addWidget(_sec_label(self.tr("PHYSICAL UNITS")))
+        # Physical units (rarely changed mid-session — collapsed).
+        self._units_section = CollapsibleSection(
+            self.tr("PHYSICAL UNITS"), expanded=False,
+        )
         self._physical_units = PhysicalUnitsWidget()
-        right.addWidget(self._physical_units)
+        self._units_section.add_widget(self._physical_units)
+        right.addWidget(self._units_section)
 
-        # Console
-        right.addWidget(_sec_label(self.tr("LOG")))
+        # Console / log (diagnostics — collapsed by default; users open
+        # it when something looks wrong).
+        self._log_section = CollapsibleSection(
+            self.tr("LOG"), expanded=False,
+        )
         self._console = ConsoleLog()
-        right.addWidget(self._console)
+        self._log_section.add_widget(self._console)
+        right.addWidget(self._log_section)
 
         right.addStretch(1)
-        root.addWidget(right_widget, 0)
+
+        right_scroll = QScrollArea()
+        right_scroll.setWidgetResizable(True)
+        right_scroll.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        right_scroll.setVerticalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAsNeeded
+        )
+        right_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        right_scroll.setWidget(right_container)
+        # 320 content + ~20 for the scrollbar gutter.  Fixed so the
+        # canvas keeps its proportional share of the window.
+        right_scroll.setFixedWidth(340)
+        root.addWidget(right_scroll, 0)
 
         self.setCentralWidget(central)
 
@@ -841,15 +887,3 @@ class StrainWindow(QMainWindow):
         super().closeEvent(event)
 
 
-# ---------------------------------------------------------------------------
-# Internal helpers
-# ---------------------------------------------------------------------------
-
-def _sec_label(text: str) -> QLabel:
-    """Small all-caps section header."""
-    lbl = QLabel(text)
-    lbl.setStyleSheet(
-        f"color: {COLORS.TEXT_SECONDARY}; font-size: 10px; "
-        f"font-weight: bold; letter-spacing: 1px; margin-top: 6px;"
-    )
-    return lbl
