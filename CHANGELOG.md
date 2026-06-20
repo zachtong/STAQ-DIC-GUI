@@ -4,6 +4,17 @@ All notable user-facing changes to pyALDIC are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.4.3] — 2026-06-15
+
+Publication release accompanying the *SoftwareX* submission. This is the
+citable snapshot archived to Zenodo and referenced from the manuscript;
+it is functionally identical to 0.4.2 at the API and GUI level.
+
+### Fixed
+
+- **CI:** corrected a YAML syntax error in the i18n workflow's Gate B
+  heredoc. Internal only — no user-facing behaviour change.
+
 ## [0.4.2] — 2026-05-20
 
 This release focuses on the **batch ROI import** workflow used by
