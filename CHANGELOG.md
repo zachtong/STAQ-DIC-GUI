@@ -4,6 +4,28 @@ All notable user-facing changes to pyALDIC are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.5.0] — 2026-06-21
+
+### Added
+
+- **Three-point circle ROI tool.** In addition to the center+radius circle,
+  an ROI circle can now be defined by clicking **three points on the circle's
+  edge** (the circumcircle), available in both the **Add** and **Cut** shape
+  menus. After the first two points a live preview circle follows the cursor;
+  the third click commits. Collinear or near-collinear points are rejected
+  with a warning instead of producing a degenerate (infinite-radius) circle.
+- **Low-confidence strain edge trimming (plane-fit method).** A new
+  **Trim low-confidence edges** control in the Strain panel hides strain at
+  ROI / hole edges where the VSG window crosses the boundary and the local
+  plane fit becomes one-sided and unreliable. A coefficient α (0–1, default
+  **0.70**) sets the trimmed band width (≈ α × VSG radius); **0** disables
+  trimming (legacy behaviour). A live *"Trimmed: N nodes (M%)"* readout shows
+  how many nodes are removed. The trim is applied consistently to the
+  on-screen field and to every export (PNG / MAT / NPZ / CSV / report /
+  animation). The default 0.70 is calibrated against a synthetic benchmark:
+  plane-fit error rises sharply within the boundary band and returns to the
+  interior baseline at ≈ 0.7 × VSG radius.
+
 ## [0.4.3] — 2026-06-15
 
 Publication release accompanying the *SoftwareX* submission. This is the

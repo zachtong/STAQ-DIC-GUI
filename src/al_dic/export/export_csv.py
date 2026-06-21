@@ -103,6 +103,11 @@ def export_csv(
         disp_values: dict[str, "np.ndarray"] = {
             "disp_u": u, "disp_v": v, "disp_magnitude": mag,
         }
+        # Strain columns with edge-trim applied (NaN at low-confidence edge
+        # nodes), computed once per frame to avoid per-node array copies.
+        strain_values: dict[str, "np.ndarray"] = {
+            fname: sr.trimmed_field(fname) for fname in strain_cols
+        }
 
         with open(out, "w", newline="", encoding="utf-8-sig") as fh:
             writer = csv.DictWriter(fh, fieldnames=header)
@@ -117,7 +122,7 @@ def export_csv(
                 for fname in disp_cols:
                     row[fname] = disp_values[fname][i]
                 for fname in strain_cols:
-                    row[fname] = getattr(sr, fname)[i]  # type: ignore[index]
+                    row[fname] = strain_values[fname][i]  # type: ignore[index]
                 writer.writerow(row)
 
         paths.append(out)

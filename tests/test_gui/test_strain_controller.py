@@ -108,12 +108,13 @@ class TestComputeAllFrames:
             ctrl.compute_all_frames(override={"winsize": 64})
 
     def test_allowed_override_set_is_strict(self):
-        # The four allowed keys correspond to the public strain knobs.
+        # The five allowed keys correspond to the public strain knobs.
         assert ALLOWED_OVERRIDES == frozenset({
             "method_to_compute_strain",
             "strain_plane_fit_rad",
             "strain_smoothness",
             "strain_type",
+            "strain_edge_trim_alpha",
         })
 
 

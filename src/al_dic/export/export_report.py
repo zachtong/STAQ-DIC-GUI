@@ -86,7 +86,7 @@ def _extract_field_values_all_frames(
                 out.append(None)
         elif field_name in _STRAIN_FIELDS:
             if results.result_strain and t < len(results.result_strain):
-                val = getattr(results.result_strain[t], field_name, None)
+                val = results.result_strain[t].trimmed_field(field_name)
                 out.append(val)
             else:
                 out.append(None)

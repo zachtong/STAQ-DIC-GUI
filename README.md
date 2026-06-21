@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/Python-3.10+-3776ab?style=flat-square&logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/GUI-PySide6-41cd52?style=flat-square" alt="PySide6"/>
   <img src="https://img.shields.io/badge/License-BSD--3--Clause-22c55e?style=flat-square" alt="License"/>
-  <a href="https://doi.org/10.5281/zenodo.19669774"><img src="https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19669774-blue?style=flat-square" alt="DOI"/></a>
+  <a href="https://doi.org/10.5281/zenodo.19521061"><img src="https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19521061-blue?style=flat-square" alt="DOI"/></a>
   <a href="https://pypi.org/project/al-dic/"><img src="https://img.shields.io/pypi/v/al-dic?style=flat-square&label=PyPI" alt="PyPI"/></a>
 </p>
 
@@ -120,7 +120,7 @@ Full-field displacement and strain overlay with configurable colormaps, alpha bl
 | **Grid** | <mark>**Adaptive refined grid**</mark> | Uniform grid | Uniform grid | Uniform grid | Uniform grid |
 | **GUI** | <mark>**Built-in desktop**</mark> | Built-in desktop¹ | Built-in desktop | Built-in desktop | Built-in desktop |
 | **Platform** | <mark>**Windows, macOS, Linux**</mark> | Windows, macOS, Linux¹ | Windows, macOS, Linux | Windows only | Windows only |
-| **Latest release**² | <mark>**v0.3 (2026)**</mark> | v1.2.2 (2017) | v3.0-beta (2023) | VIC-2D 7 (2022) | MatchID 2D (2026) |
+| **Latest release**² | <mark>**v0.5.0 (2026)**</mark> | v1.2.2 (2017) | v3.0-beta (2023) | VIC-2D 7 (2022) | MatchID 2D (2026) |
 | **Cost** | <mark>**Free**</mark> | Free¹ | Free | Commercial | Commercial |
 
 <sub>¹ Requires a MATLAB license.</sub><br/>

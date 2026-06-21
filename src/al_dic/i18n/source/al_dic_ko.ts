@@ -135,93 +135,93 @@ FFT 초기 추정 모드에만 관련됩니다.</translation>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="523"/>
         <source>Select Mask Folder</source>
-        <translation type="unfinished"></translation>
+        <translation>마스크 폴더 선택</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="576"/>
         <source>Failed to read mask file.</source>
-        <translation type="unfinished"></translation>
+        <translation>마스크 파일을 읽지 못했습니다.</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="581"/>
         <source>Mismatched shape: %1×%2 (expected %3×%4)</source>
-        <translation type="unfinished"></translation>
+        <translation>형상 불일치: %1×%2 (예상 %3×%4)</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="659"/>
         <source>%n mask(s) have mismatched sizes and are disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>크기가 일치하지 않는 마스크 %n개가 비활성화되었습니다.</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="712"/>
         <source>Invalid assignment</source>
-        <translation type="unfinished"></translation>
+        <translation>잘못된 할당</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="717"/>
         <source>A frame can only have one mask. Select exactly one mask, or select multiple frames to assign one mask to many.</source>
-        <translation type="unfinished"></translation>
+        <translation>한 프레임에는 마스크를 하나만 지정할 수 있습니다. 마스크를 정확히 하나 선택하거나, 여러 프레임을 선택해 하나의 마스크를 여러 프레임에 지정하세요.</translation>
     </message>
 </context>
 <context>
     <name>CanvasArea</name>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1107"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1197"/>
         <source>Fit</source>
         <translation>맞춤</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1108"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1198"/>
         <source>Fit image to viewport</source>
         <translation>이미지를 뷰포트에 맞춤</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1113"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1203"/>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1114"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1204"/>
         <source>Zoom to 100% (1:1)</source>
         <translation>100%(1:1) 확대</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1118"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1208"/>
         <source>Zoom in</source>
         <translation>확대</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1124"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1214"/>
         <source>–</source>
         <translation>–</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1125"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1215"/>
         <source>Zoom out</source>
         <translation>축소</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1138"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1228"/>
         <source>Show Grid</source>
         <translation>격자 표시</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1139"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1229"/>
         <source>Show/hide computational mesh grid</source>
         <translation>계산 메시 격자 표시/숨김</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1142"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1232"/>
         <source>Show Subset</source>
         <translation>서브셋 표시</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1143"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1233"/>
         <source>Show subset window on hover (requires Grid)</source>
         <translation>마우스 오버 시 서브셋 창 표시(격자 필요)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1397"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1487"/>
         <source>Placing Starting Points</source>
         <translation>시드점 배치 중</translation>
     </message>
@@ -793,6 +793,19 @@ Tick labels update per frame when Auto range is enabled.</source>
     </message>
 </context>
 <context>
+    <name>ImageCanvas</name>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="1044"/>
+        <source>Load images first before drawing a Region of Interest.</source>
+        <translation>관심 영역을 그리기 전에 먼저 이미지를 불러오세요.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="1064"/>
+        <source>The three points are nearly collinear — pick points spread around the circle&apos;s edge.</source>
+        <translation>세 점이 거의 일직선입니다 — 원의 가장자리에 고르게 세 점을 찍으세요.</translation>
+    </message>
+</context>
+<context>
     <name>ImageList</name>
     <message>
         <location filename="../../gui/widgets/image_list.py" line="95"/>
@@ -1136,12 +1149,12 @@ Default (unchecked): lexicographic — best for zero-padded names</source>
     <message>
         <location filename="../../gui/app.py" line="754"/>
         <source>  Imported mask for frame %1</source>
-        <translation type="unfinished"></translation>
+        <translation>  프레임 %1의 마스크를 가져왔습니다</translation>
     </message>
     <message>
         <location filename="../../gui/app.py" line="765"/>
         <source>Batch import: %n mask(s) loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>일괄 가져오기: 마스크 %n개를 불러왔습니다</translation>
     </message>
 </context>
 <context>
@@ -1535,6 +1548,11 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <source>Clear Brush</source>
         <translation>브러시 지우기</translation>
     </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="256"/>
+        <source>Circle (3-point)</source>
+        <translation>원(3점)</translation>
+    </message>
 </context>
 <context>
     <name>RightSidebar</name>
@@ -1722,22 +1740,22 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
 <context>
     <name>StrainParamPanel</name>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="79"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="85"/>
         <source>Plane fitting</source>
         <translation>평면 피팅</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="80"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="86"/>
         <source>FEM nodal</source>
         <translation>FEM 절점</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="82"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="88"/>
         <source>Method</source>
         <translation>방법</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="106"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="112"/>
         <source>VSG (Virtual Strain Gauge) size is the diameter, in pixels, of the circular region around each mesh node used to fit a local displacement plane. Strain is then taken as the plane&apos;s slope.
 
 • Larger VSG → smoother strain, lower spatial resolution.
@@ -1754,33 +1772,57 @@ Not used when Method = FEM nodal (there, mesh spacing itself sets the gauge size
 Method = FEM nodal일 때는 사용되지 않습니다(그 경우 메시 간격 자체가 게이지 크기를 결정).</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="109"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="115"/>
         <source>VSG size</source>
         <translation>VSG 크기</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="139"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="155"/>
+        <source>Hides low-confidence strain at ROI / hole edges, where the VSG window crosses the boundary and the local plane fit becomes one-sided and unreliable.
+
+• Coefficient × VSG radius = width of the trimmed boundary band.
+• 0.00 = keep every node (no trimming).
+• 0.70 = recommended (trims where edge error rises sharply).
+• 1.00 = strictest (trim any node whose window touches the edge).
+
+Only applies when Method = Plane fitting.</source>
+        <translation>ROI / 구멍 가장자리에서 VSG 창이 경계를 넘어 국소 평면 피팅이 한쪽으로 치우쳐 신뢰할 수 없게 되는 부분의 저신뢰도 변형률을 숨깁니다.
+
+• 계수 × VSG 반경 = 잘라내는 경계 띠의 폭.
+• 0.00 = 모든 노드 유지(잘라내기 없음).
+• 0.70 = 권장(가장자리 오차가 급증하는 곳을 잘라냄).
+• 1.00 = 가장 엄격(창이 가장자리에 닿는 모든 노드를 잘라냄).
+
+Method = 평면 피팅 일 때만 적용됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="158"/>
+        <source>Trim low-confidence edges</source>
+        <translation>저신뢰도 가장자리 잘라내기</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="185"/>
         <source>Off</source>
         <comment>Strain smoothing preset</comment>
         <translation>끔</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="140"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="186"/>
         <source>Light (σ = 0.5 × step)</source>
         <translation>약함 (σ = 0.5 × step)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="141"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="187"/>
         <source>Medium (σ = 1 × step)</source>
         <translation>중간 (σ = 1 × step)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="142"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="188"/>
         <source>Strong (σ = 2 × step) ⚠</source>
         <translation>강함 (σ = 2 × step) ⚠</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="153"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="199"/>
         <source>Gaussian smoothing of the strain field after computation.
 σ is the Gaussian kernel width; &apos;step&apos; = DIC node spacing.
   Light  (0.5 × step):  subtle, preserves fine features.
@@ -1793,32 +1835,37 @@ Method = FEM nodal일 때는 사용되지 않습니다(그 경우 메시 간격 
   Strong (2 × step) ⚠: 강함, 실제 기울기를 흐릴 수 있음.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="154"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="200"/>
         <source>Strain field smoothing</source>
         <translation>변형률장 평활화</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="159"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="205"/>
         <source>Infinitesimal</source>
         <translation>미소 변형률</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="160"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="206"/>
         <source>Eulerian</source>
         <translation>오일러 변형률</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="161"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="207"/>
         <source>Green-Lagrangian</source>
         <translation>그린-라그랑주 변형률</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="163"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="209"/>
         <source>Strain type</source>
         <translation>변형률 종류</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="256"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="271"/>
+        <source>Trimmed: %1 nodes (%2%)</source>
+        <translation>잘라냄: 노드 %1개 (%2%)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="324"/>
         <source>⚠ VSG radius (%1 px) &lt; DIC node spacing (%2 px); plane fit will fail. Use VSG ≥ %3 px or switch Method to FEM nodal.</source>
         <translation>⚠ VSG 반경(%1 px) &lt; DIC 노드 간격(%2 px); 평면 피팅이 실패합니다. VSG ≥ %3 px로 설정하거나 Method를 FEM nodal로 전환하세요.</translation>
     </message>
@@ -2135,82 +2182,82 @@ or Browse</source>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="130"/>
         <source>Preview</source>
-        <translation type="unfinished"></translation>
+        <translation>미리보기</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="134"/>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="260"/>
         <source>(no image)</source>
-        <translation type="unfinished"></translation>
+        <translation>(이미지 없음)</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="154"/>
         <source>Image only</source>
-        <translation type="unfinished"></translation>
+        <translation>이미지만</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="155"/>
         <source>Image + Mask</source>
-        <translation type="unfinished"></translation>
+        <translation>이미지 + 마스크</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="156"/>
         <source>Mask only</source>
-        <translation type="unfinished"></translation>
+        <translation>마스크만</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="159"/>
         <source>View:</source>
-        <translation type="unfinished"></translation>
+        <translation>보기:</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="165"/>
         <source>Alpha:</source>
-        <translation type="unfinished"></translation>
+        <translation>알파:</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="173"/>
         <source>Blue</source>
         <comment>Mask overlay color</comment>
-        <translation type="unfinished"></translation>
+        <translation>파랑</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="177"/>
         <source>Red</source>
         <comment>Mask overlay color</comment>
-        <translation type="unfinished"></translation>
+        <translation>빨강</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="181"/>
         <source>Green</source>
         <comment>Mask overlay color</comment>
-        <translation type="unfinished"></translation>
+        <translation>초록</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="185"/>
         <source>Yellow</source>
         <comment>Mask overlay color</comment>
-        <translation type="unfinished"></translation>
+        <translation>노랑</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="189"/>
         <source>Mask color:</source>
-        <translation type="unfinished"></translation>
+        <translation>마스크 색상:</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="267"/>
         <source>No mask assigned</source>
-        <translation type="unfinished"></translation>
+        <translation>지정된 마스크 없음</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="272"/>
         <source>Frame %1 — %2</source>
-        <translation type="unfinished"></translation>
+        <translation>프레임 %1 — %2</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="287"/>
         <source>Failed to load image</source>
-        <translation type="unfinished"></translation>
+        <translation>이미지를 불러오지 못했습니다</translation>
     </message>
 </context>
 </TS>

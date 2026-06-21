@@ -22,6 +22,7 @@ from __future__ import annotations
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QComboBox,
+    QDoubleSpinBox,
     QFormLayout,
     QHBoxLayout,
     QLabel,
@@ -59,6 +60,11 @@ _SMOOTH_PRESETS: tuple[tuple[str, float], ...] = (
 # Default VSG size in pixels (must be odd).
 # rad = (VSG - 1) / 2 = (41 - 1) / 2 = 20 px  (matches prior default).
 _DEFAULT_VSG_PX = 41
+
+# Default edge-trim coefficient (alpha). 0.70 is calibrated to where the
+# plane-fit error returns to the interior baseline; see DICPara docstring
+# and reports/strain_edge_trim_validation.pdf.
+_DEFAULT_EDGE_TRIM_ALPHA = 0.70
 
 
 class StrainParamPanel(QWidget):
@@ -126,6 +132,46 @@ class StrainParamPanel(QWidget):
         self._vsg_warning.setVisible(False)
         layout.addRow("", self._vsg_warning)
 
+        # --- Trim low-confidence edges (plane fitting only) ---
+        # ROI/hole-edge nodes whose VSG window crosses the boundary get a
+        # one-sided, unreliable plane fit. This coefficient (alpha) sets how
+        # wide a boundary band to drop: trim band = alpha * VSG radius.
+        # 0 = keep all, 0.7 = recommended, 1 = strictest.
+        self._edge_trim_spin = QDoubleSpinBox()
+        self._edge_trim_spin.setRange(0.0, 1.0)
+        self._edge_trim_spin.setSingleStep(0.05)
+        self._edge_trim_spin.setDecimals(2)
+        self._edge_trim_spin.setValue(_DEFAULT_EDGE_TRIM_ALPHA)
+        edge_tip = self.tr(
+            "Hides low-confidence strain at ROI / hole edges, where the VSG "
+            "window crosses the boundary and the local plane fit becomes "
+            "one-sided and unreliable.\n\n"
+            "• Coefficient × VSG radius = width of the trimmed boundary band.\n"
+            "• 0.00 = keep every node (no trimming).\n"
+            "• 0.70 = recommended (trims where edge error rises sharply).\n"
+            "• 1.00 = strictest (trim any node whose window touches the edge).\n\n"
+            "Only applies when Method = Plane fitting."
+        )
+        edge_label_row = QHBoxLayout()
+        edge_label_row.setContentsMargins(0, 0, 0, 0)
+        edge_label_row.setSpacing(2)
+        edge_lbl = QLabel(self.tr("Trim low-confidence edges"))
+        edge_label_row.addWidget(edge_lbl)
+        edge_label_row.addWidget(InfoIcon(edge_tip))
+        edge_label_row.addStretch()
+        edge_label_widget = QWidget()
+        edge_label_widget.setLayout(edge_label_row)
+        layout.addRow(edge_label_widget, self._edge_trim_spin)
+
+        # Live readout: how many nodes the current trim removes. Updated by
+        # the window after each strain render. Informational, not a warning.
+        self._edge_trim_readout = QLabel("")
+        self._edge_trim_readout.setStyleSheet(
+            "color: #6b7280; font-size: 10px; padding-left: 4px;"
+        )
+        self._edge_trim_readout.setVisible(False)
+        layout.addRow("", self._edge_trim_readout)
+
         # --- Strain field smoothing ---
         # Applies Gaussian smoothing to the computed strain tensor field
         # after differentiation (not to the displacement field).
@@ -171,6 +217,7 @@ class StrainParamPanel(QWidget):
         # Wire dirty propagation
         self._method_combo.currentIndexChanged.connect(self._mark_dirty)
         self._vsg_spin.valueChanged.connect(self._on_vsg_value_changed)
+        self._edge_trim_spin.valueChanged.connect(self._mark_dirty)
         self._smooth_combo.currentIndexChanged.connect(self._mark_dirty)
         self._type_combo.currentIndexChanged.connect(self._mark_dirty)
 
@@ -196,6 +243,7 @@ class StrainParamPanel(QWidget):
             "strain_plane_fit_rad": rad,
             "strain_smoothness": self._resolve_smoothness(),
             "strain_type": self._type_codes[self._type_combo.currentIndex()],
+            "strain_edge_trim_alpha": float(self._edge_trim_spin.value()),
         }
 
     def is_dirty(self) -> bool:
@@ -206,6 +254,23 @@ class StrainParamPanel(QWidget):
     def mark_clean(self) -> None:
         """Reset the dirty flag (typically after a successful compute)."""
         self._dirty = False
+
+    def set_trim_readout(self, n_trimmed: int, n_total: int) -> None:
+        """Update the 'Trimmed: N nodes (M%)' readout.
+
+        Called by the strain window after rendering a strain frame, using that
+        frame's ``StrainResult.strain_valid``. Pass ``n_total <= 0`` (or call
+        while Method != Plane fitting) to hide the readout.
+        """
+        plane_fit = self._method_combo.currentIndex() == 0
+        if n_total <= 0 or not plane_fit:
+            self._edge_trim_readout.setVisible(False)
+            return
+        pct = 100.0 * n_trimmed / n_total
+        self._edge_trim_readout.setText(
+            tr_args(self.tr("Trimmed: %1 nodes (%2%)"), n_trimmed, f"{pct:.0f}")
+        )
+        self._edge_trim_readout.setVisible(True)
 
     # ------------------------------------------------------------------
     # Internal
@@ -224,9 +289,12 @@ class StrainParamPanel(QWidget):
         self._mark_dirty()
 
     def _on_method_changed(self, index: int) -> None:
-        """Show / enable VSG size only for plane fitting (method 2)."""
+        """Show / enable VSG size + edge trim only for plane fitting (method 2)."""
         code = self._method_codes[index]
         self._vsg_spin.setEnabled(code == 2)
+        self._edge_trim_spin.setEnabled(code == 2)
+        if code != 2:
+            self._edge_trim_readout.setVisible(False)
         self._refresh_vsg_warning()
 
     def _refresh_vsg_warning(self) -> None:

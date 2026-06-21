@@ -16,6 +16,8 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING
 
+from al_dic.utils.geometry import circumcircle
+
 import numpy as np
 from numpy.typing import NDArray
 from PySide6.QtCore import Qt, Signal, QPointF, QRectF, QTimer, QEvent
@@ -272,7 +274,7 @@ class ImageCanvas(QGraphicsView):
     def set_tool(self, tool: str) -> None:
         """Set the active tool.
 
-        Valid tools: select, pan, rect, polygon, circle, brush, seed.
+        Valid tools: select, pan, rect, polygon, circle, circle3, brush, seed.
         """
         self._current_tool = tool
         self._cancel_drawing()
@@ -285,7 +287,7 @@ class ImageCanvas(QGraphicsView):
             self.setCursor(Qt.CursorShape.OpenHandCursor)
         elif tool == "brush":
             self._update_brush_cursor()
-        elif tool in ("rect", "polygon", "circle"):
+        elif tool in ("rect", "polygon", "circle", "circle3"):
             self.setCursor(Qt.CursorShape.CrossCursor)
         elif tool == "seed":
             self.setCursor(Qt.CursorShape.CrossCursor)
@@ -691,7 +693,7 @@ class ImageCanvas(QGraphicsView):
         # Shape drawing tools
         if (
             event.button() == Qt.MouseButton.LeftButton
-            and self._current_tool in ("rect", "polygon", "circle")
+            and self._current_tool in ("rect", "polygon", "circle", "circle3")
         ):
             scene_pos = self.mapToScene(event.position().toPoint())
             self._handle_draw_press(scene_pos)
@@ -921,6 +923,23 @@ class ImageCanvas(QGraphicsView):
                 self._scene.addItem(line)
                 self._preview_items.append(line)
 
+        elif self._current_tool == "circle3":
+            # Three-point circle: collect exactly 3 points on the circle's
+            # edge, then commit the circumcircle automatically on the 3rd click.
+            if self._draw_state is None:
+                self._draw_state = {"points": [pos]}
+                self._preview_items = []
+            else:
+                self._draw_state["points"].append(pos)
+            # Small marker dot at each clicked point for feedback.
+            dot = QGraphicsEllipseItem(QRectF(pos.x() - 2, pos.y() - 2, 4, 4))
+            dot.setPen(pen)
+            dot.setZValue(11)
+            self._scene.addItem(dot)
+            self._preview_items.append(dot)
+            if len(self._draw_state["points"]) >= 3:
+                self._finalize_circle3()
+
     def _handle_draw_move(self, pos: QPointF) -> None:
         if self._current_tool == "rect" and self._preview_items:
             start = self._draw_state["start"]
@@ -936,6 +955,33 @@ class ImageCanvas(QGraphicsView):
                 center.x() - radius, center.y() - radius,
                 2 * radius, 2 * radius,
             ))
+
+        elif self._current_tool == "circle3" and self._draw_state is not None:
+            # Live circumcircle preview through the 2 placed points + cursor.
+            pts = self._draw_state.get("points", [])
+            if len(pts) >= 2:
+                res = circumcircle(
+                    (pts[0].x(), pts[0].y()),
+                    (pts[1].x(), pts[1].y()),
+                    (pos.x(), pos.y()),
+                )
+                circ = self._draw_state.get("preview_circle")
+                sr = self._scene.sceneRect()
+                max_r = 5.0 * math.hypot(sr.width(), sr.height())
+                if res is not None and 0 < res[2] <= max_r:
+                    cx, cy, r = res
+                    if circ is None:
+                        cpen = _PEN_CUT if self._drawing_mode == "cut" else _PEN_ADD
+                        circ = QGraphicsEllipseItem()
+                        circ.setPen(cpen)
+                        circ.setZValue(10)
+                        self._scene.addItem(circ)
+                        self._draw_state["preview_circle"] = circ
+                        self._preview_items.append(circ)
+                    circ.setRect(QRectF(cx - r, cy - r, 2 * r, 2 * r))
+                    circ.setVisible(True)
+                elif circ is not None:
+                    circ.setVisible(False)
 
     def _handle_draw_release(self, pos: QPointF) -> None:
         if self._roi_ctrl is None:
@@ -980,6 +1026,50 @@ class ImageCanvas(QGraphicsView):
             return
         int_pts = [(int(p.x()), int(p.y())) for p in pts]
         self._roi_ctrl.add_polygon(int_pts, self._drawing_mode)
+        self._finish_drawing()
+
+    def _finalize_circle3(self) -> None:
+        """Commit a three-point circle (circumcircle of the 3 clicks).
+
+        Aborts gracefully when the points are collinear (no circle) or nearly
+        collinear (circle far larger than the image), which would otherwise
+        produce a garbage radius.
+        """
+        if self._roi_ctrl is None or self._draw_state is None:
+            self._cancel_drawing()
+            if self._roi_ctrl is None:
+                AppState.instance().log_message.emit(
+                    self.tr(
+                        "Load images first before drawing a Region of Interest."
+                    ),
+                    "warn",
+                )
+            return
+        pts = self._draw_state.get("points", [])
+        if len(pts) < 3:
+            self._cancel_drawing()
+            return
+        res = circumcircle(
+            (pts[0].x(), pts[0].y()),
+            (pts[1].x(), pts[1].y()),
+            (pts[2].x(), pts[2].y()),
+        )
+        sr = self._scene.sceneRect()
+        max_r = 5.0 * math.hypot(sr.width(), sr.height())
+        if res is None or not (0 < res[2] <= max_r):
+            AppState.instance().log_message.emit(
+                self.tr(
+                    "The three points are nearly collinear — pick points "
+                    "spread around the circle's edge."
+                ),
+                "warn",
+            )
+            self._cancel_drawing()
+            return
+        cx, cy, r = res
+        self._roi_ctrl.add_circle(
+            int(round(cx)), int(round(cy)), int(round(r)), self._drawing_mode
+        )
         self._finish_drawing()
 
     def _finish_drawing(self) -> None:

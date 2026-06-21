@@ -21,7 +21,56 @@ from __future__ import annotations
 
 import numpy as np
 from numpy.typing import NDArray
+from scipy.ndimage import distance_transform_edt
 from scipy.spatial import KDTree
+
+
+def edge_valid_mask(
+    coordinates: NDArray[np.float64],
+    mask: NDArray[np.float64] | None,
+    rad: float,
+    alpha: float = 0.7,
+) -> NDArray[np.bool_]:
+    """Flag plane-fit nodes whose VSG window crosses the ROI/hole boundary.
+
+    A plane fit (``comp_def_grad``) is only reliable when its weighted
+    neighbourhood is roughly symmetric.  At a node closer than ``alpha * rad``
+    to the ROI (or an internal hole/crack) boundary, the VSG disk is truncated
+    to one side, biasing the gradient and de-conditioning the least squares.
+    This returns ``True`` for reliable (interior) nodes and ``False`` for
+    edge nodes that should be trimmed.
+
+    The criterion is purely geometric — distance from the node to the nearest
+    boundary pixel, via the Euclidean distance transform of ``mask`` — so it is
+    independent of mesh node density (uniform vs adaptive quadtree).
+
+    Args:
+        coordinates: Node coordinates (n_nodes, 2), columns [x, y].
+        mask: Binary ROI mask (H, W); zero outside the ROI and inside holes.
+            If None, all nodes are considered valid.
+        rad: VSG / plane-fit search radius in pixels (``strain_plane_fit_rad``).
+        alpha: Edge-trim coefficient. A node is valid iff its distance to the
+            boundary is >= ``alpha * rad``.  ``alpha = 1.0`` trims any node
+            whose disk touches the boundary; ``alpha = 0.0`` disables trimming
+            (all nodes valid).
+
+    Returns:
+        Boolean array (n_nodes,): True = reliable, False = edge-trimmed.
+    """
+    n_nodes = coordinates.shape[0]
+    if mask is None or alpha <= 0.0:
+        return np.ones(n_nodes, dtype=bool)
+
+    # Pad with a zero border so the image edge also counts as a boundary,
+    # then distance-transform: dt[p] = distance from p to the nearest 0 pixel
+    # (ROI outer edge, hole edge, or image border).
+    m = np.pad(mask > 0, 1, mode="constant", constant_values=False)
+    dt = distance_transform_edt(m)
+
+    H, W = mask.shape
+    col = np.clip(np.round(coordinates[:, 0]).astype(int), 0, W - 1) + 1
+    row = np.clip(np.round(coordinates[:, 1]).astype(int), 0, H - 1) + 1
+    return dt[row, col] >= alpha * rad
 
 
 def comp_def_grad(

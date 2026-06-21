@@ -570,6 +570,39 @@ class TestPreviewMeshLiveOnParamsDuringEditing:
         assert timer_started["v"] is False
 
 
+class TestThreePointCircle:
+    """3-point circle ROI tool: 3 clicks on the edge -> circumcircle."""
+
+    def _enter_circle3(self, qapp):
+        win = _make_main_window(qapp)
+        state = AppState.instance()
+        state.set_current_frame(0)
+        win._on_draw_requested("circle3", "add")
+        return win, state, win._canvas_area.canvas
+
+    def test_three_points_commit_circumcircle(self, qapp):
+        from PySide6.QtCore import QPointF
+        win, state, canvas = self._enter_circle3(qapp)
+        assert canvas._current_tool == "circle3"
+        # Points on a circle centered at (64, 64) with radius 30.
+        for x, y in [(94.0, 64.0), (64.0, 94.0), (34.0, 64.0)]:
+            canvas._handle_draw_press(QPointF(x, y))
+        assert 0 in state.per_frame_rois, "circle should have committed"
+        mask = state.per_frame_rois[0]
+        assert mask[64, 64], "center pixel should be inside the circle"
+        assert not mask[0, 0], "far corner should be outside the circle"
+        assert canvas._current_tool == "select", "tool is one-shot"
+
+    def test_collinear_points_abort_gracefully(self, qapp):
+        from PySide6.QtCore import QPointF
+        win, state, canvas = self._enter_circle3(qapp)
+        # Three points on a straight line -> no finite circumcircle.
+        for x, y in [(10.0, 10.0), (20.0, 20.0), (30.0, 30.0)]:
+            canvas._handle_draw_press(QPointF(x, y))
+        assert 0 not in state.per_frame_rois, "collinear must not commit"
+        assert canvas._current_tool == "select", "tool reset after abort"
+
+
 class TestRunButtonClearsStaleResults:
     """Clicking Run a second time must invalidate the previous run's
     results immediately, so the canvas does not render a hybrid view

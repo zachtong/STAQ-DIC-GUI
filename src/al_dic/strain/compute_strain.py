@@ -23,7 +23,7 @@ from numpy.typing import NDArray
 from ..core.data_structures import DICMesh, DICPara, StrainResult
 from ..utils.region_analysis import NodeRegionMap
 from .apply_strain_type import apply_strain_type
-from .comp_def_grad import comp_def_grad
+from .comp_def_grad import comp_def_grad, edge_valid_mask
 from .nodal_strain_fem import global_nodal_strain_fem
 from .smooth_field import smooth_field_sparse
 
@@ -205,6 +205,18 @@ def compute_strain(
         exx, exy, eyy,
     )
 
+    # --- Edge-trim validity mask (plane fitting only) ---
+    # Geometric (distance-to-boundary) reliability flag; strain *values* stay
+    # dense, consumers may NaN-out invalid nodes for display/export.
+    strain_valid = None
+    if method == 2:
+        strain_valid = edge_valid_mask(
+            mesh.coordinates_fem,
+            para.img_ref_mask,
+            para.strain_plane_fit_rad,
+            getattr(para, "strain_edge_trim_alpha", 0.0),
+        )
+
     return StrainResult(
         disp_u=disp_u,
         disp_v=disp_v,
@@ -220,4 +232,5 @@ def compute_strain(
         strain_maxshear=maxshear,
         strain_von_mises=von_mises,
         strain_rotation=rotation,
+        strain_valid=strain_valid,
     )

@@ -25,6 +25,7 @@ def test_default_override(panel):
         "strain_plane_fit_rad": 20.0,
         "strain_smoothness": 0.0,
         "strain_type": 0,
+        "strain_edge_trim_alpha": 0.7,
     }
 
 

@@ -51,6 +51,7 @@ ALLOWED_OVERRIDES: frozenset[str] = frozenset({
     "strain_plane_fit_rad",
     "strain_smoothness",
     "strain_type",
+    "strain_edge_trim_alpha",
 })
 
 

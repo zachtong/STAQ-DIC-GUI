@@ -135,93 +135,93 @@ Only relevant for the FFT init-guess mode.</source>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="523"/>
         <source>Select Mask Folder</source>
-        <translation type="unfinished"></translation>
+        <translation>選擇遮罩資料夾</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="576"/>
         <source>Failed to read mask file.</source>
-        <translation type="unfinished"></translation>
+        <translation>無法讀取遮罩檔案。</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="581"/>
         <source>Mismatched shape: %1×%2 (expected %3×%4)</source>
-        <translation type="unfinished"></translation>
+        <translation>尺寸不符：%1×%2（預期 %3×%4）</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="659"/>
         <source>%n mask(s) have mismatched sizes and are disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>%n 個遮罩尺寸不符，已停用。</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="712"/>
         <source>Invalid assignment</source>
-        <translation type="unfinished"></translation>
+        <translation>無效的指派</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="717"/>
         <source>A frame can only have one mask. Select exactly one mask, or select multiple frames to assign one mask to many.</source>
-        <translation type="unfinished"></translation>
+        <translation>一個影格只能對應一個遮罩。請選擇恰好一個遮罩，或選擇多個影格以將同一個遮罩套用到多個影格。</translation>
     </message>
 </context>
 <context>
     <name>CanvasArea</name>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1107"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1197"/>
         <source>Fit</source>
         <translation>適配</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1108"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1198"/>
         <source>Fit image to viewport</source>
         <translation>將影像適配到視口</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1113"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1203"/>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1114"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1204"/>
         <source>Zoom to 100% (1:1)</source>
         <translation>縮放到 100%（1:1）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1118"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1208"/>
         <source>Zoom in</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1124"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1214"/>
         <source>–</source>
         <translation>–</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1125"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1215"/>
         <source>Zoom out</source>
         <translation>縮小</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1138"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1228"/>
         <source>Show Grid</source>
         <translation>顯示網格</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1139"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1229"/>
         <source>Show/hide computational mesh grid</source>
         <translation>顯示/隱藏計算網格</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1142"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1232"/>
         <source>Show Subset</source>
         <translation>顯示子集</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1143"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1233"/>
         <source>Show subset window on hover (requires Grid)</source>
         <translation>懸停時顯示子集窗口（需要先開啟網格）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1397"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1487"/>
         <source>Placing Starting Points</source>
         <translation>正在放置種子點</translation>
     </message>
@@ -793,6 +793,19 @@ Tick labels update per frame when Auto range is enabled.</source>
     </message>
 </context>
 <context>
+    <name>ImageCanvas</name>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="1044"/>
+        <source>Load images first before drawing a Region of Interest.</source>
+        <translation>請先載入影像，再繪製感興趣區域。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="1064"/>
+        <source>The three points are nearly collinear — pick points spread around the circle&apos;s edge.</source>
+        <translation>三個點幾乎共線 — 請在圓周上分散地選取三個點。</translation>
+    </message>
+</context>
+<context>
     <name>ImageList</name>
     <message>
         <location filename="../../gui/widgets/image_list.py" line="95"/>
@@ -1136,12 +1149,12 @@ Default (unchecked): lexicographic — best for zero-padded names</source>
     <message>
         <location filename="../../gui/app.py" line="754"/>
         <source>  Imported mask for frame %1</source>
-        <translation type="unfinished"></translation>
+        <translation>  已匯入影格 %1 的遮罩</translation>
     </message>
     <message>
         <location filename="../../gui/app.py" line="765"/>
         <source>Batch import: %n mask(s) loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>批次匯入：已載入 %n 個遮罩</translation>
     </message>
 </context>
 <context>
@@ -1535,6 +1548,11 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <source>Clear Brush</source>
         <translation>清除畫筆</translation>
     </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="256"/>
+        <source>Circle (3-point)</source>
+        <translation>圓（三點）</translation>
+    </message>
 </context>
 <context>
     <name>RightSidebar</name>
@@ -1722,22 +1740,22 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
 <context>
     <name>StrainParamPanel</name>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="79"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="85"/>
         <source>Plane fitting</source>
         <translation>平面擬合</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="80"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="86"/>
         <source>FEM nodal</source>
         <translation>有限元節點</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="82"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="88"/>
         <source>Method</source>
         <translation>方法</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="106"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="112"/>
         <source>VSG (Virtual Strain Gauge) size is the diameter, in pixels, of the circular region around each mesh node used to fit a local displacement plane. Strain is then taken as the plane&apos;s slope.
 
 • Larger VSG → smoother strain, lower spatial resolution.
@@ -1754,33 +1772,57 @@ Not used when Method = FEM nodal (there, mesh spacing itself sets the gauge size
 方法選擇 FEM nodal 時不使用此參數（此時由網格間距決定虛擬應變計尺寸）。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="109"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="115"/>
         <source>VSG size</source>
         <translation>VSG 尺寸</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="139"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="155"/>
+        <source>Hides low-confidence strain at ROI / hole edges, where the VSG window crosses the boundary and the local plane fit becomes one-sided and unreliable.
+
+• Coefficient × VSG radius = width of the trimmed boundary band.
+• 0.00 = keep every node (no trimming).
+• 0.70 = recommended (trims where edge error rises sharply).
+• 1.00 = strictest (trim any node whose window touches the edge).
+
+Only applies when Method = Plane fitting.</source>
+        <translation>在 ROI / 孔洞邊緣隱藏低可信度的應變：那裡 VSG 視窗跨越邊界，局部平面擬合變成單邊、不可靠。
+
+• 係數 × VSG 半徑 = 裁剪邊界帶的寬度。
+• 0.00 = 保留所有節點（不裁剪）。
+• 0.70 = 推薦（裁掉誤差明顯上升的區域）。
+• 1.00 = 最嚴格（視窗一旦觸及邊界即裁剪）。
+
+僅在 方法 = 平面擬合 時生效。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="158"/>
+        <source>Trim low-confidence edges</source>
+        <translation>裁剪低可信度邊緣</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="185"/>
         <source>Off</source>
         <comment>Strain smoothing preset</comment>
         <translation>關閉</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="140"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="186"/>
         <source>Light (σ = 0.5 × step)</source>
         <translation>輕度（σ = 0.5 × step）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="141"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="187"/>
         <source>Medium (σ = 1 × step)</source>
         <translation>中等（σ = 1 × step）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="142"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="188"/>
         <source>Strong (σ = 2 × step) ⚠</source>
         <translation>強（σ = 2 × step）⚠</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="153"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="199"/>
         <source>Gaussian smoothing of the strain field after computation.
 σ is the Gaussian kernel width; &apos;step&apos; = DIC node spacing.
   Light  (0.5 × step):  subtle, preserves fine features.
@@ -1793,32 +1835,37 @@ Not used when Method = FEM nodal (there, mesh spacing itself sets the gauge size
   Strong（2 × step）⚠：強平滑，可能模糊真實梯度。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="154"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="200"/>
         <source>Strain field smoothing</source>
         <translation>應變場平滑</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="159"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="205"/>
         <source>Infinitesimal</source>
         <translation>無窮小應變</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="160"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="206"/>
         <source>Eulerian</source>
         <translation>歐拉應變</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="161"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="207"/>
         <source>Green-Lagrangian</source>
         <translation>格林-拉格朗日應變</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="163"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="209"/>
         <source>Strain type</source>
         <translation>應變類型</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="256"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="271"/>
+        <source>Trimmed: %1 nodes (%2%)</source>
+        <translation>已裁剪：%1 個節點 (%2%)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="324"/>
         <source>⚠ VSG radius (%1 px) &lt; DIC node spacing (%2 px); plane fit will fail. Use VSG ≥ %3 px or switch Method to FEM nodal.</source>
         <translation>⚠ VSG 半徑（%1 px）&lt; DIC 節點間距（%2 px）；平面擬合將失敗。請將 VSG ≥ %3 px 或將方法切換為 FEM nodal。</translation>
     </message>
@@ -2135,82 +2182,82 @@ or Browse</source>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="130"/>
         <source>Preview</source>
-        <translation type="unfinished"></translation>
+        <translation>預覽</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="134"/>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="260"/>
         <source>(no image)</source>
-        <translation type="unfinished"></translation>
+        <translation>（無影像）</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="154"/>
         <source>Image only</source>
-        <translation type="unfinished"></translation>
+        <translation>僅影像</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="155"/>
         <source>Image + Mask</source>
-        <translation type="unfinished"></translation>
+        <translation>影像 + 遮罩</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="156"/>
         <source>Mask only</source>
-        <translation type="unfinished"></translation>
+        <translation>僅遮罩</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="159"/>
         <source>View:</source>
-        <translation type="unfinished"></translation>
+        <translation>檢視：</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="165"/>
         <source>Alpha:</source>
-        <translation type="unfinished"></translation>
+        <translation>透明度：</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="173"/>
         <source>Blue</source>
         <comment>Mask overlay color</comment>
-        <translation type="unfinished"></translation>
+        <translation>藍色</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="177"/>
         <source>Red</source>
         <comment>Mask overlay color</comment>
-        <translation type="unfinished"></translation>
+        <translation>紅色</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="181"/>
         <source>Green</source>
         <comment>Mask overlay color</comment>
-        <translation type="unfinished"></translation>
+        <translation>綠色</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="185"/>
         <source>Yellow</source>
         <comment>Mask overlay color</comment>
-        <translation type="unfinished"></translation>
+        <translation>黃色</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="189"/>
         <source>Mask color:</source>
-        <translation type="unfinished"></translation>
+        <translation>遮罩顏色：</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="267"/>
         <source>No mask assigned</source>
-        <translation type="unfinished"></translation>
+        <translation>未指派遮罩</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="272"/>
         <source>Frame %1 — %2</source>
-        <translation type="unfinished"></translation>
+        <translation>影格 %1 — %2</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="287"/>
         <source>Failed to load image</source>
-        <translation type="unfinished"></translation>
+        <translation>無法載入影像</translation>
     </message>
 </context>
 </TS>

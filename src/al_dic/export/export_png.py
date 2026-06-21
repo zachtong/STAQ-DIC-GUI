@@ -548,4 +548,4 @@ def _extract_field_values(
     if not results.result_strain or frame >= len(results.result_strain):
         return None
     sr = results.result_strain[frame]
-    return getattr(sr, field_name, None)
+    return sr.trimmed_field(field_name)  # edge-trim applied (NaN at edges)

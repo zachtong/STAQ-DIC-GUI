@@ -135,93 +135,93 @@ Uniquement pertinent pour le mode d&apos;estimation initiale FFT.</translation>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="523"/>
         <source>Select Mask Folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner le dossier de masques</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="576"/>
         <source>Failed to read mask file.</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec de la lecture du fichier de masque.</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="581"/>
         <source>Mismatched shape: %1×%2 (expected %3×%4)</source>
-        <translation type="unfinished"></translation>
+        <translation>Forme incompatible : %1×%2 (attendu %3×%4)</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="659"/>
         <source>%n mask(s) have mismatched sizes and are disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>%n masque(s) ont des tailles incompatibles et sont désactivés.</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="712"/>
         <source>Invalid assignment</source>
-        <translation type="unfinished"></translation>
+        <translation>Affectation non valide</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="717"/>
         <source>A frame can only have one mask. Select exactly one mask, or select multiple frames to assign one mask to many.</source>
-        <translation type="unfinished"></translation>
+        <translation>Une image ne peut avoir qu&apos;un seul masque. Sélectionnez exactement un masque, ou sélectionnez plusieurs images pour attribuer un masque à plusieurs.</translation>
     </message>
 </context>
 <context>
     <name>CanvasArea</name>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1107"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1197"/>
         <source>Fit</source>
         <translation>Ajuster</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1108"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1198"/>
         <source>Fit image to viewport</source>
         <translation>Ajuster l&apos;image à la vue</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1113"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1203"/>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1114"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1204"/>
         <source>Zoom to 100% (1:1)</source>
         <translation>Zoomer à 100% (1:1)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1118"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1208"/>
         <source>Zoom in</source>
         <translation>Zoom avant</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1124"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1214"/>
         <source>–</source>
         <translation>–</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1125"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1215"/>
         <source>Zoom out</source>
         <translation>Zoom arrière</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1138"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1228"/>
         <source>Show Grid</source>
         <translation>Afficher la grille</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1139"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1229"/>
         <source>Show/hide computational mesh grid</source>
         <translation>Afficher/masquer la grille du maillage</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1142"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1232"/>
         <source>Show Subset</source>
         <translation>Afficher l&apos;imagette</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1143"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1233"/>
         <source>Show subset window on hover (requires Grid)</source>
         <translation>Afficher la fenêtre d&apos;imagette au survol (nécessite la grille)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1397"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1487"/>
         <source>Placing Starting Points</source>
         <translation>Placement des points de départ</translation>
     </message>
@@ -793,6 +793,19 @@ Les étiquettes se mettent à jour par image quand la plage auto est activée.</
     </message>
 </context>
 <context>
+    <name>ImageCanvas</name>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="1044"/>
+        <source>Load images first before drawing a Region of Interest.</source>
+        <translation>Chargez d'abord des images avant de dessiner une région d'intérêt.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="1064"/>
+        <source>The three points are nearly collinear — pick points spread around the circle&apos;s edge.</source>
+        <translation>Les trois points sont presque colinéaires — choisissez des points répartis sur le bord du cercle.</translation>
+    </message>
+</context>
+<context>
     <name>ImageList</name>
     <message>
         <location filename="../../gui/widgets/image_list.py" line="95"/>
@@ -1136,12 +1149,12 @@ Par défaut (non coché) : lexicographique — idéal pour les noms avec zéros 
     <message>
         <location filename="../../gui/app.py" line="754"/>
         <source>  Imported mask for frame %1</source>
-        <translation type="unfinished"></translation>
+        <translation>  Masque importé pour l&apos;image %1</translation>
     </message>
     <message>
         <location filename="../../gui/app.py" line="765"/>
         <source>Batch import: %n mask(s) loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>Import par lot : %n masque(s) chargé(s)</translation>
     </message>
 </context>
 <context>
@@ -1535,6 +1548,11 @@ N&apos;affecte que l&apos;initialisation des points de départ ; les autres nœu
         <source>Clear Brush</source>
         <translation>Effacer le pinceau</translation>
     </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="256"/>
+        <source>Circle (3-point)</source>
+        <translation>Cercle (3 points)</translation>
+    </message>
 </context>
 <context>
     <name>RightSidebar</name>
@@ -1722,22 +1740,22 @@ N&apos;affecte que l&apos;initialisation des points de départ ; les autres nœu
 <context>
     <name>StrainParamPanel</name>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="79"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="85"/>
         <source>Plane fitting</source>
         <translation>Ajustement de plan</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="80"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="86"/>
         <source>FEM nodal</source>
         <translation>FEM nodal</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="82"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="88"/>
         <source>Method</source>
         <translation>Méthode</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="106"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="112"/>
         <source>VSG (Virtual Strain Gauge) size is the diameter, in pixels, of the circular region around each mesh node used to fit a local displacement plane. Strain is then taken as the plane&apos;s slope.
 
 • Larger VSG → smoother strain, lower spatial resolution.
@@ -1754,33 +1772,57 @@ Not used when Method = FEM nodal (there, mesh spacing itself sets the gauge size
 Non utilisée quand Méthode = FEM nodal (l&apos;espacement du maillage fixe alors la taille).</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="109"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="115"/>
         <source>VSG size</source>
         <translation>Taille VSG</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="139"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="155"/>
+        <source>Hides low-confidence strain at ROI / hole edges, where the VSG window crosses the boundary and the local plane fit becomes one-sided and unreliable.
+
+• Coefficient × VSG radius = width of the trimmed boundary band.
+• 0.00 = keep every node (no trimming).
+• 0.70 = recommended (trims where edge error rises sharply).
+• 1.00 = strictest (trim any node whose window touches the edge).
+
+Only applies when Method = Plane fitting.</source>
+        <translation>Masque la déformation peu fiable aux bords de la ROI / des trous, là où la fenêtre VSG franchit la frontière et où l&apos;ajustement de plan local devient unilatéral et peu fiable.
+
+• Coefficient × rayon VSG = largeur de la bande de bord rognée.
+• 0.00 = conserver tous les nœuds (aucun rognage).
+• 0.70 = recommandé (rogne là où l&apos;erreur de bord augmente fortement).
+• 1.00 = le plus strict (rogne tout nœud dont la fenêtre touche le bord).
+
+Ne s&apos;applique que lorsque Méthode = Ajustement de plan.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="158"/>
+        <source>Trim low-confidence edges</source>
+        <translation>Rogner les bords peu fiables</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="185"/>
         <source>Off</source>
         <comment>Strain smoothing preset</comment>
         <translation>Désactivé</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="140"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="186"/>
         <source>Light (σ = 0.5 × step)</source>
         <translation>Léger (σ = 0,5 × step)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="141"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="187"/>
         <source>Medium (σ = 1 × step)</source>
         <translation>Moyen (σ = 1 × step)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="142"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="188"/>
         <source>Strong (σ = 2 × step) ⚠</source>
         <translation>Fort (σ = 2 × step) ⚠</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="153"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="199"/>
         <source>Gaussian smoothing of the strain field after computation.
 σ is the Gaussian kernel width; &apos;step&apos; = DIC node spacing.
   Light  (0.5 × step):  subtle, preserves fine features.
@@ -1793,32 +1835,37 @@ Non utilisée quand Méthode = FEM nodal (l&apos;espacement du maillage fixe alo
   Fort    (2 × step) ⚠ : agressif, peut flouter les vrais gradients.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="154"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="200"/>
         <source>Strain field smoothing</source>
         <translation>Lissage du champ de déformation</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="159"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="205"/>
         <source>Infinitesimal</source>
         <translation>Infinitésimal</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="160"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="206"/>
         <source>Eulerian</source>
         <translation>Eulérien</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="161"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="207"/>
         <source>Green-Lagrangian</source>
         <translation>Green-Lagrange</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="163"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="209"/>
         <source>Strain type</source>
         <translation>Type de déformation</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="256"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="271"/>
+        <source>Trimmed: %1 nodes (%2%)</source>
+        <translation>Rognés : %1 nœuds (%2%)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="324"/>
         <source>⚠ VSG radius (%1 px) &lt; DIC node spacing (%2 px); plane fit will fail. Use VSG ≥ %3 px or switch Method to FEM nodal.</source>
         <translation>⚠ Rayon VSG (%1 px) &lt; espacement des nœuds DIC (%2 px) ; l&apos;ajustement de plan échouera. Utilisez VSG ≥ %3 px ou passez la Méthode en FEM nodal.</translation>
     </message>
@@ -2136,82 +2183,82 @@ ou Parcourir</translation>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="130"/>
         <source>Preview</source>
-        <translation type="unfinished"></translation>
+        <translation>Aperçu</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="134"/>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="260"/>
         <source>(no image)</source>
-        <translation type="unfinished"></translation>
+        <translation>(aucune image)</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="154"/>
         <source>Image only</source>
-        <translation type="unfinished"></translation>
+        <translation>Image seule</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="155"/>
         <source>Image + Mask</source>
-        <translation type="unfinished"></translation>
+        <translation>Image + masque</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="156"/>
         <source>Mask only</source>
-        <translation type="unfinished"></translation>
+        <translation>Masque seul</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="159"/>
         <source>View:</source>
-        <translation type="unfinished"></translation>
+        <translation>Affichage :</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="165"/>
         <source>Alpha:</source>
-        <translation type="unfinished"></translation>
+        <translation>Alpha :</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="173"/>
         <source>Blue</source>
         <comment>Mask overlay color</comment>
-        <translation type="unfinished"></translation>
+        <translation>Bleu</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="177"/>
         <source>Red</source>
         <comment>Mask overlay color</comment>
-        <translation type="unfinished"></translation>
+        <translation>Rouge</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="181"/>
         <source>Green</source>
         <comment>Mask overlay color</comment>
-        <translation type="unfinished"></translation>
+        <translation>Vert</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="185"/>
         <source>Yellow</source>
         <comment>Mask overlay color</comment>
-        <translation type="unfinished"></translation>
+        <translation>Jaune</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="189"/>
         <source>Mask color:</source>
-        <translation type="unfinished"></translation>
+        <translation>Couleur du masque :</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="267"/>
         <source>No mask assigned</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucun masque attribué</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="272"/>
         <source>Frame %1 — %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Image %1 — %2</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/batch_import_dialog.py" line="287"/>
         <source>Failed to load image</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec du chargement de l&apos;image</translation>
     </message>
 </context>
 </TS>

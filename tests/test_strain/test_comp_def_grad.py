@@ -209,3 +209,63 @@ class TestCompDefGradFiltering:
 
         F = comp_def_grad(U, coords, elems, rad=25.0, mask=mask)
         assert np.all(np.isnan(F))
+
+
+class TestEdgeValidMask:
+    """Tests for edge_valid_mask — the VSG-crosses-boundary trim criterion."""
+
+    def _rect_mask(self, h=200, w=200, lo=40, hi=160):
+        m = np.zeros((h, w), dtype=np.float64)
+        m[lo:hi, lo:hi] = 1.0
+        return m
+
+    def test_alpha_zero_keeps_all(self):
+        """alpha = 0 disables trimming — every node valid."""
+        from al_dic.strain.comp_def_grad import edge_valid_mask
+        mask = self._rect_mask()
+        coords = np.array([[100.0, 100.0], [41.0, 41.0], [159.0, 159.0]])
+        valid = edge_valid_mask(coords, mask, rad=20.0, alpha=0.0)
+        assert valid.dtype == bool
+        assert valid.all()
+
+    def test_none_mask_keeps_all(self):
+        """No mask -> nothing to trim against -> all valid."""
+        from al_dic.strain.comp_def_grad import edge_valid_mask
+        coords = np.array([[100.0, 100.0], [0.0, 0.0]])
+        assert edge_valid_mask(coords, None, rad=20.0, alpha=1.0).all()
+
+    def test_interior_valid_edge_trimmed(self):
+        """Center node valid; node within alpha*rad of the ROI edge trimmed."""
+        from al_dic.strain.comp_def_grad import edge_valid_mask
+        mask = self._rect_mask(lo=40, hi=160)  # ROI [40,160), center (100,100)
+        rad, alpha = 20.0, 0.7  # trim band = 14 px from boundary
+        center = np.array([[100.0, 100.0]])     # dt ~ 60 px >> 14 -> valid
+        near_edge = np.array([[45.0, 100.0]])   # dt ~ 5 px < 14 -> trimmed
+        just_inside = np.array([[100.0, 56.0]]) # dt ~ 16 px > 14 -> valid
+        assert edge_valid_mask(center, mask, rad, alpha)[0]
+        assert not edge_valid_mask(near_edge, mask, rad, alpha)[0]
+        assert edge_valid_mask(just_inside, mask, rad, alpha)[0]
+
+    def test_internal_hole_edge_trimmed(self):
+        """A node next to an internal hole boundary is trimmed too."""
+        from al_dic.strain.comp_def_grad import edge_valid_mask
+        mask = self._rect_mask(lo=20, hi=180)
+        # punch a hole of radius 15 at (100,100)
+        yy, xx = np.mgrid[0:200, 0:200]
+        mask[(xx - 100) ** 2 + (yy - 100) ** 2 < 15 ** 2] = 0.0
+        rad, alpha = 20.0, 0.7
+        near_hole = np.array([[118.0, 100.0]])  # ~3 px from hole edge -> trimmed
+        far = np.array([[60.0, 100.0]])         # far from hole & ROI edge -> valid
+        assert not edge_valid_mask(near_hole, mask, rad, alpha)[0]
+        assert edge_valid_mask(far, mask, rad, alpha)[0]
+
+    def test_density_independent(self):
+        """Two nodes at the same boundary distance get the same flag,
+        regardless of how the (hypothetical) mesh around them is spaced."""
+        from al_dic.strain.comp_def_grad import edge_valid_mask
+        mask = self._rect_mask(lo=20, hi=180)
+        rad, alpha = 20.0, 0.7
+        # same dt (both ~80 px from any edge), criterion depends only on dt
+        a = np.array([[100.0, 100.0]])
+        b = np.array([[100.0, 100.0]])
+        assert edge_valid_mask(a, mask, rad, alpha)[0] == edge_valid_mask(b, mask, rad, alpha)[0]

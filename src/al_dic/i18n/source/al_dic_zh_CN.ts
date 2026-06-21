@@ -166,62 +166,62 @@ Only relevant for the FFT init-guess mode.</source>
 <context>
     <name>CanvasArea</name>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1107"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1197"/>
         <source>Fit</source>
         <translation>适配</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1108"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1198"/>
         <source>Fit image to viewport</source>
         <translation>将图像适配到视口</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1113"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1203"/>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1114"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1204"/>
         <source>Zoom to 100% (1:1)</source>
         <translation>缩放到 100%（1:1）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1118"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1208"/>
         <source>Zoom in</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1124"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1214"/>
         <source>–</source>
         <translation>–</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1125"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1215"/>
         <source>Zoom out</source>
         <translation>缩小</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1138"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1228"/>
         <source>Show Grid</source>
         <translation>显示网格</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1139"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1229"/>
         <source>Show/hide computational mesh grid</source>
         <translation>显示/隐藏计算网格</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1142"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1232"/>
         <source>Show Subset</source>
         <translation>显示子集</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1143"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1233"/>
         <source>Show subset window on hover (requires Grid)</source>
         <translation>悬停时显示子集窗口（需要先开启网格）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1397"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1487"/>
         <source>Placing Starting Points</source>
         <translation>正在放置种子点</translation>
     </message>
@@ -790,6 +790,19 @@ Tick labels update per frame when Auto range is enabled.</source>
         <location filename="../../gui/widgets/frame_navigator.py" line="191"/>
         <source>FRAME %1/%2</source>
         <translation>帧 %1/%2</translation>
+    </message>
+</context>
+<context>
+    <name>ImageCanvas</name>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="1044"/>
+        <source>Load images first before drawing a Region of Interest.</source>
+        <translation>请先加载图像，再绘制感兴趣区域。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="1064"/>
+        <source>The three points are nearly collinear — pick points spread around the circle&apos;s edge.</source>
+        <translation>三个点几乎共线 — 请在圆周上分散地选取三个点。</translation>
     </message>
 </context>
 <context>
@@ -1535,6 +1548,11 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <source>Clear Brush</source>
         <translation>清除画笔</translation>
     </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="256"/>
+        <source>Circle (3-point)</source>
+        <translation>圆（三点）</translation>
+    </message>
 </context>
 <context>
     <name>RightSidebar</name>
@@ -1722,22 +1740,22 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
 <context>
     <name>StrainParamPanel</name>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="79"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="85"/>
         <source>Plane fitting</source>
         <translation>平面拟合</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="80"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="86"/>
         <source>FEM nodal</source>
         <translation>有限元节点</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="82"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="88"/>
         <source>Method</source>
         <translation>方法</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="106"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="112"/>
         <source>VSG (Virtual Strain Gauge) size is the diameter, in pixels, of the circular region around each mesh node used to fit a local displacement plane. Strain is then taken as the plane&apos;s slope.
 
 • Larger VSG → smoother strain, lower spatial resolution.
@@ -1754,33 +1772,57 @@ Not used when Method = FEM nodal (there, mesh spacing itself sets the gauge size
 方法选择 FEM nodal 时不使用此参数（此时由网格间距决定虚拟应变计尺寸）。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="109"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="115"/>
         <source>VSG size</source>
         <translation>VSG 尺寸</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="139"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="155"/>
+        <source>Hides low-confidence strain at ROI / hole edges, where the VSG window crosses the boundary and the local plane fit becomes one-sided and unreliable.
+
+• Coefficient × VSG radius = width of the trimmed boundary band.
+• 0.00 = keep every node (no trimming).
+• 0.70 = recommended (trims where edge error rises sharply).
+• 1.00 = strictest (trim any node whose window touches the edge).
+
+Only applies when Method = Plane fitting.</source>
+        <translation>在 ROI / 孔洞边缘隐藏低置信度的应变：那里 VSG 窗口跨越边界，局部平面拟合变成单边、不可靠。
+
+• 系数 × VSG 半径 = 裁剪边界带的宽度。
+• 0.00 = 保留所有节点（不裁剪）。
+• 0.70 = 推荐（裁掉误差明显上升的区域）。
+• 1.00 = 最严格（窗口一旦触及边界即裁剪）。
+
+仅在 方法 = 平面拟合 时生效。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="158"/>
+        <source>Trim low-confidence edges</source>
+        <translation>裁剪低置信度边缘</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="185"/>
         <source>Off</source>
         <comment>Strain smoothing preset</comment>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="140"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="186"/>
         <source>Light (σ = 0.5 × step)</source>
         <translation>轻度（σ = 0.5 × step）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="141"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="187"/>
         <source>Medium (σ = 1 × step)</source>
         <translation>中等（σ = 1 × step）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="142"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="188"/>
         <source>Strong (σ = 2 × step) ⚠</source>
         <translation>强（σ = 2 × step）⚠</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="153"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="199"/>
         <source>Gaussian smoothing of the strain field after computation.
 σ is the Gaussian kernel width; &apos;step&apos; = DIC node spacing.
   Light  (0.5 × step):  subtle, preserves fine features.
@@ -1793,32 +1835,37 @@ Not used when Method = FEM nodal (there, mesh spacing itself sets the gauge size
   Strong（2 × step）⚠：强平滑，可能模糊真实梯度。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="154"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="200"/>
         <source>Strain field smoothing</source>
         <translation>应变场平滑</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="159"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="205"/>
         <source>Infinitesimal</source>
         <translation>无穷小应变</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="160"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="206"/>
         <source>Eulerian</source>
         <translation>欧拉应变</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="161"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="207"/>
         <source>Green-Lagrangian</source>
         <translation>格林-拉格朗日应变</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="163"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="209"/>
         <source>Strain type</source>
         <translation>应变类型</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="256"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="271"/>
+        <source>Trimmed: %1 nodes (%2%)</source>
+        <translation>已裁剪：%1 个节点 (%2%)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="324"/>
         <source>⚠ VSG radius (%1 px) &lt; DIC node spacing (%2 px); plane fit will fail. Use VSG ≥ %3 px or switch Method to FEM nodal.</source>
         <translation>⚠ VSG 半径（%1 px）&lt; DIC 节点间距（%2 px）；平面拟合将失败。请将 VSG ≥ %3 px 或将方法切换为 FEM nodal。</translation>
     </message>

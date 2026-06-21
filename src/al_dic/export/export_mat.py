@@ -117,7 +117,7 @@ def export_mat(
         for field_name in requested_strain:
             mat = np.full((n_nodes, n_strain_frames), np.nan)
             for t, sr in enumerate(results.result_strain):
-                val = getattr(sr, field_name, None)
+                val = sr.trimmed_field(field_name)  # edge-trim applied
                 if val is not None:
                     mat[:, t] = val
             mat_dict[field_name] = mat

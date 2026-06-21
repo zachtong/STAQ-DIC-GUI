@@ -626,9 +626,23 @@ class StrainWindow(QMainWindow):
         sr: StrainResult = result.result_strain[strain_idx]
 
         if field_name == "strain_rotation":
-            return sr.strain_rotation  # pre-computed from raw F before strain-type conversion
+            vals = sr.strain_rotation  # pre-computed from raw F before strain-type conversion
+        else:
+            vals = getattr(sr, field_name, None)
 
-        return getattr(sr, field_name, None)
+        # Edge-trim sink: hide low-confidence ROI/hole-edge nodes from the
+        # displayed field. ``strain_valid`` is set for plane-fit strain only
+        # (None otherwise); the values stored in StrainResult are untouched —
+        # we NaN a display copy so the interpolator drops those nodes,
+        # producing a transparent boundary band.
+        if (
+            vals is not None
+            and sr.strain_valid is not None
+            and len(sr.strain_valid) == len(vals)
+        ):
+            vals = np.asarray(vals, dtype=np.float64).copy()
+            vals[~sr.strain_valid] = np.nan
+        return vals
 
     def _get_disp_field(
         self,
@@ -707,6 +721,27 @@ class StrainWindow(QMainWindow):
         except (IndexError, FileNotFoundError, ValueError):
             pass
 
+    def _update_trim_readout(
+        self, field_name: str, frame: int, result: PipelineResult,
+    ) -> None:
+        """Refresh the panel's 'Trimmed: N nodes (M%)' readout for this frame.
+
+        Uses the current strain frame's ``strain_valid`` (plane-fit only).
+        Clears the readout for displacement fields, the reference frame, or
+        when no validity mask is available.
+        """
+        sv = None
+        if field_name not in DISP_FIELD_NAMES and frame >= 1 and result.result_strain:
+            idx = frame - 1
+            if idx < len(result.result_strain):
+                sv = result.result_strain[idx].strain_valid
+        if sv is None:
+            self._param_panel.set_trim_readout(0, 0)
+        else:
+            self._param_panel.set_trim_readout(
+                int(np.count_nonzero(~sv)), int(sv.size),
+            )
+
     def _render_current(self) -> None:
         try:
             result = self._state.results
@@ -719,6 +754,7 @@ class StrainWindow(QMainWindow):
             frame = self._strain_current_frame
             field_name = self._field_selector.current_field()
             values = self._get_field_values(field_name, frame, result)
+            self._update_trim_readout(field_name, frame, result)
 
             viz = self._viz_panel.get_state()
             show_deformed = bool(viz.get("show_deformed", False))

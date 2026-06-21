@@ -44,6 +44,250 @@ LANGUAGES = ("zh_CN", "zh_TW", "ja", "ko", "de", "fr", "es")
 #
 # Short words / common UI labels
 TRANSLATIONS: dict[str, dict[str, str]] = {
+    # ========== StrainParamPanel — edge trim (all 8 locales) ==========
+    "Trim low-confidence edges": {
+        "zh_CN": "裁剪低置信度边缘",
+        "zh_TW": "裁剪低可信度邊緣",
+        "ja":    "低信頼度のエッジを除去",
+        "ko":    "저신뢰도 가장자리 잘라내기",
+        "de":    "Ränder mit geringer Konfidenz beschneiden",
+        "fr":    "Rogner les bords peu fiables",
+        "es":    "Recortar bordes de baja confianza",
+    },
+    "Hides low-confidence strain at ROI / hole edges, where the VSG "
+    "window crosses the boundary and the local plane fit becomes "
+    "one-sided and unreliable.\n\n"
+    "• Coefficient × VSG radius = width of the trimmed boundary band.\n"
+    "• 0.00 = keep every node (no trimming).\n"
+    "• 0.70 = recommended (trims where edge error rises sharply).\n"
+    "• 1.00 = strictest (trim any node whose window touches the edge).\n\n"
+    "Only applies when Method = Plane fitting.": {
+        "zh_CN": "在 ROI / 孔洞边缘隐藏低置信度的应变：那里 VSG 窗口跨越边界，"
+                 "局部平面拟合变成单边、不可靠。\n\n"
+                 "• 系数 × VSG 半径 = 裁剪边界带的宽度。\n"
+                 "• 0.00 = 保留所有节点（不裁剪）。\n"
+                 "• 0.70 = 推荐（裁掉误差明显上升的区域）。\n"
+                 "• 1.00 = 最严格（窗口一旦触及边界即裁剪）。\n\n"
+                 "仅在 方法 = 平面拟合 时生效。",
+        "zh_TW": "在 ROI / 孔洞邊緣隱藏低可信度的應變：那裡 VSG 視窗跨越邊界，"
+                 "局部平面擬合變成單邊、不可靠。\n\n"
+                 "• 係數 × VSG 半徑 = 裁剪邊界帶的寬度。\n"
+                 "• 0.00 = 保留所有節點（不裁剪）。\n"
+                 "• 0.70 = 推薦（裁掉誤差明顯上升的區域）。\n"
+                 "• 1.00 = 最嚴格（視窗一旦觸及邊界即裁剪）。\n\n"
+                 "僅在 方法 = 平面擬合 時生效。",
+        "ja":    "ROI / 穴の縁で、VSG ウィンドウが境界をまたぎ、局所的な平面"
+                 "フィッティングが片側的かつ不正確になる箇所の、低信頼度のひずみ"
+                 "を非表示にします。\n\n"
+                 "• 係数 × VSG 半径 = トリミングされる境界帯の幅。\n"
+                 "• 0.00 = すべてのノードを保持（トリミングなし）。\n"
+                 "• 0.70 = 推奨（縁の誤差が急増する箇所をトリミング）。\n"
+                 "• 1.00 = 最も厳格（ウィンドウが縁に触れるノードをすべて"
+                 "トリミング）。\n\n"
+                 "方法 = 平面フィッティング の場合のみ有効です。",
+        "ko":    "ROI / 구멍 가장자리에서 VSG 창이 경계를 넘어 국소 평면 피팅이 "
+                 "한쪽으로 치우쳐 신뢰할 수 없게 되는 부분의 저신뢰도 변형률을 "
+                 "숨깁니다.\n\n"
+                 "• 계수 × VSG 반경 = 잘라내는 경계 띠의 폭.\n"
+                 "• 0.00 = 모든 노드 유지(잘라내기 없음).\n"
+                 "• 0.70 = 권장(가장자리 오차가 급증하는 곳을 잘라냄).\n"
+                 "• 1.00 = 가장 엄격(창이 가장자리에 닿는 모든 노드를 잘라냄).\n\n"
+                 "Method = 평면 피팅 일 때만 적용됩니다.",
+        "de":    "Blendet Dehnung mit geringer Konfidenz an ROI-/Loch-Rändern "
+                 "aus, wo das VSG-Fenster die Grenze überschreitet und die "
+                 "lokale Ebenenanpassung einseitig und unzuverlässig wird.\n\n"
+                 "• Koeffizient × VSG-Radius = Breite des beschnittenen "
+                 "Randbereichs.\n"
+                 "• 0.00 = jeden Knoten behalten (kein Beschneiden).\n"
+                 "• 0.70 = empfohlen (beschneidet, wo der Randfehler stark "
+                 "ansteigt).\n"
+                 "• 1.00 = strengste Einstellung (beschneidet jeden Knoten, "
+                 "dessen Fenster den Rand berührt).\n\n"
+                 "Gilt nur bei Methode = Ebenenanpassung.",
+        "fr":    "Masque la déformation peu fiable aux bords de la ROI / des "
+                 "trous, là où la fenêtre VSG franchit la frontière et où "
+                 "l'ajustement de plan local devient unilatéral et peu "
+                 "fiable.\n\n"
+                 "• Coefficient × rayon VSG = largeur de la bande de bord "
+                 "rognée.\n"
+                 "• 0.00 = conserver tous les nœuds (aucun rognage).\n"
+                 "• 0.70 = recommandé (rogne là où l'erreur de bord augmente "
+                 "fortement).\n"
+                 "• 1.00 = le plus strict (rogne tout nœud dont la fenêtre "
+                 "touche le bord).\n\n"
+                 "Ne s'applique que lorsque Méthode = Ajustement de plan.",
+        "es":    "Oculta la deformación de baja confianza en los bordes de la "
+                 "ROI / huecos, donde la ventana VSG cruza el límite y el "
+                 "ajuste de plano local se vuelve unilateral y poco fiable.\n\n"
+                 "• Coeficiente × radio VSG = ancho de la banda de borde "
+                 "recortada.\n"
+                 "• 0.00 = conservar todos los nodos (sin recorte).\n"
+                 "• 0.70 = recomendado (recorta donde el error de borde "
+                 "aumenta bruscamente).\n"
+                 "• 1.00 = más estricto (recorta cualquier nodo cuya ventana "
+                 "toque el borde).\n\n"
+                 "Solo se aplica cuando Método = Ajuste de plano.",
+    },
+    "Trimmed: %1 nodes (%2%)": {
+        "zh_CN": "已裁剪：%1 个节点 (%2%)",
+        "zh_TW": "已裁剪：%1 個節點 (%2%)",
+        "ja":    "トリミング: %1 ノード (%2%)",
+        "ko":    "잘라냄: 노드 %1개 (%2%)",
+        "de":    "Beschnitten: %1 Knoten (%2%)",
+        "fr":    "Rognés : %1 nœuds (%2%)",
+        "es":    "Recortados: %1 nodos (%2%)",
+    },
+
+    # ========== ROI drawing — 3-point circle (all 8 locales) ==========
+    "Circle (3-point)": {
+        "zh_CN": "圆（三点）", "zh_TW": "圓（三點）",
+        "ja": "円（3 点）", "ko": "원(3점)",
+        "de": "Kreis (3 Punkte)", "fr": "Cercle (3 points)",
+        "es": "Círculo (3 puntos)",
+    },
+    "Load images first before drawing a Region of Interest.": {
+        "zh_CN": "请先加载图像，再绘制感兴趣区域。",
+        "zh_TW": "請先載入影像，再繪製感興趣區域。",
+        "ja": "関心領域を描画する前に、まず画像を読み込んでください。",
+        "ko": "관심 영역을 그리기 전에 먼저 이미지를 불러오세요.",
+        "de": "Laden Sie zuerst Bilder, bevor Sie eine Region of Interest zeichnen.",
+        "fr": "Chargez d'abord des images avant de dessiner une région d'intérêt.",
+        "es": "Cargue primero las imágenes antes de dibujar una región de interés.",
+    },
+    "The three points are nearly collinear — pick points spread around the circle's edge.": {
+        "zh_CN": "三个点几乎共线 — 请在圆周上分散地选取三个点。",
+        "zh_TW": "三個點幾乎共線 — 請在圓周上分散地選取三個點。",
+        "ja": "3 点がほぼ一直線です — 円周上に分散させて 3 点を選んでください。",
+        "ko": "세 점이 거의 일직선입니다 — 원의 가장자리에 고르게 세 점을 찍으세요.",
+        "de": "Die drei Punkte sind fast kollinear — wählen Sie Punkte, die über den Kreisrand verteilt sind.",
+        "fr": "Les trois points sont presque colinéaires — choisissez des points répartis sur le bord du cercle.",
+        "es": "Los tres puntos son casi colineales — elija puntos repartidos por el borde del círculo.",
+    },
+
+    # ========== Batch-import dialog backlog (zh_CN already done; fill 6 others) ==========
+    "Select Mask Folder": {
+        "zh_TW": "選擇遮罩資料夾", "ja": "マスクフォルダを選択",
+        "ko": "마스크 폴더 선택", "de": "Maskenordner auswählen",
+        "fr": "Sélectionner le dossier de masques",
+        "es": "Seleccionar carpeta de máscaras",
+    },
+    "Failed to read mask file.": {
+        "zh_TW": "無法讀取遮罩檔案。", "ja": "マスクファイルの読み込みに失敗しました。",
+        "ko": "마스크 파일을 읽지 못했습니다.",
+        "de": "Maskendatei konnte nicht gelesen werden.",
+        "fr": "Échec de la lecture du fichier de masque.",
+        "es": "No se pudo leer el archivo de máscara.",
+    },
+    "Mismatched shape: %1×%2 (expected %3×%4)": {
+        "zh_TW": "尺寸不符：%1×%2（預期 %3×%4）",
+        "ja": "形状が一致しません: %1×%2 (期待値 %3×%4)",
+        "ko": "형상 불일치: %1×%2 (예상 %3×%4)",
+        "de": "Größe stimmt nicht: %1×%2 (erwartet %3×%4)",
+        "fr": "Forme incompatible : %1×%2 (attendu %3×%4)",
+        "es": "Forma no coincide: %1×%2 (se esperaba %3×%4)",
+    },
+    "%n mask(s) have mismatched sizes and are disabled.": {
+        "zh_TW": "%n 個遮罩尺寸不符，已停用。",
+        "ja": "%n 個のマスクはサイズが一致しないため無効化されました。",
+        "ko": "크기가 일치하지 않는 마스크 %n개가 비활성화되었습니다.",
+        "de": "%n Maske(n) haben abweichende Größen und sind deaktiviert.",
+        "fr": "%n masque(s) ont des tailles incompatibles et sont désactivés.",
+        "es": "%n máscara(s) tienen tamaños no coincidentes y están deshabilitadas.",
+    },
+    "Invalid assignment": {
+        "zh_TW": "無效的指派", "ja": "無効な割り当て", "ko": "잘못된 할당",
+        "de": "Ungültige Zuordnung", "fr": "Affectation non valide",
+        "es": "Asignación no válida",
+    },
+    "A frame can only have one mask. Select exactly one mask, or select multiple frames to assign one mask to many.": {
+        "zh_TW": "一個影格只能對應一個遮罩。請選擇恰好一個遮罩，或選擇多個影格以將同一個遮罩套用到多個影格。",
+        "ja": "1 つのフレームに割り当てられるマスクは 1 つだけです。マスクを 1 つだけ選択するか、複数のフレームを選択して 1 つのマスクを複数に割り当ててください。",
+        "ko": "한 프레임에는 마스크를 하나만 지정할 수 있습니다. 마스크를 정확히 하나 선택하거나, 여러 프레임을 선택해 하나의 마스크를 여러 프레임에 지정하세요.",
+        "de": "Ein Bild kann nur eine Maske haben. Wählen Sie genau eine Maske aus oder wählen Sie mehrere Bilder, um eine Maske mehreren zuzuweisen.",
+        "fr": "Une image ne peut avoir qu'un seul masque. Sélectionnez exactement un masque, ou sélectionnez plusieurs images pour attribuer un masque à plusieurs.",
+        "es": "Un fotograma solo puede tener una máscara. Seleccione exactamente una máscara, o seleccione varios fotogramas para asignar una máscara a muchos.",
+    },
+    "  Imported mask for frame %1": {
+        "zh_TW": "  已匯入影格 %1 的遮罩",
+        "ja": "  フレーム %1 のマスクをインポートしました",
+        "ko": "  프레임 %1의 마스크를 가져왔습니다",
+        "de": "  Maske für Bild %1 importiert",
+        "fr": "  Masque importé pour l'image %1",
+        "es": "  Máscara importada para el fotograma %1",
+    },
+    "Batch import: %n mask(s) loaded": {
+        "zh_TW": "批次匯入：已載入 %n 個遮罩",
+        "ja": "バッチインポート: %n 個のマスクを読み込みました",
+        "ko": "일괄 가져오기: 마스크 %n개를 불러왔습니다",
+        "de": "Stapelimport: %n Maske(n) geladen",
+        "fr": "Import par lot : %n masque(s) chargé(s)",
+        "es": "Importación por lotes: %n máscara(s) cargada(s)",
+    },
+    "Preview": {
+        "zh_TW": "預覽", "ja": "プレビュー", "ko": "미리보기",
+        "de": "Vorschau", "fr": "Aperçu", "es": "Vista previa",
+    },
+    "(no image)": {
+        "zh_TW": "（無影像）", "ja": "（画像なし）", "ko": "(이미지 없음)",
+        "de": "(kein Bild)", "fr": "(aucune image)", "es": "(sin imagen)",
+    },
+    "Image only": {
+        "zh_TW": "僅影像", "ja": "画像のみ", "ko": "이미지만",
+        "de": "Nur Bild", "fr": "Image seule", "es": "Solo imagen",
+    },
+    "Image + Mask": {
+        "zh_TW": "影像 + 遮罩", "ja": "画像 + マスク", "ko": "이미지 + 마스크",
+        "de": "Bild + Maske", "fr": "Image + masque", "es": "Imagen + máscara",
+    },
+    "Mask only": {
+        "zh_TW": "僅遮罩", "ja": "マスクのみ", "ko": "마스크만",
+        "de": "Nur Maske", "fr": "Masque seul", "es": "Solo máscara",
+    },
+    "View:": {
+        "zh_TW": "檢視：", "ja": "表示:", "ko": "보기:",
+        "de": "Ansicht:", "fr": "Affichage :", "es": "Vista:",
+    },
+    "Alpha:": {
+        "zh_TW": "透明度：", "ja": "アルファ:", "ko": "알파:",
+        "de": "Alpha:", "fr": "Alpha :", "es": "Alfa:",
+    },
+    "Blue": {
+        "zh_TW": "藍色", "ja": "青", "ko": "파랑",
+        "de": "Blau", "fr": "Bleu", "es": "Azul",
+    },
+    "Red": {
+        "zh_TW": "紅色", "ja": "赤", "ko": "빨강",
+        "de": "Rot", "fr": "Rouge", "es": "Rojo",
+    },
+    "Green": {
+        "zh_TW": "綠色", "ja": "緑", "ko": "초록",
+        "de": "Grün", "fr": "Vert", "es": "Verde",
+    },
+    "Yellow": {
+        "zh_TW": "黃色", "ja": "黄", "ko": "노랑",
+        "de": "Gelb", "fr": "Jaune", "es": "Amarillo",
+    },
+    "Mask color:": {
+        "zh_TW": "遮罩顏色：", "ja": "マスクの色:", "ko": "마스크 색상:",
+        "de": "Maskenfarbe:", "fr": "Couleur du masque :", "es": "Color de máscara:",
+    },
+    "No mask assigned": {
+        "zh_TW": "未指派遮罩", "ja": "マスク未割り当て", "ko": "지정된 마스크 없음",
+        "de": "Keine Maske zugewiesen", "fr": "Aucun masque attribué",
+        "es": "Sin máscara asignada",
+    },
+    "Frame %1 — %2": {
+        "zh_TW": "影格 %1 — %2", "ja": "フレーム %1 — %2", "ko": "프레임 %1 — %2",
+        "de": "Bild %1 — %2", "fr": "Image %1 — %2", "es": "Fotograma %1 — %2",
+    },
+    "Failed to load image": {
+        "zh_TW": "無法載入影像", "ja": "画像の読み込みに失敗しました",
+        "ko": "이미지를 불러오지 못했습니다",
+        "de": "Bild konnte nicht geladen werden",
+        "fr": "Échec du chargement de l'image",
+        "es": "No se pudo cargar la imagen",
+    },
+
     # ========== AdvancedTuningWidget ==========
     "AL-DIC Iterations": {
         "zh_CN": "AL-DIC 迭代次数",
@@ -764,76 +1008,6 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
     },
 
     # ========== BatchImportDialog — size pre-scan & 1:N assignment ==========
-    # zh_CN only; other languages await contributor translation per the
-    # project i18n contract (no AI-translation for non-zh_CN locales).
-    "Select Mask Folder": {
-        "zh_CN": "选择掩模文件夹",
-    },
-    "Failed to read mask file.": {
-        "zh_CN": "无法读取掩模文件。",
-    },
-    "Mismatched shape: %1×%2 (expected %3×%4)": {
-        "zh_CN": "尺寸不匹配：%1×%2（期望 %3×%4）",
-    },
-    "Invalid assignment": {
-        "zh_CN": "无效的分配",
-    },
-    "A frame can only have one mask. Select exactly one mask, or "
-    "select multiple frames to assign one mask to many.": {
-        "zh_CN": "一个帧只能对应一个掩模。请选择恰好一个掩模，"
-                 "或者选择多个帧以把同一个掩模应用到多个帧。",
-    },
-    "  Imported mask for frame %1": {
-        "zh_CN": "  已导入帧 %1 的掩模",
-    },
-
-    # ========== BatchImportDialog — live mask preview panel ==========
-    # zh_CN only; non-zh_CN locales await contributor translation.
-    "Preview": {
-        "zh_CN": "预览",
-    },
-    "(no image)": {
-        "zh_CN": "（无图像）",
-    },
-    "Image only": {
-        "zh_CN": "仅图像",
-    },
-    "Image + Mask": {
-        "zh_CN": "图像 + 掩模",
-    },
-    "Mask only": {
-        "zh_CN": "仅掩模",
-    },
-    "View:": {
-        "zh_CN": "视图：",
-    },
-    "Alpha:": {
-        "zh_CN": "透明度：",
-    },
-    "Mask color:": {
-        "zh_CN": "掩模颜色：",
-    },
-    "No mask assigned": {
-        "zh_CN": "未分配掩模",
-    },
-    "Frame %1 — %2": {
-        "zh_CN": "帧 %1 — %2",
-    },
-    "Failed to load image": {
-        "zh_CN": "无法加载图像",
-    },
-    "Blue": {
-        "zh_CN": "蓝色",
-    },
-    "Red": {
-        "zh_CN": "红色",
-    },
-    "Green": {
-        "zh_CN": "绿色",
-    },
-    "Yellow": {
-        "zh_CN": "黄色",
-    },
 }
 
 

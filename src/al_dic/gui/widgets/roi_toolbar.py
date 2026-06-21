@@ -252,6 +252,10 @@ class ROIToolbar(QWidget):
         menu.addAction(
             "\u25cb  Circle", lambda: self._on_shape_selected("circle", mode)
         )
+        menu.addAction(
+            "\u25cc  " + self.tr("Circle (3-point)"),
+            lambda: self._on_shape_selected("circle3", mode),
+        )
         return menu
 
     def _show_add_menu(self) -> None:

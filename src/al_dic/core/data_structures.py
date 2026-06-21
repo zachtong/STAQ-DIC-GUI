@@ -337,6 +337,14 @@ class DICPara:
     method_to_compute_strain: int = 2
     strain_plane_fit_rad: float = 20.0
     strain_type: int = 0
+    # Edge-trim coefficient for plane-fit strain (method 2). A node is flagged
+    # unreliable when its VSG disk crosses the ROI/hole boundary within
+    # alpha * strain_plane_fit_rad (one-sided stencil -> biased plane fit).
+    # alpha = 1.0 strictest (trim any disk that touches the boundary);
+    # alpha = 0.0 disables trimming (report every node, legacy behaviour).
+    # Default 0.7 is calibrated to where plane-fit error returns to the
+    # interior baseline (see reports/strain_edge_trim_validation.pdf).
+    strain_edge_trim_alpha: float = 0.7
 
     # --- 11. Stress ---
     material_model: int = 1
@@ -433,6 +441,12 @@ class StrainResult:
         strain_principal_max, strain_principal_min: Principal strains.
         strain_maxshear: Maximum shear strain.
         strain_von_mises: Von Mises equivalent strain.
+        strain_valid: Per-node reliability mask (n_nodes,) for plane-fit
+            strain. True = neighbourhood complete; False = ROI/hole-edge node
+            whose VSG window crosses the boundary (unreliable). None when not
+            computed (non-plane-fit methods, or edge-trim disabled). Strain
+            *values* stay dense; consumers may NaN-out invalid nodes for
+            display/export.
     """
 
     disp_u: NDArray[np.float64]
@@ -449,6 +463,27 @@ class StrainResult:
     strain_maxshear: NDArray[np.float64] | None = None
     strain_von_mises: NDArray[np.float64] | None = None
     strain_rotation: NDArray[np.float64] | None = None
+    strain_valid: NDArray[np.bool_] | None = None
+
+    def trimmed_field(self, name: str) -> NDArray[np.float64] | None:
+        """Return strain field ``name`` with low-confidence edge nodes NaN'd.
+
+        Applies the :attr:`strain_valid` edge-trim mask so display and export
+        stay consistent. Returns the raw field unchanged when ``strain_valid``
+        is None (trim disabled or non-plane-fit method) or shapes mismatch.
+        Intended for strain components only — displacement fields are not
+        subject to plane-fit edge trimming.
+        """
+        vals = getattr(self, name, None)
+        if (
+            vals is None
+            or self.strain_valid is None
+            or len(self.strain_valid) != len(vals)
+        ):
+            return vals
+        out = np.asarray(vals, dtype=np.float64).copy()
+        out[~self.strain_valid] = np.nan
+        return out
 
 
 @dataclass(frozen=True)
