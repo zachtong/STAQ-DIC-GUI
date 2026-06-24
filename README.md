@@ -50,6 +50,15 @@ A complete desktop application built with PySide6. Three-column layout with imag
   <i>End-to-end GUI walkthrough — click the <a href="assets/videos/pyALDIC_demo.mp4">full-HD MP4</a> for maximum clarity.</i>
 </p>
 
+<p align="center">
+  <b>📺 Full video tutorial</b> &nbsp;|&nbsp;
+  English: <a href="https://www.youtube.com/watch?v=aLqDyM3tQII">YouTube</a> ·
+  <a href="https://www.bilibili.com/video/BV1dBjm6zEnQ?p=2">Bilibili</a>
+  &nbsp;&nbsp;·&nbsp;&nbsp;
+  中文: <a href="https://www.youtube.com/watch?v=27TtJEMefNA">YouTube</a> ·
+  <a href="https://www.bilibili.com/video/BV1dBjm6zEnQ">Bilibili</a>
+</p>
+
 ### Adaptive Spatial Refinement
 
 Quadtree mesh refinement with 5 built-in criteria: mask boundary, ROI edge, brush region, manual selection, and posterior error. Concentrates computational effort where it matters — near boundaries, discontinuities, and high-gradient regions.
