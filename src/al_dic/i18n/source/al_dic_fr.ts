@@ -797,7 +797,7 @@ Les étiquettes se mettent à jour par image quand la plage auto est activée.</
     <message>
         <location filename="../../gui/panels/canvas_area.py" line="1044"/>
         <source>Load images first before drawing a Region of Interest.</source>
-        <translation>Chargez d'abord des images avant de dessiner une région d'intérêt.</translation>
+        <translation>Chargez d&apos;abord des images avant de dessiner une région d&apos;intérêt.</translation>
     </message>
     <message>
         <location filename="../../gui/panels/canvas_area.py" line="1064"/>

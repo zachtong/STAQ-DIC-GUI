@@ -21,16 +21,30 @@ from __future__ import annotations
 import re
 import sys
 from pathlib import Path
-from xml.sax.saxutils import escape
+from xml.sax.saxutils import escape as _xml_escape
 from xml.sax.saxutils import unescape as _xml_unescape
+
+# pyside6-lupdate serialises .ts text with the full set of five XML
+# predefined entities, i.e. it also escapes ' -> &apos; and " -> &quot;.
+# Stdlib escape()/unescape() only handle & < > by default, so we extend
+# both directions to stay byte-identical to lupdate. Otherwise any
+# translation containing an apostrophe (very common in French: d'abord,
+# d'intérêt, l'image, ...) drifts on the next `i18n.py extract` and the
+# CI Gate A "extract drift" check fails.
+_XML_EXTRA_ESCAPE = {"'": "&apos;", '"': "&quot;"}
+_XML_EXTRA_UNESCAPE = {"&apos;": "'", "&quot;": '"'}
+
+
+def escape(text: str) -> str:
+    """XML-escape matching pyside6-lupdate (includes &apos; and &quot;)."""
+    return _xml_escape(text, _XML_EXTRA_ESCAPE)
 
 
 def unescape(text: str) -> str:
-    """Stdlib's xml.sax.saxutils.unescape only handles &lt; &gt; &amp; by
-    default — add &apos; and &quot; so translation keys containing curly
-    quotes match our Python dict keys.
+    """Inverse of escape(); also resolves &apos; and &quot; so translation
+    keys containing curly quotes match our Python dict keys.
     """
-    return _xml_unescape(text, {"&apos;": "'", "&quot;": '"'})
+    return _xml_unescape(text, _XML_EXTRA_UNESCAPE)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 TS_DIR = PROJECT_ROOT / "src" / "al_dic" / "i18n" / "source"
