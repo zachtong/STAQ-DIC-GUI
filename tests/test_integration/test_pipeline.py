@@ -344,6 +344,38 @@ class TestRefCacheLRU:
     def test_accumulative_capacity_invariant(self, monkeypatch):
         self._assert_capacity_invariant("accumulative", monkeypatch)
 
+    @staticmethod
+    def _run_all_caps(reference_mode, cap, monkeypatch):
+        # Bound ALL three reference-keyed caches (ref bundle + the two heavy
+        # solver precompute caches) to the same cap. use_global_step=True so
+        # subpb1_precompute_cache is exercised (it is only used under global
+        # step); icgn_ctx_cache is exercised every frame regardless.
+        import al_dic.core.pipeline as pipeline_mod
+        monkeypatch.setattr(pipeline_mod, "_REF_BUNDLE_CACHE_SIZE", cap)
+        monkeypatch.setattr(pipeline_mod, "_PRECOMPUTE_CACHE_SIZE", cap)
+        h, w = 64, 64
+        base, f1 = _make_speckle_pair(shift_x=0.2, shift_y=0.1, seed=0)
+        _, f2 = _make_speckle_pair(shift_x=0.4, shift_y=0.2, seed=0)
+        _, f3 = _make_speckle_pair(shift_x=0.6, shift_y=0.3, seed=0)
+        frames = [base, f1, f2, f3]
+        masks = [np.ones((h, w))] * 4
+        para = _make_default_para(
+            h, w, use_global_step=True, reference_mode=reference_mode
+        )
+        return run_aldic(para, frames, masks, compute_strain=False)
+
+    def test_precompute_caches_capacity_invariant_incremental(self, monkeypatch):
+        # cap=1 forces evict+recompute of the 6-DOF/2-DOF precompute every
+        # reference switch; cap=1000 never evicts. Byte-identical required.
+        small = self._run_all_caps("incremental", 1, monkeypatch)
+        large = self._run_all_caps("incremental", 1000, monkeypatch)
+        assert len(small.result_disp) == len(large.result_disp)
+        for a, b in zip(small.result_disp, large.result_disp):
+            if a is None or b is None:
+                assert a is None and b is None
+                continue
+            np.testing.assert_array_equal(a.U, b.U)
+
 
 class TestRunALDICAccumulative:
     """Test accumulative reference mode."""

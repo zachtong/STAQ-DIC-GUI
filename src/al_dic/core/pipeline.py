@@ -521,6 +521,13 @@ _REF_BUNDLE_CACHE_SIZE = 2  # max cached reference bundles (bounded LRU).
 # (ref = frame-1). Eviction is correctness-safe: a miss deterministically
 # recomputes the identical bundle from the frame provider.
 
+_PRECOMPUTE_CACHE_SIZE = 2  # max cached solver precompute contexts (LRU):
+# icgn_ctx_cache (6-DOF, keyed by ref+mesh) and subpb1_precompute_cache
+# (2-DOF, keyed by ref). Each entry is the heavy ~3 GB (N, Sy, Sx) subset
+# cube set; left unbounded they leak O(N_refs) in incremental mode. Bounded
+# like the ref bundles; recompute on a miss is byte-identical. Must be >= 1
+# so a just-inserted entry survives its own post-insert evict check.
+
 
 def run_aldic(
     para: DICPara,
@@ -705,8 +712,9 @@ def run_aldic(
         NDArray[np.float64], object,
     ]] = OrderedDict()
 
-    # subpb1_cache[ref_idx] = precomputed subpb1 data (depends on ref image)
-    subpb1_precompute_cache: dict[int, object] = {}
+    # subpb1_cache[ref_idx] = precomputed subpb1 data (depends on ref image).
+    # Bounded LRU: unbounded this leaks ~3 GB per reference in incremental.
+    subpb1_precompute_cache: OrderedDict[int, object] = OrderedDict()
 
     # local_icgn 6-DOF context cache, keyed by ref_idx + mesh hash. The
     # 6-DOF precompute (ref_all, gx_all, gy_all, ... at every node) is
@@ -716,7 +724,8 @@ def run_aldic(
     # doubling the per-frame peak. With this cache, frames sharing a
     # reference reuse the same arrays. Invalidated on ref switch +
     # whenever the mesh changes (mid-run refinement).
-    icgn_ctx_cache: dict[tuple[int, int], object] = {}
+    # Bounded LRU: unbounded this leaks ~3 GB per reference in incremental.
+    icgn_ctx_cache: OrderedDict[tuple[int, int], object] = OrderedDict()
 
     # Cross-frame FFT search-radius memo: once auto-expand grows the
     # search radius to cover a frame's actual displacement, subsequent
@@ -1223,6 +1232,10 @@ def run_aldic(
                 dic_mesh.coordinates_fem, Df, f_img_raw, para,
             )
             icgn_ctx_cache[_icgn_key] = icgn_ctx
+            if len(icgn_ctx_cache) > _PRECOMPUTE_CACHE_SIZE:
+                icgn_ctx_cache.popitem(last=False)  # evict LRU
+        else:
+            icgn_ctx_cache.move_to_end(_icgn_key)
         (
             U_subpb1, F_subpb1, local_time, conv_iter_s4,
             bad_pt_num_s4, mark_hole_strain,
@@ -1371,6 +1384,10 @@ def run_aldic(
                 subpb1_precompute_cache[ref_idx] = precompute_subpb1(
                     dic_mesh.coordinates_fem, Df, f_img_raw, para,
                 )
+                if len(subpb1_precompute_cache) > _PRECOMPUTE_CACHE_SIZE:
+                    subpb1_precompute_cache.popitem(last=False)  # evict LRU
+            else:
+                subpb1_precompute_cache.move_to_end(ref_idx)
             subpb1_pre = subpb1_precompute_cache[ref_idx]
 
             # subpb2 cache already created before S5 solve above
