@@ -14,6 +14,7 @@ Sort modes:
 from __future__ import annotations
 
 import re
+from collections import OrderedDict
 from pathlib import Path
 
 import cv2
@@ -129,13 +130,18 @@ def _to_gray_uint8(img: NDArray) -> NDArray[np.uint8]:
     return _to_display_uint8(gray)
 
 
+_RGB_CACHE_SIZE = 8  # max RGB preview frames kept resident (bounded LRU)
+
+
 class ImageController:
     """Loads images from a folder and provides cached reading."""
 
     def __init__(self, state: AppState) -> None:
         self._state = state
         self._cache: dict[int, NDArray[np.float64]] = {}
-        self._cache_rgb: dict[int, NDArray[np.uint8]] = {}
+        # Bounded LRU (OrderedDict): scrubbing a long sequence must not
+        # pin every RGB preview frame in RAM; misses re-decode from disk.
+        self._cache_rgb: "OrderedDict[int, NDArray[np.uint8]]" = OrderedDict()
         self._natural_sort: bool = False
         self._raw_files: list[str] = []  # unsorted file list
         # Invalidate caches whenever the image file list changes. Each
@@ -285,6 +291,7 @@ class ImageController:
             raise IndexError(f"Image index {idx} out of range")
 
         if idx in self._cache_rgb:
+            self._cache_rgb.move_to_end(idx)  # mark most-recently-used
             return self._cache_rgb[idx]
 
         raw = _read_image_raw(self._state.image_files[idx])
@@ -306,6 +313,8 @@ class ImageController:
             rgb = cv2.cvtColor(raw, cv2.COLOR_BGR2RGB)
 
         self._cache_rgb[idx] = rgb
+        if len(self._cache_rgb) > _RGB_CACHE_SIZE:
+            self._cache_rgb.popitem(last=False)  # evict least-recently-used
         return rgb
 
     def image_dimensions(self, idx: int) -> tuple[int, int]:
