@@ -130,6 +130,24 @@ def _to_gray_uint8(img: NDArray) -> NDArray[np.uint8]:
     return _to_display_uint8(gray)
 
 
+def _decode_grayscale_float64(path: str) -> NDArray[np.float64]:
+    """Decode an image file to (H, W) float64 grayscale in [0, 1].
+
+    Single source of truth for the compute-path decode: used by both
+    ImageController.read_image and the streaming compute provider, so the
+    two produce byte-identical frames.
+    """
+    raw = _read_image_raw(path)
+    if raw.ndim == 3:
+        if raw.shape[2] == 4:
+            gray = cv2.cvtColor(raw, cv2.COLOR_BGRA2GRAY)
+        else:
+            gray = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = raw
+    return _normalize_to_float64(gray)
+
+
 _RGB_CACHE_SIZE = 8  # max RGB preview frames kept resident (bounded LRU)
 
 
@@ -258,18 +276,7 @@ class ImageController:
         if idx in self._cache:
             return self._cache[idx]
 
-        raw = _read_image_raw(self._state.image_files[idx])
-
-        # Convert to grayscale if needed
-        if raw.ndim == 3:
-            if raw.shape[2] == 4:
-                gray = cv2.cvtColor(raw, cv2.COLOR_BGRA2GRAY)
-            else:
-                gray = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
-        else:
-            gray = raw
-
-        result = _normalize_to_float64(gray)
+        result = _decode_grayscale_float64(self._state.image_files[idx])
         self._cache[idx] = result
         return result
 
