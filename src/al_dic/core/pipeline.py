@@ -567,6 +567,18 @@ def run_aldic(
     # =====================================================================
     # Validation & defaults
     # =====================================================================
+    # Validate up front, before any eager normalization, so an invalid call
+    # raises immediately without allocating the normalized frame stack.
+    # len(images) works for both a raw list and a streaming provider.
+    if len(images) < 2:
+        raise ValueError(
+            f"At least 2 images required (got {len(images)})"
+        )
+    if len(masks) != len(images):
+        raise ValueError(
+            f"masks length ({len(masks)}) != images length ({len(images)})"
+        )
+
     # Resolve the frame provider. A raw list is wrapped in ListFrameProvider
     # (eager-normalized -- byte-identical to the previous normalize_images
     # path); an object already exposing get_normalized() is used as-is. From
@@ -576,15 +588,6 @@ def run_aldic(
         provider: FrameProvider = images  # type: ignore[assignment]
     else:
         provider = ListFrameProvider(images, para.gridxy_roi_range)
-
-    if len(provider) < 2:
-        raise ValueError(
-            f"At least 2 images required (got {len(provider)})"
-        )
-    if len(masks) != len(provider):
-        raise ValueError(
-            f"masks length ({len(masks)}) != images length ({len(provider)})"
-        )
 
     progress = progress_fn or _default_progress
     should_stop = stop_fn or _default_stop
