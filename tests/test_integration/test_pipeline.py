@@ -306,6 +306,45 @@ class TestRunALDICMultiFrame:
         assert len(result.result_disp) == 2
 
 
+class TestRefCacheLRU:
+    """B2: ref_cache is a bounded LRU. Capacity must not change DIC results --
+    an evicted reference bundle is recomputed identically on the next miss.
+    """
+
+    @staticmethod
+    def _run(reference_mode, capacity, monkeypatch):
+        import al_dic.core.pipeline as pipeline_mod
+        monkeypatch.setattr(pipeline_mod, "_REF_BUNDLE_CACHE_SIZE", capacity)
+        h, w = 64, 64
+        base, f1 = _make_speckle_pair(shift_x=0.2, shift_y=0.1, seed=0)
+        _, f2 = _make_speckle_pair(shift_x=0.4, shift_y=0.2, seed=0)
+        _, f3 = _make_speckle_pair(shift_x=0.6, shift_y=0.3, seed=0)
+        frames = [base, f1, f2, f3]
+        masks = [np.ones((h, w))] * 4
+        para = _make_default_para(
+            h, w, use_global_step=False, reference_mode=reference_mode
+        )
+        return run_aldic(para, frames, masks, compute_strain=False)
+
+    def _assert_capacity_invariant(self, mode, monkeypatch):
+        # capacity=1 forces eviction + recompute at every reference switch;
+        # capacity=1000 never evicts. Results must be byte-identical.
+        res_small = self._run(mode, 1, monkeypatch)
+        res_large = self._run(mode, 1000, monkeypatch)
+        assert len(res_small.result_disp) == len(res_large.result_disp)
+        for a, b in zip(res_small.result_disp, res_large.result_disp):
+            if a is None or b is None:
+                assert a is None and b is None
+                continue
+            np.testing.assert_array_equal(a.U, b.U)
+
+    def test_incremental_capacity_invariant(self, monkeypatch):
+        self._assert_capacity_invariant("incremental", monkeypatch)
+
+    def test_accumulative_capacity_invariant(self, monkeypatch):
+        self._assert_capacity_invariant("accumulative", monkeypatch)
+
+
 class TestRunALDICAccumulative:
     """Test accumulative reference mode."""
 

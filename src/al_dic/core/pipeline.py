@@ -34,6 +34,7 @@ from __future__ import annotations
 import logging
 import time
 import warnings
+from collections import OrderedDict
 from dataclasses import replace
 from typing import Callable
 
@@ -514,6 +515,13 @@ def _compute_cumulative_displacements_tree(
 # ---------------------------------------------------------------------------
 
 
+_REF_BUNDLE_CACHE_SIZE = 2  # max cached reference bundles (bounded LRU).
+# Must be >= 1 so the single reference in accumulative mode (ref_idx == 0)
+# never evicts (zero regression). 2 optimally serves incremental mode
+# (ref = frame-1). Eviction is correctness-safe: a miss deterministically
+# recomputes the identical bundle from the frame provider.
+
+
 def run_aldic(
     para: DICPara,
     images: list[NDArray[np.float64]] | FrameProvider,
@@ -687,9 +695,15 @@ def run_aldic(
     # Caches for reference image precomputation
     # =====================================================================
     # ref_cache[ref_idx] = (f_img, f_img_raw, f_mask, Df)
-    ref_cache: dict[int, tuple[
-        NDArray[np.float64], NDArray[np.float64], object,
-    ]] = {}
+    # Bounded LRU (OrderedDict): in incremental mode ref_idx changes every
+    # frame, so an unbounded dict accumulates every reference's full bundle
+    # (O(N) memory leak). _REF_BUNDLE_CACHE_SIZE keeps only the most-recently
+    # -used references; an evicted reference is recomputed identically on the
+    # next miss, so DIC results are unchanged.
+    ref_cache: OrderedDict[int, tuple[
+        NDArray[np.float64], NDArray[np.float64],
+        NDArray[np.float64], object,
+    ]] = OrderedDict()
 
     # subpb1_cache[ref_idx] = precomputed subpb1 data (depends on ref image)
     subpb1_precompute_cache: dict[int, object] = {}
@@ -764,6 +778,7 @@ def run_aldic(
 
         # --- Load reference image (with cache) ---
         if ref_idx in ref_cache:
+            ref_cache.move_to_end(ref_idx)  # mark most-recently-used
             f_img, f_img_raw, f_mask, Df = ref_cache[ref_idx]
         else:
             f_mask = masks[ref_idx].astype(np.float64)
@@ -771,6 +786,8 @@ def run_aldic(
             f_img = f_img_raw * f_mask  # masked version for gradient computation
             Df = compute_image_gradient(f_img, f_mask, img_raw=f_img_raw)
             ref_cache[ref_idx] = (f_img, f_img_raw, f_mask, Df)
+            if len(ref_cache) > _REF_BUNDLE_CACHE_SIZE:
+                ref_cache.popitem(last=False)  # evict least-recently-used
 
         # --- Load deformed image ---
         g_mask = masks[frame_idx].astype(np.float64)
