@@ -19,6 +19,39 @@ from scipy.ndimage import correlate1d
 from ..core.data_structures import GridxyROIRange, ImageGradients
 
 
+def compute_clamped_roi(
+    shape: tuple[int, int],
+    roi: GridxyROIRange,
+) -> GridxyROIRange:
+    """Clamp an ROI range to image bounds (0-based)."""
+    h, w = shape
+    gx0 = max(0, roi.gridx[0])
+    gx1 = min(w - 1, roi.gridx[1])
+    gy0 = max(0, roi.gridy[0])
+    gy1 = min(h - 1, roi.gridy[1])
+    return GridxyROIRange(gridx=(gx0, gx1), gridy=(gy0, gy1))
+
+
+def normalize_one(
+    img: NDArray[np.float64],
+    clamped_roi: GridxyROIRange,
+) -> NDArray[np.float64]:
+    """Normalize one image by its ROI-patch mean/std: ``(img - avg) / std``.
+
+    ``clamped_roi`` must already be clamped to the image bounds (see
+    :func:`compute_clamped_roi`).
+    """
+    gx0, gx1 = clamped_roi.gridx
+    gy0, gy1 = clamped_roi.gridy
+    # In Python convention: rows = y, cols = x
+    roi_patch = img[gy0 : gy1 + 1, gx0 : gx1 + 1]
+    avg = np.mean(roi_patch)
+    std = np.std(roi_patch, ddof=0)
+    if std < 1e-12:
+        std = 1.0
+    return (img - avg) / std
+
+
 def normalize_images(
     images: list[NDArray[np.float64]],
     roi: GridxyROIRange,
@@ -41,27 +74,42 @@ def normalize_images(
     if not images:
         return [], roi
 
-    h, w = images[0].shape
-
-    # Clamp ROI to image bounds (0-based)
-    gx0 = max(0, roi.gridx[0])
-    gx1 = min(w - 1, roi.gridx[1])
-    gy0 = max(0, roi.gridy[0])
-    gy1 = min(h - 1, roi.gridy[1])
-    clamped_roi = GridxyROIRange(gridx=(gx0, gx1), gridy=(gy0, gy1))
-
-    normalized = []
-    for img in images:
-        # Extract ROI sub-region for statistics
-        # In Python convention: rows = y, cols = x
-        roi_patch = img[gy0 : gy1 + 1, gx0 : gx1 + 1]
-        avg = np.mean(roi_patch)
-        std = np.std(roi_patch, ddof=0)
-        if std < 1e-12:
-            std = 1.0
-        normalized.append((img - avg) / std)
-
+    clamped_roi = compute_clamped_roi(images[0].shape, roi)
+    normalized = [normalize_one(img, clamped_roi) for img in images]
     return normalized, clamped_roi
+
+
+class ListFrameProvider:
+    """Eager frame provider — a back-compat adapter over a list of raw
+    frames.
+
+    Normalizes the whole list once (byte-identical to
+    :func:`normalize_images`) and serves the result by index, exposing the
+    same interface as a streaming provider so ``run_aldic`` treats list and
+    streaming inputs uniformly.
+    """
+
+    def __init__(
+        self,
+        images: list[NDArray[np.float64]],
+        roi: GridxyROIRange,
+    ) -> None:
+        self._normalized, self._clamped_roi = normalize_images(images, roi)
+        self._shape = images[0].shape if images else (0, 0)
+
+    def __len__(self) -> int:
+        return len(self._normalized)
+
+    @property
+    def shape(self) -> tuple[int, int]:
+        return self._shape
+
+    @property
+    def clamped_roi(self) -> GridxyROIRange:
+        return self._clamped_roi
+
+    def get_normalized(self, idx: int) -> NDArray[np.float64]:
+        return self._normalized[idx]
 
 
 def compute_image_gradient(

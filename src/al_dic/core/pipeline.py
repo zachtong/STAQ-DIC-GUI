@@ -44,12 +44,13 @@ from ._brush_warp import warp_brush_mask_to_ref
 from .data_structures import (
     DICMesh,
     DICPara,
+    FrameProvider,
     FrameResult,
     FrameSchedule,
     PipelineResult,
     StrainResult,
 )
-from ..io.image_ops import compute_image_gradient, normalize_images
+from ..io.image_ops import ListFrameProvider, compute_image_gradient
 from ..mesh.criteria.brush_region import BrushRegionCriterion
 from ..mesh.mark_inside import mark_inside
 from ..mesh.mesh_setup import mesh_setup
@@ -515,7 +516,7 @@ def _compute_cumulative_displacements_tree(
 
 def run_aldic(
     para: DICPara,
-    images: list[NDArray[np.float64]],
+    images: list[NDArray[np.float64]] | FrameProvider,
     masks: list[NDArray[np.float64]],
     progress_fn: Callable[[float, str], None] | None = None,
     stop_fn: Callable[[], bool] | None = None,
@@ -566,13 +567,23 @@ def run_aldic(
     # =====================================================================
     # Validation & defaults
     # =====================================================================
-    if len(images) < 2:
+    # Resolve the frame provider. A raw list is wrapped in ListFrameProvider
+    # (eager-normalized -- byte-identical to the previous normalize_images
+    # path); an object already exposing get_normalized() is used as-is. From
+    # here on run_aldic touches only the FrameProvider interface, so a
+    # streaming provider can later supply frames lazily with no core change.
+    if hasattr(images, "get_normalized"):
+        provider: FrameProvider = images  # type: ignore[assignment]
+    else:
+        provider = ListFrameProvider(images, para.gridxy_roi_range)
+
+    if len(provider) < 2:
         raise ValueError(
-            f"At least 2 images required (got {len(images)})"
+            f"At least 2 images required (got {len(provider)})"
         )
-    if len(masks) != len(images):
+    if len(masks) != len(provider):
         raise ValueError(
-            f"masks length ({len(masks)}) != images length ({len(images)})"
+            f"masks length ({len(masks)}) != images length ({len(provider)})"
         )
 
     progress = progress_fn or _default_progress
@@ -584,8 +595,8 @@ def run_aldic(
     progress(0.0, "Section 2b: Normalizing images...")
     logger.info("--- Section 2b Start ---")
 
-    img_normalized, clamped_roi = normalize_images(images, para.gridxy_roi_range)
-    img_h, img_w = images[0].shape
+    clamped_roi = provider.clamped_roi
+    img_h, img_w = provider.shape
     para = replace(para, gridxy_roi_range=clamped_roi, img_size=(img_h, img_w))
 
     # Auto-scale FFT search region. Constraint is FFT-grid-specific:
@@ -607,7 +618,7 @@ def run_aldic(
             warnings.warn(msg, stacklevel=2)
             progress(0.0, msg)
 
-    n_frames = len(img_normalized)
+    n_frames = len(provider)
     result_disp: list[FrameResult | None] = [None] * (n_frames - 1)
     result_def_grad: list[FrameResult | None] = [None] * (n_frames - 1)
     result_strain: list[StrainResult | None] = [None] * (n_frames - 1)
@@ -753,7 +764,7 @@ def run_aldic(
             f_img, f_img_raw, f_mask, Df = ref_cache[ref_idx]
         else:
             f_mask = masks[ref_idx].astype(np.float64)
-            f_img_raw = img_normalized[ref_idx].copy()
+            f_img_raw = provider.get_normalized(ref_idx).copy()
             f_img = f_img_raw * f_mask  # masked version for gradient computation
             Df = compute_image_gradient(f_img, f_mask, img_raw=f_img_raw)
             ref_cache[ref_idx] = (f_img, f_img_raw, f_mask, Df)
@@ -766,7 +777,7 @@ def run_aldic(
         # to float32 internally, IC-GN samples via map_coordinates.
         # Share a single copy instead of allocating two identical
         # buffers per frame (saves ~134 MB per frame at 4096²).
-        g_img_fft = img_normalized[frame_idx].copy()
+        g_img_fft = provider.get_normalized(frame_idx).copy()
         g_img_icgn = g_img_fft
         para = replace(para, img_ref_mask=f_mask)
 

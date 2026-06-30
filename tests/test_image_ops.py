@@ -4,7 +4,13 @@ import numpy as np
 import pytest
 
 from al_dic.core.data_structures import GridxyROIRange
-from al_dic.io.image_ops import normalize_images, compute_image_gradient
+from al_dic.io.image_ops import (
+    ListFrameProvider,
+    compute_clamped_roi,
+    compute_image_gradient,
+    normalize_images,
+    normalize_one,
+)
 
 
 class TestNormalizeImages:
@@ -37,6 +43,34 @@ class TestNormalizeImages:
     def test_empty_list(self):
         normed, roi = normalize_images([], GridxyROIRange())
         assert normed == []
+
+
+class TestListFrameProvider:
+    """B1: the eager adapter must be byte-identical to normalize_images."""
+
+    def test_get_normalized_matches_normalize_images(self):
+        rng = np.random.default_rng(7)
+        imgs = [rng.random((48, 40)) * 255 for _ in range(4)]
+        roi = GridxyROIRange(gridx=(5, 30), gridy=(8, 35))
+        ref_normed, ref_roi = normalize_images(imgs, roi)
+
+        provider = ListFrameProvider(imgs, roi)
+        assert len(provider) == len(imgs)
+        assert provider.shape == imgs[0].shape
+        assert provider.clamped_roi == ref_roi
+        for i in range(len(imgs)):
+            np.testing.assert_array_equal(
+                provider.get_normalized(i), ref_normed[i]
+            )
+
+    def test_normalize_one_matches_batch(self):
+        rng = np.random.default_rng(8)
+        imgs = [rng.random((32, 32)) * 100 for _ in range(3)]
+        roi = GridxyROIRange(gridx=(2, 28), gridy=(3, 27))
+        clamped = compute_clamped_roi(imgs[0].shape, roi)
+        batch, _ = normalize_images(imgs, roi)
+        for i, img in enumerate(imgs):
+            np.testing.assert_array_equal(normalize_one(img, clamped), batch[i])
 
 
 class TestComputeImageGradient:

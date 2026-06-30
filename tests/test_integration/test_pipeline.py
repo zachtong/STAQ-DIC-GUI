@@ -114,6 +114,34 @@ def _make_default_para(h: int = 64, w: int = 64, **overrides):
 # ---------------------------------------------------------------------------
 
 
+class TestRunALDICProviderEquivalence:
+    """B1: run_aldic(ListFrameProvider) is byte-identical to run_aldic(list).
+
+    Proves the frame-provider refactor adds zero numerical change -- the
+    list path is wrapped in the same eager ListFrameProvider internally, and
+    an externally-built provider yields the same PipelineResult.
+    """
+
+    def test_provider_matches_list_byte_for_byte(self):
+        from al_dic.io.image_ops import ListFrameProvider
+
+        ref, deformed = _make_speckle_pair(shift_x=0.5, shift_y=0.3)
+        images = [ref, deformed]
+        masks = [np.ones((64, 64)), np.ones((64, 64))]
+        para = _make_default_para()
+
+        res_list = run_aldic(para, images, masks)
+        provider = ListFrameProvider(images, para.gridxy_roi_range)
+        res_prov = run_aldic(para, provider, masks)
+
+        assert len(res_prov.result_disp) == len(res_list.result_disp)
+        for fr_l, fr_p in zip(res_list.result_disp, res_prov.result_disp):
+            if fr_l is None or fr_p is None:
+                assert fr_l is None and fr_p is None
+                continue
+            np.testing.assert_array_equal(fr_p.U, fr_l.U)
+
+
 class TestRunALDICValidation:
     def test_too_few_images(self):
         """Should raise ValueError with < 2 images."""
