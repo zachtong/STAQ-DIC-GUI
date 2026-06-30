@@ -95,14 +95,20 @@ def _build_masks(
     - Non-ref frame without own ROI: all-ones (no mask)
     """
     mask0 = per_frame_rois.get(0)
+    # Store masks as uint8 (0/1): 8x smaller than float64. Every pipeline
+    # consumer casts via .astype(np.float64) (core/pipeline.py:755/762/1484),
+    # so values are bit-identical after the cast. Non-ROI frames all share
+    # ONE read-only all-ones array instead of allocating a full-image mask
+    # each.
+    ones_shared = np.ones(img_shape, dtype=np.uint8)
     masks: list[np.ndarray] = []
     for i in range(n_frames):
         if i in per_frame_rois:
-            masks.append(per_frame_rois[i].astype(np.float64))
+            masks.append(per_frame_rois[i].astype(np.uint8))
         elif i in ref_frame_set and mask0 is not None:
-            masks.append(mask0.astype(np.float64))
+            masks.append(mask0.astype(np.uint8))
         else:
-            masks.append(np.ones(img_shape, dtype=np.float64))
+            masks.append(ones_shared)
     return masks
 
 
@@ -176,8 +182,14 @@ class PipelineWorker(QThread):
     ) -> None:
         super().__init__()
         self._para = para
-        self._images = [img.copy() for img in images]
-        self._masks = [m.copy() for m in masks]
+        # No defensive copy: the worker is the sole consumer and treats
+        # images/masks as read-only (normalize_images and gradient calcs
+        # allocate new arrays; nothing mutates these in place). The old
+        # per-array .copy() duplicated the entire full-image float64 stack
+        # (+ masks) at compute start. Snapshot the list containers (cheap)
+        # while sharing the underlying arrays with ImageController's cache.
+        self._images = list(images)
+        self._masks = list(masks)
         self._refinement_policy = refinement_policy
 
         self._stop_requested = False

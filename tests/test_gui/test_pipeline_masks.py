@@ -16,7 +16,7 @@ class TestBuildMasks:
         masks = _build_masks(per_frame, 5, (100, 100), {0})
         # Frame 0 uses its own ROI
         assert masks[0].sum() == per_frame[0].sum()
-        assert masks[0].dtype == np.float64
+        assert masks[0].dtype == np.uint8  # fix 2: uint8 storage (8x smaller)
         # Frames 1-4 are non-ref, no own ROI -> all-ones
         for i in range(1, 5):
             assert masks[i].sum() == 100 * 100
@@ -31,7 +31,7 @@ class TestBuildMasks:
         masks = _build_masks(per_frame, 4, (50, 50), {0, 2})
         # Frame 2 has its own ROI
         assert masks[2].sum() == per_frame[2].sum()
-        assert masks[2].dtype == np.float64
+        assert masks[2].dtype == np.uint8  # fix 2: uint8 storage
 
     def test_ref_frame_inherits_from_0(self):
         """Ref frame without own ROI inherits from frame 0."""
@@ -43,18 +43,26 @@ class TestBuildMasks:
         assert np.array_equal(masks[3], mask0.astype(np.float64))
 
     def test_nonref_no_roi_all_ones(self):
-        """Non-ref frame without own ROI gets all-ones mask."""
+        """Non-ref frames without own ROI get all-ones masks, and (fix 2)
+        share ONE read-only buffer instead of allocating one each."""
         per_frame = {0: np.ones((20, 20), dtype=bool)}
         masks = _build_masks(per_frame, 3, (20, 20), {0})
         assert masks[1].sum() == 20 * 20
         assert masks[2].sum() == 20 * 20
+        # memory optimization: the all-ones frames alias the same buffer
+        assert masks[1] is masks[2]
 
-    def test_output_dtype_is_float64(self):
-        """All masks should be float64 regardless of input dtype."""
+    def test_output_dtype_is_uint8(self):
+        """Masks are stored as uint8 (0/1) for memory (fix 2: 8x smaller
+        than float64). Every pipeline consumer casts via .astype(float64)
+        (core/pipeline.py:755/762/1484), so the values stay correct."""
         per_frame = {0: np.ones((30, 30), dtype=bool)}
         masks = _build_masks(per_frame, 2, (30, 30), {0})
         for m in masks:
-            assert m.dtype == np.float64
+            assert m.dtype == np.uint8
+            # the contract that matters: clean cast to the float64 the
+            # pipeline actually uses, values restricted to {0.0, 1.0}
+            assert set(np.unique(m.astype(np.float64))) <= {0.0, 1.0}
 
     def test_output_length_matches_n_frames(self):
         """Output list length should match n_frames."""
