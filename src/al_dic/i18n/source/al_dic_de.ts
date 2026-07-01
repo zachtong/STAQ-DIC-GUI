@@ -40,12 +40,12 @@ Nur relevant für den FFT-Startschätzungsmodus.</translation>
 <context>
     <name>App</name>
     <message>
-        <location filename="../../gui/app.py" line="797"/>
+        <location filename="../../gui/app.py" line="903"/>
         <source>Imported Region of Interest for %n frame(s)</source>
         <translation>Region of Interest für %n Bilder importiert</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="809"/>
+        <location filename="../../gui/app.py" line="915"/>
         <source>Run DIC first -- no displacement results to post-process.</source>
         <translation>DIC zuerst ausführen — keine Verschiebungs-Ergebnisse zur Nachbearbeitung.</translation>
     </message>
@@ -1247,95 +1247,151 @@ Standard (nicht aktiviert): lexikographisch — ideal für nullgefüllte Namen</
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../gui/app.py" line="195"/>
+        <location filename="../../gui/app.py" line="196"/>
         <source>&amp;File</source>
         <translation>Datei</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="197"/>
+        <location filename="../../gui/app.py" line="198"/>
         <source>Open Session…</source>
         <translation>Sitzung öffnen…</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="202"/>
+        <location filename="../../gui/app.py" line="203"/>
         <source>Save Session…</source>
         <translation>Sitzung speichern…</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="208"/>
+        <location filename="../../gui/app.py" line="212"/>
+        <source>Associate .aldic files with pyALDIC…</source>
+        <translation>.aldic-Dateien mit pyALDIC verknüpfen…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="215"/>
+        <source>Register .aldic so double-clicking a session file opens pyALDIC (current user only, no admin rights needed).</source>
+        <translation>Registriert .aldic, sodass ein Doppelklick auf eine Sitzungsdatei pyALDIC öffnet (nur aktueller Benutzer, keine Administratorrechte nötig).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="220"/>
         <source>Quit</source>
         <translation>Beenden</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="216"/>
+        <location filename="../../gui/app.py" line="228"/>
         <source>&amp;Settings</source>
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="217"/>
+        <location filename="../../gui/app.py" line="229"/>
         <source>Language</source>
         <translation>Sprache</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="246"/>
+        <location filename="../../gui/app.py" line="258"/>
         <source>Language changed</source>
         <translation>Sprache geändert</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="250"/>
+        <location filename="../../gui/app.py" line="262"/>
         <source>Language set to %1. Please restart pyALDIC for all widgets to pick up the new language.</source>
         <translation>Sprache auf %1 eingestellt. Bitte starten Sie pyALDIC neu, damit alle Elemente die neue Sprache übernehmen.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="261"/>
+        <location filename="../../gui/app.py" line="275"/>
         <source>Save Session</source>
         <translation>Sitzung speichern</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="263"/>
-        <location filename="../../gui/app.py" line="290"/>
+        <location filename="../../gui/app.py" line="277"/>
+        <location filename="../../gui/app.py" line="326"/>
         <source>pyALDIC Session</source>
         <translation>pyALDIC-Sitzung</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="264"/>
-        <location filename="../../gui/app.py" line="292"/>
+        <location filename="../../gui/app.py" line="278"/>
+        <location filename="../../gui/app.py" line="327"/>
         <source>All Files</source>
         <translation>Alle Dateien</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="274"/>
+        <location filename="../../gui/app.py" line="292"/>
+        <source>large</source>
+        <translation>groß</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="294"/>
+        <source>Include Results?</source>
+        <translation>Ergebnisse einbeziehen?</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="296"/>
+        <source>Include the computed results in this session?</source>
+        <translation>Die berechneten Ergebnisse in diese Sitzung einbeziehen?</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="301"/>
+        <source>Including results (about %1 uncompressed) lets you reopen the session without recomputing. Choose No to save a small configuration-only file for sharing.</source>
+        <translation>Mit Ergebnissen (etwa %1 unkomprimiert) können Sie die Sitzung ohne Neuberechnung wieder öffnen. Wählen Sie Nein, um eine kleine reine Konfigurationsdatei zum Teilen zu speichern.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="312"/>
+        <source>Saving Session</source>
+        <translation>Sitzung wird gespeichert</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="317"/>
         <source>Save Session Failed</source>
         <translation>Speichern der Sitzung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="288"/>
+        <location filename="../../gui/app.py" line="324"/>
         <source>Open Session</source>
         <translation>Sitzung öffnen</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="291"/>
-        <source>JSON</source>
-        <translation>JSON</translation>
+        <location filename="../../gui/app.py" line="339"/>
+        <source>Loading Session</source>
+        <translation>Sitzung wird geladen</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="300"/>
+        <location filename="../../gui/app.py" line="342"/>
+        <location filename="../../gui/app.py" line="352"/>
         <source>Open Session Failed</source>
         <translation>Öffnen der Sitzung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="652"/>
-        <location filename="../../gui/app.py" line="705"/>
+        <location filename="../../gui/app.py" line="406"/>
+        <source>File Association Failed</source>
+        <translation>Dateiverknüpfung fehlgeschlagen</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="407"/>
+        <source>Could not register .aldic files: </source>
+        <translation>.aldic-Dateien konnten nicht registriert werden: </translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="410"/>
+        <source>File Association</source>
+        <translation>Dateiverknüpfung</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="412"/>
+        <source>Done. Double-clicking a .aldic file will now open pyALDIC and restore that session.</source>
+        <translation>Fertig. Ein Doppelklick auf eine .aldic-Datei öffnet nun pyALDIC und stellt diese Sitzung wieder her.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="758"/>
+        <location filename="../../gui/app.py" line="811"/>
         <source>Load images first.</source>
         <translation>Bitte zuerst Bilder laden.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="754"/>
+        <location filename="../../gui/app.py" line="860"/>
         <source>  Imported mask for frame %1</source>
         <translation>  Maske für Bild %1 importiert</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="765"/>
+        <location filename="../../gui/app.py" line="871"/>
         <source>Batch import: %n mask(s) loaded</source>
         <translation>Stapelimport: %n Maske(n) geladen</translation>
     </message>

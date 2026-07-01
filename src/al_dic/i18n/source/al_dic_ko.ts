@@ -40,12 +40,12 @@ FFT 초기 추정 모드에만 관련됩니다.</translation>
 <context>
     <name>App</name>
     <message>
-        <location filename="../../gui/app.py" line="797"/>
+        <location filename="../../gui/app.py" line="903"/>
         <source>Imported Region of Interest for %n frame(s)</source>
         <translation>%n 프레임에 관심 영역 가져옴</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="809"/>
+        <location filename="../../gui/app.py" line="915"/>
         <source>Run DIC first -- no displacement results to post-process.</source>
         <translation>DIC를 먼저 실행하세요 —— 후처리할 변위 결과가 없습니다.</translation>
     </message>
@@ -1247,95 +1247,151 @@ Default (unchecked): lexicographic — best for zero-padded names</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../gui/app.py" line="195"/>
+        <location filename="../../gui/app.py" line="196"/>
         <source>&amp;File</source>
         <translation>파일</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="197"/>
+        <location filename="../../gui/app.py" line="198"/>
         <source>Open Session…</source>
         <translation>세션 열기…</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="202"/>
+        <location filename="../../gui/app.py" line="203"/>
         <source>Save Session…</source>
         <translation>세션 저장…</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="208"/>
+        <location filename="../../gui/app.py" line="212"/>
+        <source>Associate .aldic files with pyALDIC…</source>
+        <translation>.aldic 파일을 pyALDIC에 연결…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="215"/>
+        <source>Register .aldic so double-clicking a session file opens pyALDIC (current user only, no admin rights needed).</source>
+        <translation>.aldic를 등록하여 세션 파일을 두 번 클릭하면 pyALDIC가 열리도록 합니다(현재 사용자만, 관리자 권한 불필요).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="220"/>
         <source>Quit</source>
         <translation>종료</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="216"/>
+        <location filename="../../gui/app.py" line="228"/>
         <source>&amp;Settings</source>
         <translation>설정</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="217"/>
+        <location filename="../../gui/app.py" line="229"/>
         <source>Language</source>
         <translation>언어</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="246"/>
+        <location filename="../../gui/app.py" line="258"/>
         <source>Language changed</source>
         <translation>언어가 변경되었습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="250"/>
+        <location filename="../../gui/app.py" line="262"/>
         <source>Language set to %1. Please restart pyALDIC for all widgets to pick up the new language.</source>
         <translation>언어가 %1(으)로 설정되었습니다. 모든 화면에 반영하려면 pyALDIC을 재시작하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="261"/>
+        <location filename="../../gui/app.py" line="275"/>
         <source>Save Session</source>
         <translation>세션 저장</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="263"/>
-        <location filename="../../gui/app.py" line="290"/>
+        <location filename="../../gui/app.py" line="277"/>
+        <location filename="../../gui/app.py" line="326"/>
         <source>pyALDIC Session</source>
         <translation>pyALDIC 세션</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="264"/>
-        <location filename="../../gui/app.py" line="292"/>
+        <location filename="../../gui/app.py" line="278"/>
+        <location filename="../../gui/app.py" line="327"/>
         <source>All Files</source>
         <translation>모든 파일</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="274"/>
+        <location filename="../../gui/app.py" line="292"/>
+        <source>large</source>
+        <translation>큼</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="294"/>
+        <source>Include Results?</source>
+        <translation>결과를 포함할까요?</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="296"/>
+        <source>Include the computed results in this session?</source>
+        <translation>이 세션에 계산된 결과를 포함하시겠습니까?</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="301"/>
+        <source>Including results (about %1 uncompressed) lets you reopen the session without recomputing. Choose No to save a small configuration-only file for sharing.</source>
+        <translation>결과를 포함하면(압축 전 약 %1) 다시 계산하지 않고 세션을 다시 열 수 있습니다. &apos;아니요&apos;를 선택하면 공유용으로 구성만 담긴 작은 파일을 저장합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="312"/>
+        <source>Saving Session</source>
+        <translation>세션 저장 중</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="317"/>
         <source>Save Session Failed</source>
         <translation>세션 저장 실패</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="288"/>
+        <location filename="../../gui/app.py" line="324"/>
         <source>Open Session</source>
         <translation>세션 열기</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="291"/>
-        <source>JSON</source>
-        <translation>JSON</translation>
+        <location filename="../../gui/app.py" line="339"/>
+        <source>Loading Session</source>
+        <translation>세션 불러오는 중</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="300"/>
+        <location filename="../../gui/app.py" line="342"/>
+        <location filename="../../gui/app.py" line="352"/>
         <source>Open Session Failed</source>
         <translation>세션 열기 실패</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="652"/>
-        <location filename="../../gui/app.py" line="705"/>
+        <location filename="../../gui/app.py" line="406"/>
+        <source>File Association Failed</source>
+        <translation>파일 연결 실패</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="407"/>
+        <source>Could not register .aldic files: </source>
+        <translation>.aldic 파일을 등록할 수 없습니다: </translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="410"/>
+        <source>File Association</source>
+        <translation>파일 연결</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="412"/>
+        <source>Done. Double-clicking a .aldic file will now open pyALDIC and restore that session.</source>
+        <translation>완료되었습니다. 이제 .aldic 파일을 두 번 클릭하면 pyALDIC가 열리고 해당 세션이 복원됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="758"/>
+        <location filename="../../gui/app.py" line="811"/>
         <source>Load images first.</source>
         <translation>먼저 이미지를 불러오세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="754"/>
+        <location filename="../../gui/app.py" line="860"/>
         <source>  Imported mask for frame %1</source>
         <translation>  프레임 %1의 마스크를 가져왔습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="765"/>
+        <location filename="../../gui/app.py" line="871"/>
         <source>Batch import: %n mask(s) loaded</source>
         <translation>일괄 가져오기: 마스크 %n개를 불러왔습니다</translation>
     </message>

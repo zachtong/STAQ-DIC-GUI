@@ -4,7 +4,7 @@ import sys
 import traceback
 from pathlib import Path
 
-from PySide6.QtCore import QCoreApplication
+from PySide6.QtCore import QCoreApplication, Qt
 from PySide6.QtGui import QAction, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QHBoxLayout,
+    QProgressDialog,
     QWidget,
 )
 
@@ -204,6 +205,17 @@ class MainWindow(QMainWindow):
         save_session_action.triggered.connect(self._on_save_session)
         file_menu.addAction(save_session_action)
 
+        from al_dic.gui import file_association
+        if file_association.is_supported():
+            file_menu.addSeparator()
+            assoc_action = QAction(
+                self.tr("Associate .aldic files with pyALDIC…"), self)
+            assoc_action.setToolTip(self.tr(
+                "Register .aldic so double-clicking a session file opens "
+                "pyALDIC (current user only, no admin rights needed)."))
+            assoc_action.triggered.connect(self._on_register_association)
+            file_menu.addAction(assoc_action)
+
         file_menu.addSeparator()
         quit_action = QAction(self.tr("Quit"), self)
         quit_action.setShortcut(QKeySequence.StandardKey.Quit)
@@ -253,57 +265,151 @@ class MainWindow(QMainWindow):
         )
 
     def _on_save_session(self) -> None:
-        """Save-session dialog: write state + Regions of Interest to JSON."""
-        from al_dic.gui.session import SessionError, save_session
+        """Save-session dialog: write config + Regions of Interest (+ results)."""
+        from al_dic.gui.session import save_session
+        from al_dic.gui.session_worker import format_bytes
+        from al_dic.io.session_serialize import estimated_nbytes
 
         path, _ = QFileDialog.getSaveFileName(
             self,
             self.tr("Save Session"),
             "",
-            self.tr("pyALDIC Session") + " (*.aldic.json);;"
+            self.tr("pyALDIC Session") + " (*.aldic);;"
             + self.tr("All Files") + " (*)",
         )
         if not path:
             return
-        # Enforce extension so the file dialog's filter actually helps
-        if not path.endswith(".aldic.json"):
-            path = path + ".aldic.json"
-        try:
-            save_session(Path(path), self._state)
-        except SessionError as e:
-            QMessageBox.critical(self, self.tr("Save Session Failed"), str(e))
-            return
-        self._state.log_message.emit(f"Session saved to {path}", "success")
+        if not path.endswith(".aldic"):
+            path = path + ".aldic"
 
-    def _on_open_session(self) -> None:
-        """Open-session dialog: parse JSON, then apply to AppState."""
-        from al_dic.gui.session import (
-            SessionError,
-            apply_session,
-            load_session,
+        # Offer to include the (potentially large) computed results.
+        include_results = False
+        if self._state.results is not None:
+            try:
+                est = format_bytes(estimated_nbytes(self._state.results))
+            except Exception:
+                est = self.tr("large")
+            box = QMessageBox(self)
+            box.setIcon(QMessageBox.Icon.Question)
+            box.setWindowTitle(self.tr("Include Results?"))
+            box.setText(self.tr(
+                "Include the computed results in this session?"))
+            from al_dic.i18n import tr_args
+            box.setInformativeText(tr_args(self.tr(
+                "Including results (about %1 uncompressed) lets you reopen the "
+                "session without recomputing. Choose No to save a small "
+                "configuration-only file for sharing."), est))
+            box.setStandardButtons(
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+                | QMessageBox.StandardButton.Cancel)
+            box.setDefaultButton(QMessageBox.StandardButton.Yes)
+            choice = box.exec()
+            if choice == QMessageBox.StandardButton.Cancel:
+                return
+            include_results = choice == QMessageBox.StandardButton.Yes
+
+        self._run_session_op(
+            self.tr("Saving Session"),
+            lambda cb: save_session(Path(path), self._state,
+                                    include_results=include_results, progress=cb),
+            on_done=lambda _r: self._state.log_message.emit(
+                f"Session saved to {path}", "success"),
+            fail_title=self.tr("Save Session Failed"),
         )
 
+    def _on_open_session(self) -> None:
+        """Open-session dialog: parse the bundle, then apply to AppState."""
         path, _ = QFileDialog.getOpenFileName(
             self,
             self.tr("Open Session"),
             "",
-            self.tr("pyALDIC Session") + " (*.aldic.json);;"
-            + self.tr("JSON") + " (*.json);;"
+            self.tr("pyALDIC Session") + " (*.aldic *.aldic.json);;"
             + self.tr("All Files") + " (*)",
         )
         if not path:
             return
+        self.open_session_path(path)
+
+    def open_session_path(self, path: str) -> None:
+        """Load and apply a session from *path* (used by the menu and by the
+        command line / file association)."""
+        from al_dic.gui.session import load_session
+
+        self._run_session_op(
+            self.tr("Loading Session"),
+            lambda cb: load_session(Path(path), progress=cb),
+            on_done=lambda session: self._apply_loaded_session(session, path),
+            fail_title=self.tr("Open Session Failed"),
+        )
+
+    def _apply_loaded_session(self, session, path: str) -> None:
+        """Apply a parsed session on the main thread (GUI-touching)."""
+        from al_dic.gui.session import SessionError, apply_session
+
         try:
-            session = load_session(Path(path))
             apply_session(session, self._state, self._image_ctrl)
         except SessionError as e:
             QMessageBox.critical(self, self.tr("Open Session Failed"), str(e))
             return
-        self._state.log_message.emit(
-            f"Session loaded from {path} "
-            f"({len(session.per_frame_rois)} Region(s) of Interest restored)",
-            "success",
-        )
+        n_roi = len(session.per_frame_rois)
+        had_results = session.results is not None
+        msg = f"Session loaded from {path} ({n_roi} Region(s) of Interest"
+        msg += ", results restored)" if had_results else ")"
+        self._state.log_message.emit(msg, "success")
+
+    def _run_session_op(self, title: str, fn, on_done, fail_title: str) -> None:
+        """Run *fn(progress_cb)* on a worker thread behind a progress dialog."""
+        from al_dic.gui.session_worker import SessionOpWorker
+
+        dlg = QProgressDialog(title + "…", "", 0, 100, self)
+        dlg.setWindowTitle(title)
+        dlg.setWindowModality(Qt.WindowModality.WindowModal)
+        dlg.setCancelButton(None)          # save/load cannot be safely aborted
+        dlg.setMinimumDuration(0)
+        dlg.setAutoClose(False)
+        dlg.setValue(0)
+
+        worker = SessionOpWorker(fn, self)
+        self._session_worker = worker      # keep a reference alive
+
+        def _progress(frac: float, message: str) -> None:
+            dlg.setValue(max(0, min(100, int(frac * 100))))
+            dlg.setLabelText(message)
+
+        def _finish() -> None:
+            dlg.reset()
+            worker.deleteLater()
+            self._session_worker = None
+
+        def _ok(result) -> None:
+            _finish()
+            on_done(result)
+
+        def _err(message: str) -> None:
+            _finish()
+            QMessageBox.critical(self, fail_title, message)
+
+        worker.progress.connect(_progress)
+        worker.done.connect(_ok)
+        worker.failed.connect(_err)
+        dlg.show()
+        worker.start()
+
+    def _on_register_association(self) -> None:
+        """Register the .aldic file type (Windows, current user)."""
+        from al_dic.gui import file_association
+
+        try:
+            file_association.register_association()
+        except Exception as e:  # noqa: BLE001 - report any failure to the user
+            QMessageBox.warning(
+                self, self.tr("File Association Failed"),
+                self.tr("Could not register .aldic files: ") + str(e))
+            return
+        QMessageBox.information(
+            self, self.tr("File Association"),
+            self.tr("Done. Double-clicking a .aldic file will now open "
+                    "pyALDIC and restore that session."))
 
     # ------------------------------------------------------------------
 
@@ -894,7 +1000,26 @@ def main() -> None:
 
     window = MainWindow()
     window.show()
+
+    # File association / command line: ``al-dic path/to/foo.aldic`` (or a
+    # double-click once .aldic is registered) opens straight into that session.
+    session_arg = _session_path_from_argv(sys.argv)
+    if session_arg is not None:
+        # Defer until the event loop is running so the progress dialog + worker
+        # behave normally.
+        from PySide6.QtCore import QTimer
+        QTimer.singleShot(0, lambda: window.open_session_path(session_arg))
+
     sys.exit(app.exec())
+
+
+def _session_path_from_argv(argv: list[str]) -> str | None:
+    """Return the first existing ``.aldic``/``.aldic.json`` path in *argv*."""
+    for arg in argv[1:]:
+        low = arg.lower()
+        if low.endswith((".aldic", ".aldic.json")) and Path(arg).exists():
+            return arg
+    return None
 
 
 if __name__ == "__main__":

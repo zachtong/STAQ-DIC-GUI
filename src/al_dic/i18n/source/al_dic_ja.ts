@@ -40,12 +40,12 @@ FFT 初期推定モードでのみ有効です。</translation>
 <context>
     <name>App</name>
     <message>
-        <location filename="../../gui/app.py" line="797"/>
+        <location filename="../../gui/app.py" line="903"/>
         <source>Imported Region of Interest for %n frame(s)</source>
         <translation>%n フレームに関心領域をインポートしました</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="809"/>
+        <location filename="../../gui/app.py" line="915"/>
         <source>Run DIC first -- no displacement results to post-process.</source>
         <translation>先に DIC を実行してください —— 後処理する変位結果がありません。</translation>
     </message>
@@ -1247,95 +1247,151 @@ Default (unchecked): lexicographic — best for zero-padded names</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../gui/app.py" line="195"/>
+        <location filename="../../gui/app.py" line="196"/>
         <source>&amp;File</source>
         <translation>ファイル</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="197"/>
+        <location filename="../../gui/app.py" line="198"/>
         <source>Open Session…</source>
         <translation>セッションを開く…</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="202"/>
+        <location filename="../../gui/app.py" line="203"/>
         <source>Save Session…</source>
         <translation>セッションを保存…</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="208"/>
+        <location filename="../../gui/app.py" line="212"/>
+        <source>Associate .aldic files with pyALDIC…</source>
+        <translation>.aldic ファイルを pyALDIC に関連付け…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="215"/>
+        <source>Register .aldic so double-clicking a session file opens pyALDIC (current user only, no admin rights needed).</source>
+        <translation>.aldic を登録し、セッションファイルをダブルクリックすると pyALDIC が開くようにします（現在のユーザーのみ、管理者権限は不要）。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="220"/>
         <source>Quit</source>
         <translation>終了</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="216"/>
+        <location filename="../../gui/app.py" line="228"/>
         <source>&amp;Settings</source>
         <translation>設定</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="217"/>
+        <location filename="../../gui/app.py" line="229"/>
         <source>Language</source>
         <translation>言語</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="246"/>
+        <location filename="../../gui/app.py" line="258"/>
         <source>Language changed</source>
         <translation>言語を変更しました</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="250"/>
+        <location filename="../../gui/app.py" line="262"/>
         <source>Language set to %1. Please restart pyALDIC for all widgets to pick up the new language.</source>
         <translation>言語を %1 に変更しました。すべての画面に反映するには pyALDIC を再起動してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="261"/>
+        <location filename="../../gui/app.py" line="275"/>
         <source>Save Session</source>
         <translation>セッションを保存</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="263"/>
-        <location filename="../../gui/app.py" line="290"/>
+        <location filename="../../gui/app.py" line="277"/>
+        <location filename="../../gui/app.py" line="326"/>
         <source>pyALDIC Session</source>
         <translation>pyALDIC セッション</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="264"/>
-        <location filename="../../gui/app.py" line="292"/>
+        <location filename="../../gui/app.py" line="278"/>
+        <location filename="../../gui/app.py" line="327"/>
         <source>All Files</source>
         <translation>すべてのファイル</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="274"/>
+        <location filename="../../gui/app.py" line="292"/>
+        <source>large</source>
+        <translation>大きい</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="294"/>
+        <source>Include Results?</source>
+        <translation>結果を含めますか？</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="296"/>
+        <source>Include the computed results in this session?</source>
+        <translation>このセッションに計算済みの結果を含めますか？</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="301"/>
+        <source>Including results (about %1 uncompressed) lets you reopen the session without recomputing. Choose No to save a small configuration-only file for sharing.</source>
+        <translation>結果を含めると（非圧縮で約 %1）、再計算せずにセッションを再度開けます。「いいえ」を選ぶと、共有用に設定のみの小さなファイルを保存します。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="312"/>
+        <source>Saving Session</source>
+        <translation>セッションを保存中</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="317"/>
         <source>Save Session Failed</source>
         <translation>セッションの保存に失敗しました</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="288"/>
+        <location filename="../../gui/app.py" line="324"/>
         <source>Open Session</source>
         <translation>セッションを開く</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="291"/>
-        <source>JSON</source>
-        <translation>JSON</translation>
+        <location filename="../../gui/app.py" line="339"/>
+        <source>Loading Session</source>
+        <translation>セッションを読み込み中</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="300"/>
+        <location filename="../../gui/app.py" line="342"/>
+        <location filename="../../gui/app.py" line="352"/>
         <source>Open Session Failed</source>
         <translation>セッションを開けませんでした</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="652"/>
-        <location filename="../../gui/app.py" line="705"/>
+        <location filename="../../gui/app.py" line="406"/>
+        <source>File Association Failed</source>
+        <translation>ファイル関連付けに失敗</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="407"/>
+        <source>Could not register .aldic files: </source>
+        <translation>.aldic ファイルを登録できませんでした：</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="410"/>
+        <source>File Association</source>
+        <translation>ファイル関連付け</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="412"/>
+        <source>Done. Double-clicking a .aldic file will now open pyALDIC and restore that session.</source>
+        <translation>完了しました。これで .aldic ファイルをダブルクリックすると pyALDIC が開き、そのセッションが復元されます。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="758"/>
+        <location filename="../../gui/app.py" line="811"/>
         <source>Load images first.</source>
         <translation>先に画像を読み込んでください。</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="754"/>
+        <location filename="../../gui/app.py" line="860"/>
         <source>  Imported mask for frame %1</source>
         <translation>  フレーム %1 のマスクをインポートしました</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="765"/>
+        <location filename="../../gui/app.py" line="871"/>
         <source>Batch import: %n mask(s) loaded</source>
         <translation>バッチインポート: %n 個のマスクを読み込みました</translation>
     </message>

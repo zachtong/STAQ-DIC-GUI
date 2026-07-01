@@ -40,12 +40,12 @@ Only relevant for the FFT init-guess mode.</source>
 <context>
     <name>App</name>
     <message>
-        <location filename="../../gui/app.py" line="797"/>
+        <location filename="../../gui/app.py" line="903"/>
         <source>Imported Region of Interest for %n frame(s)</source>
         <translation>為 %n 影格匯入了感興趣區域</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="809"/>
+        <location filename="../../gui/app.py" line="915"/>
         <source>Run DIC first -- no displacement results to post-process.</source>
         <translation>請先執行 DIC —— 目前沒有可後處理的位移結果。</translation>
     </message>
@@ -1247,95 +1247,151 @@ Default (unchecked): lexicographic — best for zero-padded names</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../gui/app.py" line="195"/>
+        <location filename="../../gui/app.py" line="196"/>
         <source>&amp;File</source>
         <translation>檔案</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="197"/>
+        <location filename="../../gui/app.py" line="198"/>
         <source>Open Session…</source>
         <translation>開啟會話…</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="202"/>
+        <location filename="../../gui/app.py" line="203"/>
         <source>Save Session…</source>
         <translation>儲存會話…</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="208"/>
+        <location filename="../../gui/app.py" line="212"/>
+        <source>Associate .aldic files with pyALDIC…</source>
+        <translation>將 .aldic 檔案關聯到 pyALDIC…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="215"/>
+        <source>Register .aldic so double-clicking a session file opens pyALDIC (current user only, no admin rights needed).</source>
+        <translation>註冊 .aldic，讓雙擊工作階段檔案即可開啟 pyALDIC（僅目前使用者，無需系統管理員權限）。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="220"/>
         <source>Quit</source>
         <translation>離開</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="216"/>
+        <location filename="../../gui/app.py" line="228"/>
         <source>&amp;Settings</source>
         <translation>設定</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="217"/>
+        <location filename="../../gui/app.py" line="229"/>
         <source>Language</source>
         <translation>語言</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="246"/>
+        <location filename="../../gui/app.py" line="258"/>
         <source>Language changed</source>
         <translation>語言已切換</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="250"/>
+        <location filename="../../gui/app.py" line="262"/>
         <source>Language set to %1. Please restart pyALDIC for all widgets to pick up the new language.</source>
         <translation>語言已切換至 %1。請重啟 pyALDIC 以讓所有界面生效。</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="261"/>
+        <location filename="../../gui/app.py" line="275"/>
         <source>Save Session</source>
         <translation>儲存會話</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="263"/>
-        <location filename="../../gui/app.py" line="290"/>
+        <location filename="../../gui/app.py" line="277"/>
+        <location filename="../../gui/app.py" line="326"/>
         <source>pyALDIC Session</source>
         <translation>pyALDIC 會話</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="264"/>
-        <location filename="../../gui/app.py" line="292"/>
+        <location filename="../../gui/app.py" line="278"/>
+        <location filename="../../gui/app.py" line="327"/>
         <source>All Files</source>
         <translation>全部檔案</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="274"/>
+        <location filename="../../gui/app.py" line="292"/>
+        <source>large</source>
+        <translation>較大</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="294"/>
+        <source>Include Results?</source>
+        <translation>包含結果？</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="296"/>
+        <source>Include the computed results in this session?</source>
+        <translation>在此工作階段中包含已計算的結果嗎？</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="301"/>
+        <source>Including results (about %1 uncompressed) lets you reopen the session without recomputing. Choose No to save a small configuration-only file for sharing.</source>
+        <translation>包含結果（未壓縮約 %1）可讓你下次直接開啟工作階段而無需重新計算。選擇「否」則只儲存一個小的僅設定檔案，便於分享。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="312"/>
+        <source>Saving Session</source>
+        <translation>正在儲存工作階段</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="317"/>
         <source>Save Session Failed</source>
         <translation>儲存會話失敗</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="288"/>
+        <location filename="../../gui/app.py" line="324"/>
         <source>Open Session</source>
         <translation>開啟會話</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="291"/>
-        <source>JSON</source>
-        <translation>JSON</translation>
+        <location filename="../../gui/app.py" line="339"/>
+        <source>Loading Session</source>
+        <translation>正在載入工作階段</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="300"/>
+        <location filename="../../gui/app.py" line="342"/>
+        <location filename="../../gui/app.py" line="352"/>
         <source>Open Session Failed</source>
         <translation>開啟會話失敗</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="652"/>
-        <location filename="../../gui/app.py" line="705"/>
+        <location filename="../../gui/app.py" line="406"/>
+        <source>File Association Failed</source>
+        <translation>檔案關聯失敗</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="407"/>
+        <source>Could not register .aldic files: </source>
+        <translation>無法註冊 .aldic 檔案：</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="410"/>
+        <source>File Association</source>
+        <translation>檔案關聯</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="412"/>
+        <source>Done. Double-clicking a .aldic file will now open pyALDIC and restore that session.</source>
+        <translation>完成。現在雙擊 .aldic 檔案即可開啟 pyALDIC 並還原該工作階段。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="758"/>
+        <location filename="../../gui/app.py" line="811"/>
         <source>Load images first.</source>
         <translation>請先載入影像。</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="754"/>
+        <location filename="../../gui/app.py" line="860"/>
         <source>  Imported mask for frame %1</source>
         <translation>  已匯入影格 %1 的遮罩</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="765"/>
+        <location filename="../../gui/app.py" line="871"/>
         <source>Batch import: %n mask(s) loaded</source>
         <translation>批次匯入：已載入 %n 個遮罩</translation>
     </message>

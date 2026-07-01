@@ -625,6 +625,97 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "fr": "Ajoute une bordure vide autour du contenu exporté, en fraction du bord long (0 = aucune).",
         "es": "Añade un borde en blanco alrededor del contenido exportado, como fracción del borde largo (0 = ninguna).",
     },
+    # ========== Session persistence (results + file association) ==========
+    "Associate .aldic files with pyALDIC…": {
+        "zh_CN": "将 .aldic 文件关联到 pyALDIC…",
+        "zh_TW": "將 .aldic 檔案關聯到 pyALDIC…",
+        "ja": ".aldic ファイルを pyALDIC に関連付け…",
+        "ko": ".aldic 파일을 pyALDIC에 연결…",
+        "de": ".aldic-Dateien mit pyALDIC verknüpfen…",
+        "fr": "Associer les fichiers .aldic à pyALDIC…",
+        "es": "Asociar archivos .aldic con pyALDIC…",
+    },
+    "Register .aldic so double-clicking a session file opens pyALDIC "
+    "(current user only, no admin rights needed).": {
+        "zh_CN": "注册 .aldic，让双击会话文件即可打开 pyALDIC（仅当前用户，无需管理员权限）。",
+        "zh_TW": "註冊 .aldic，讓雙擊工作階段檔案即可開啟 pyALDIC（僅目前使用者，無需系統管理員權限）。",
+        "ja": ".aldic を登録し、セッションファイルをダブルクリックすると pyALDIC が開くようにします（現在のユーザーのみ、管理者権限は不要）。",
+        "ko": ".aldic를 등록하여 세션 파일을 두 번 클릭하면 pyALDIC가 열리도록 합니다(현재 사용자만, 관리자 권한 불필요).",
+        "de": "Registriert .aldic, sodass ein Doppelklick auf eine Sitzungsdatei pyALDIC öffnet (nur aktueller Benutzer, keine Administratorrechte nötig).",
+        "fr": "Enregistre .aldic pour qu'un double-clic sur un fichier de session ouvre pyALDIC (utilisateur actuel uniquement, sans droits administrateur).",
+        "es": "Registra .aldic para que hacer doble clic en un archivo de sesión abra pyALDIC (solo el usuario actual, sin permisos de administrador).",
+    },
+    "Include Results?": {
+        "zh_CN": "包含结果？", "zh_TW": "包含結果？", "ja": "結果を含めますか？",
+        "ko": "결과를 포함할까요?", "de": "Ergebnisse einbeziehen?",
+        "fr": "Inclure les résultats ?", "es": "¿Incluir resultados?",
+    },
+    "Include the computed results in this session?": {
+        "zh_CN": "在此会话中包含已计算的结果吗？",
+        "zh_TW": "在此工作階段中包含已計算的結果嗎？",
+        "ja": "このセッションに計算済みの結果を含めますか？",
+        "ko": "이 세션에 계산된 결과를 포함하시겠습니까?",
+        "de": "Die berechneten Ergebnisse in diese Sitzung einbeziehen?",
+        "fr": "Inclure les résultats calculés dans cette session ?",
+        "es": "¿Incluir los resultados calculados en esta sesión?",
+    },
+    "Including results (about %1 uncompressed) lets you reopen the "
+    "session without recomputing. Choose No to save a small "
+    "configuration-only file for sharing.": {
+        "zh_CN": "包含结果（未压缩约 %1）可让你下次直接打开会话而无需重新计算。选择“否”则只保存一个小的仅配置文件，便于分享。",
+        "zh_TW": "包含結果（未壓縮約 %1）可讓你下次直接開啟工作階段而無需重新計算。選擇「否」則只儲存一個小的僅設定檔案，便於分享。",
+        "ja": "結果を含めると（非圧縮で約 %1）、再計算せずにセッションを再度開けます。「いいえ」を選ぶと、共有用に設定のみの小さなファイルを保存します。",
+        "ko": "결과를 포함하면(압축 전 약 %1) 다시 계산하지 않고 세션을 다시 열 수 있습니다. '아니요'를 선택하면 공유용으로 구성만 담긴 작은 파일을 저장합니다.",
+        "de": "Mit Ergebnissen (etwa %1 unkomprimiert) können Sie die Sitzung ohne Neuberechnung wieder öffnen. Wählen Sie Nein, um eine kleine reine Konfigurationsdatei zum Teilen zu speichern.",
+        "fr": "Inclure les résultats (environ %1 non compressé) permet de rouvrir la session sans tout recalculer. Choisissez Non pour enregistrer un petit fichier de configuration seule, à partager.",
+        "es": "Incluir los resultados (unos %1 sin comprimir) permite reabrir la sesión sin recalcular. Elija No para guardar un pequeño archivo solo de configuración para compartir.",
+    },
+    "large": {
+        "zh_CN": "较大", "zh_TW": "較大", "ja": "大きい", "ko": "큼",
+        "de": "groß", "fr": "volumineux", "es": "grande",
+    },
+    "Saving Session": {
+        "zh_CN": "正在保存会话", "zh_TW": "正在儲存工作階段",
+        "ja": "セッションを保存中", "ko": "세션 저장 중",
+        "de": "Sitzung wird gespeichert", "fr": "Enregistrement de la session",
+        "es": "Guardando sesión",
+    },
+    "Loading Session": {
+        "zh_CN": "正在加载会话", "zh_TW": "正在載入工作階段",
+        "ja": "セッションを読み込み中", "ko": "세션 불러오는 중",
+        "de": "Sitzung wird geladen", "fr": "Chargement de la session",
+        "es": "Cargando sesión",
+    },
+    "File Association Failed": {
+        "zh_CN": "文件关联失败", "zh_TW": "檔案關聯失敗",
+        "ja": "ファイル関連付けに失敗", "ko": "파일 연결 실패",
+        "de": "Dateiverknüpfung fehlgeschlagen",
+        "fr": "Échec de l'association de fichiers",
+        "es": "Error al asociar archivos",
+    },
+    "Could not register .aldic files: ": {
+        "zh_CN": "无法注册 .aldic 文件：", "zh_TW": "無法註冊 .aldic 檔案：",
+        "ja": ".aldic ファイルを登録できませんでした：",
+        "ko": ".aldic 파일을 등록할 수 없습니다: ",
+        "de": ".aldic-Dateien konnten nicht registriert werden: ",
+        "fr": "Impossible d'enregistrer les fichiers .aldic : ",
+        "es": "No se pudieron registrar los archivos .aldic: ",
+    },
+    "File Association": {
+        "zh_CN": "文件关联", "zh_TW": "檔案關聯", "ja": "ファイル関連付け",
+        "ko": "파일 연결", "de": "Dateiverknüpfung",
+        "fr": "Association de fichiers", "es": "Asociación de archivos",
+    },
+    "Done. Double-clicking a .aldic file will now open pyALDIC and "
+    "restore that session.": {
+        "zh_CN": "完成。现在双击 .aldic 文件即可打开 pyALDIC 并恢复该会话。",
+        "zh_TW": "完成。現在雙擊 .aldic 檔案即可開啟 pyALDIC 並還原該工作階段。",
+        "ja": "完了しました。これで .aldic ファイルをダブルクリックすると pyALDIC が開き、そのセッションが復元されます。",
+        "ko": "완료되었습니다. 이제 .aldic 파일을 두 번 클릭하면 pyALDIC가 열리고 해당 세션이 복원됩니다.",
+        "de": "Fertig. Ein Doppelklick auf eine .aldic-Datei öffnet nun pyALDIC und stellt diese Sitzung wieder her.",
+        "fr": "Terminé. Un double-clic sur un fichier .aldic ouvrira désormais pyALDIC et restaurera cette session.",
+        "es": "Listo. Ahora, hacer doble clic en un archivo .aldic abrirá pyALDIC y restaurará esa sesión.",
+    },
     "Include colorbar": {
         "zh_CN": "包含色条", "zh_TW": "包含色條", "ja": "カラーバーを含める",
         "ko": "컬러바 포함", "de": "Farbleiste einfügen",

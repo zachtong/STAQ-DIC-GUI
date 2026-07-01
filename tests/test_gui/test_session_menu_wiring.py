@@ -44,20 +44,26 @@ def test_save_session_returns_silently_when_user_cancels(monkeypatch, tmp_path):
 
 
 def test_save_session_writes_file(monkeypatch, tmp_path):
-    """Full happy path: user chooses a path -> file exists."""
+    """Full happy path: user chooses a path -> an .aldic bundle is written."""
+    import zipfile
+
     from al_dic.gui.app import MainWindow
     from PySide6.QtWidgets import QFileDialog
 
-    out = tmp_path / "my.aldic.json"
+    out = tmp_path / "my.aldic"
     monkeypatch.setattr(
         QFileDialog,
         "getSaveFileName",
         staticmethod(lambda *args, **kwargs: (str(out), "")),
     )
     win = MainWindow()
-    win._on_save_session()
+    win._on_save_session()          # runs on a background worker
+    worker = win._session_worker
+    assert worker is not None
+    assert worker.wait(5000)        # wait for the save thread to finish
+    app.processEvents()             # let the done slot run
     assert out.exists()
-    assert out.read_text(encoding="utf-8").startswith("{")
+    assert zipfile.is_zipfile(out)  # schema-2 bundle, not plain JSON
 
 
 def test_open_session_returns_silently_when_user_cancels(monkeypatch):
