@@ -390,10 +390,16 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "ko": "DPI", "de": "DPI", "fr": "DPI", "es": "PPP",
     },
     # ========== Export: output resolution + JPEG quality (all 8 locales) ==========
-    "Resolution": {
-        "zh_CN": "分辨率", "zh_TW": "解析度", "ja": "解像度",
-        "ko": "해상도", "de": "Auflösung", "fr": "Résolution",
-        "es": "Resolución",
+    "Resolution (long edge)": {
+        "zh_CN": "分辨率（长边）", "zh_TW": "解析度（長邊）",
+        "ja": "解像度（長辺）", "ko": "해상도(긴 변)",
+        "de": "Auflösung (lange Kante)", "fr": "Résolution (bord long)",
+        "es": "Resolución (borde largo)",
+    },
+    "Frame step": {
+        "zh_CN": "抽帧间隔", "zh_TW": "抽幀間隔", "ja": "フレーム間引き",
+        "ko": "프레임 간격", "de": "Bildschritt", "fr": "Pas d'image",
+        "es": "Paso de fotogramas",
     },
     "Full resolution": {
         "zh_CN": "原始分辨率", "zh_TW": "原始解析度", "ja": "フル解像度",
@@ -414,49 +420,68 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "fr": "Qualité JPEG (plus élevée = fichier plus gros). Ignorée pour PNG/TIFF.",
         "es": "Calidad JPEG (mayor = archivo más grande). Se ignora para PNG/TIFF.",
     },
-    "Cap the exported image's long edge (default 1536 px).\n"
-    "Field detail is bounded by the mesh, so a smaller cap is "
-    "near-lossless\nbut much smaller on disk and faster to encode. "
-    "'Full resolution' keeps the native image size.": {
-        "zh_CN": "限制导出图像的长边（默认 1536 px）。\n"
+    "Cap the exported image's long edge (the larger of width/height; "
+    "aspect ratio is kept).\nField detail is bounded by the mesh, so a "
+    "smaller cap is near-lossless\nbut much smaller on disk and faster "
+    "to encode. Lower = faster. 'Full resolution' keeps the native "
+    "size.": {
+        "zh_CN": "限制导出图像的长边（宽和高中较大的一个；保持宽高比）。\n"
                  "场的细节由网格密度决定，因此较小的上限几乎无损，\n"
-                 "但文件更小、编码更快。「原始分辨率」保持原生图像尺寸。",
-        "zh_TW": "限制匯出影像的長邊（預設 1536 px）。\n"
+                 "但文件更小、编码更快。越低越快。「原始分辨率」保持原生尺寸。",
+        "zh_TW": "限制匯出影像的長邊（寬與高中較大的一個；保持長寬比）。\n"
                  "場的細節由網格密度決定，因此較小的上限幾乎無損，\n"
-                 "但檔案更小、編碼更快。「原始解析度」保持原生影像尺寸。",
-        "ja": "書き出す画像の長辺を制限します（既定 1536 px）。\n"
+                 "但檔案更小、編碼更快。越低越快。「原始解析度」保持原生尺寸。",
+        "ja": "書き出す画像の長辺（幅と高さの大きい方。縦横比は維持）を制限します。\n"
               "フィールドの詳細はメッシュで決まるため、上限を小さくしてもほぼ無損失で、\n"
-              "ファイルは小さく書き出しも高速です。「フル解像度」は元の画像サイズを保ちます。",
-        "ko": "내보내는 이미지의 긴 변을 제한합니다(기본 1536 px).\n"
+              "ファイルは小さく書き出しも高速です。小さいほど高速。「フル解像度」は元のサイズを保ちます。",
+        "ko": "내보내는 이미지의 긴 변(너비/높이 중 큰 값, 종횡비 유지)을 제한합니다.\n"
               "필드 세부 정보는 메시로 결정되므로 상한을 낮춰도 거의 무손실이며,\n"
-              "파일이 작고 인코딩이 빠릅니다. '전체 해상도'는 원본 이미지 크기를 유지합니다.",
-        "de": "Begrenzt die lange Kante des exportierten Bildes (Standard 1536 px).\n"
+              "파일이 작고 인코딩이 빠릅니다. 낮을수록 빠름. '전체 해상도'는 원본 크기를 유지합니다.",
+        "de": "Begrenzt die lange Kante des exportierten Bildes (das Größere von Breite/Höhe; Seitenverhältnis bleibt erhalten).\n"
               "Die Felddetails sind durch das Netz begrenzt, daher ist eine kleinere Grenze nahezu verlustfrei,\n"
-              "aber viel kleiner und schneller zu kodieren. „Volle Auflösung“ behält die native Bildgröße bei.",
-        "fr": "Limite le bord long de l'image exportée (par défaut 1536 px).\n"
+              "aber viel kleiner und schneller zu kodieren. Kleiner = schneller. „Volle Auflösung“ behält die native Größe bei.",
+        "fr": "Limite le bord long de l'image exportée (le plus grand de largeur/hauteur ; le ratio est conservé).\n"
               "Le détail du champ est borné par le maillage, donc une limite plus petite est quasi sans perte,\n"
-              "mais bien plus légère et rapide à encoder. « Résolution native » conserve la taille d'image native.",
-        "es": "Limita el borde largo de la imagen exportada (predeterminado 1536 px).\n"
+              "mais bien plus légère et rapide à encoder. Plus petit = plus rapide. « Résolution native » conserve la taille native.",
+        "es": "Limita el borde largo de la imagen exportada (el mayor de ancho/alto; se mantiene la relación de aspecto).\n"
               "El detalle del campo está limitado por la malla, por lo que un límite menor es casi sin pérdida,\n"
-              "pero mucho más pequeño y rápido de codificar. «Resolución completa» mantiene el tamaño de imagen nativo.",
+              "pero mucho más pequeño y rápido de codificar. Menor = más rápido. «Resolución completa» mantiene el tamaño nativo.",
     },
-    "Cap the animation's long edge (default 1536 px).\n"
-    "Strongly recommended for GIF, whose size explodes at native "
-    "resolution.": {
-        "zh_CN": "限制动画的长边（默认 1536 px）。\n"
-                 "强烈建议用于 GIF：其体积在原生分辨率下会急剧膨胀。",
-        "zh_TW": "限制動畫的長邊（預設 1536 px）。\n"
-                 "強烈建議用於 GIF：其體積在原生解析度下會急劇膨脹。",
-        "ja": "アニメーションの長辺を制限します（既定 1536 px）。\n"
-              "GIF に強く推奨されます。ネイティブ解像度ではサイズが急激に増大します。",
-        "ko": "애니메이션의 긴 변을 제한합니다(기본 1536 px).\n"
-              "GIF에 강력히 권장됩니다. 원본 해상도에서는 크기가 급격히 커집니다.",
-        "de": "Begrenzt die lange Kante der Animation (Standard 1536 px).\n"
-              "Dringend empfohlen für GIF, dessen Größe bei nativer Auflösung explodiert.",
-        "fr": "Limite le bord long de l'animation (par défaut 1536 px).\n"
-              "Fortement recommandé pour le GIF, dont la taille explose en résolution native.",
-        "es": "Limita el borde largo de la animación (predeterminado 1536 px).\n"
-              "Muy recomendable para GIF, cuyo tamaño se dispara a resolución nativa.",
+    "Cap the animation's long edge (the larger of width/height).\n"
+    "Lower = faster and much smaller. Strongly recommended for GIF, "
+    "whose size explodes at native resolution.": {
+        "zh_CN": "限制动画的长边（宽和高中较大的一个）。\n"
+                 "越低越快、越小。强烈建议用于 GIF：其体积在原生分辨率下会急剧膨胀。",
+        "zh_TW": "限制動畫的長邊（寬與高中較大的一個）。\n"
+                 "越低越快、越小。強烈建議用於 GIF：其體積在原生解析度下會急劇膨脹。",
+        "ja": "アニメーションの長辺（幅と高さの大きい方）を制限します。\n"
+              "小さいほど高速・小容量。GIF に強く推奨されます。ネイティブ解像度ではサイズが急激に増大します。",
+        "ko": "애니메이션의 긴 변(너비/높이 중 큰 값)을 제한합니다.\n"
+              "낮을수록 빠르고 작습니다. GIF에 강력히 권장됩니다. 원본 해상도에서는 크기가 급격히 커집니다.",
+        "de": "Begrenzt die lange Kante der Animation (das Größere von Breite/Höhe).\n"
+              "Kleiner = schneller und viel kleiner. Dringend empfohlen für GIF, dessen Größe bei nativer Auflösung explodiert.",
+        "fr": "Limite le bord long de l'animation (le plus grand de largeur/hauteur).\n"
+              "Plus petit = plus rapide et bien plus léger. Fortement recommandé pour le GIF, dont la taille explose en résolution native.",
+        "es": "Limita el borde largo de la animación (el mayor de ancho/alto).\n"
+              "Menor = más rápido y mucho más pequeño. Muy recomendable para GIF, cuyo tamaño se dispara a resolución nativa.",
+    },
+    "Export every Nth frame (1 = every frame). Higher is faster and "
+    "smaller\nbut looks choppier. Playback duration is preserved (the "
+    "FPS above is the pre-decimation rate).": {
+        "zh_CN": "每 N 帧导出一帧（1 = 每帧都导出）。越大越快、越小，\n"
+                 "但看起来更卡顿。播放时长保持不变（上方 FPS 为抽帧前的帧率）。",
+        "zh_TW": "每 N 幀匯出一幀（1 = 每幀都匯出）。越大越快、越小，\n"
+                 "但看起來更卡頓。播放時長保持不變（上方 FPS 為抽幀前的幀率）。",
+        "ja": "N フレームごとに 1 枚書き出します（1 = 全フレーム）。大きいほど高速・小容量ですが、\n"
+              "カクついて見えます。再生時間は維持されます（上の FPS は間引き前のレート）。",
+        "ko": "N 프레임마다 하나씩 내보냅니다(1 = 모든 프레임). 클수록 빠르고 작지만,\n"
+              "더 끊겨 보입니다. 재생 시간은 유지됩니다(위의 FPS는 추출 전 프레임률).",
+        "de": "Jedes N-te Bild exportieren (1 = jedes Bild). Höher = schneller und kleiner,\n"
+              "wirkt aber ruckeliger. Die Abspieldauer bleibt erhalten (die FPS oben sind die Rate vor der Dezimierung).",
+        "fr": "Exporte une image sur N (1 = toutes les images). Plus élevé = plus rapide et plus léger,\n"
+              "mais plus saccadé. La durée de lecture est conservée (les FPS ci-dessus sont le débit avant décimation).",
+        "es": "Exporta uno de cada N fotogramas (1 = todos). Mayor = más rápido y pequeño,\n"
+              "pero se ve más entrecortado. La duración se conserva (los FPS de arriba son la tasa antes de diezmar).",
     },
     "Include colorbar": {
         "zh_CN": "包含色条", "zh_TW": "包含色條", "ja": "カラーバーを含める",

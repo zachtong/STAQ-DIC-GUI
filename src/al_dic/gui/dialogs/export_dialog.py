@@ -141,7 +141,7 @@ class ExportConfig:
     image_fields: list[FieldImageConfig] = field(default_factory=list)
     image_format: str = "jpeg"
     image_dpi: int = 150
-    image_output_max_dim: int = 1536  # cap long edge (0 = native)
+    image_output_max_dim: int = 1024  # cap long edge in px (0 = native)
     jpeg_quality: int = 92
     show_deformed: bool = False     # render field at deformed node positions
     bg_mode: str = "ref_frame"      # "ref_frame" | "current_frame"
@@ -153,7 +153,8 @@ class ExportConfig:
     anim_fields: list[FieldImageConfig] = field(default_factory=list)
     anim_format: str = "mp4"
     anim_fps: int = 10
-    anim_output_max_dim: int = 1536  # cap long edge (0 = native)
+    anim_output_max_dim: int = 1024  # cap long edge in px (0 = native)
+    anim_frame_step: int = 1         # keep every Nth frame (1 = all)
     anim_show_deformed: bool = False
     anim_bg_mode: str = "ref_frame"  # "ref_frame" | "current_frame"
     anim_frame_start: int = 0
@@ -328,6 +329,7 @@ class ExportAnimationWorker(QThread):
                 pixel_size=self._config.pixel_size,
                 pixel_unit=self._config.pixel_unit,
                 output_max_dim=self._config.anim_output_max_dim,
+                frame_step=self._config.anim_frame_step,
             )
             self.finished.emit(paths)
         except Exception as exc:  # pragma: no cover
@@ -758,22 +760,22 @@ class ExportDialog(QDialog):
         fmt_row.addStretch()
         img_form.addRow(self.tr("Format"), fmt_row)
 
-        # Output resolution cap: numbers stay literal; only the "native"
-        # option + tooltip are translated.
+        # Output resolution cap: the value is the long edge (max of W/H), kept
+        # literal; only the "native" option + tooltip are translated.
         res_row = QHBoxLayout()
         self._img_res_combo = QComboBox()
-        self._img_res_combo.addItem("1536 px", 1536)
-        self._img_res_combo.addItem("2048 px", 2048)
-        self._img_res_combo.addItem("1024 px", 1024)
+        for _px in (1024, 768, 512, 1536, 2048):
+            self._img_res_combo.addItem(f"{_px} px", _px)
         self._img_res_combo.addItem(self.tr("Full resolution"), 0)
         self._img_res_combo.setToolTip(self.tr(
-            "Cap the exported image's long edge (default 1536 px).\n"
-            "Field detail is bounded by the mesh, so a smaller cap is "
-            "near-lossless\nbut much smaller on disk and faster to encode. "
-            "'Full resolution' keeps the native image size."))
+            "Cap the exported image's long edge (the larger of width/height; "
+            "aspect ratio is kept).\nField detail is bounded by the mesh, so a "
+            "smaller cap is near-lossless\nbut much smaller on disk and faster "
+            "to encode. Lower = faster. 'Full resolution' keeps the native "
+            "size."))
         res_row.addWidget(self._img_res_combo)
         res_row.addStretch()
-        img_form.addRow(self.tr("Resolution"), res_row)
+        img_form.addRow(self.tr("Resolution (long edge)"), res_row)
 
         quality_row = QHBoxLayout()
         self._img_quality_spin = QSpinBox()
@@ -902,19 +904,19 @@ class ExportDialog(QDialog):
         anim_form.addRow(self.tr("Format"), fmt_row)
 
         # Output resolution cap (crucial for GIF: a 4K GIF is hundreds of MB).
+        # The value is the long edge (max of W/H); numbers stay literal.
         anim_res_row = QHBoxLayout()
         self._anim_res_combo = QComboBox()
-        self._anim_res_combo.addItem("1536 px", 1536)
-        self._anim_res_combo.addItem("1024 px", 1024)
-        self._anim_res_combo.addItem("2048 px", 2048)
+        for _px in (1024, 768, 512, 1536, 2048):
+            self._anim_res_combo.addItem(f"{_px} px", _px)
         self._anim_res_combo.addItem(self.tr("Full resolution"), 0)
         self._anim_res_combo.setToolTip(self.tr(
-            "Cap the animation's long edge (default 1536 px).\n"
-            "Strongly recommended for GIF, whose size explodes at native "
-            "resolution."))
+            "Cap the animation's long edge (the larger of width/height).\n"
+            "Lower = faster and much smaller. Strongly recommended for GIF, "
+            "whose size explodes at native resolution."))
         anim_res_row.addWidget(self._anim_res_combo)
         anim_res_row.addStretch()
-        anim_form.addRow(self.tr("Resolution"), anim_res_row)
+        anim_form.addRow(self.tr("Resolution (long edge)"), anim_res_row)
 
         fps_row = QHBoxLayout()
         self._anim_fps_spin = QSpinBox()
@@ -924,6 +926,21 @@ class ExportDialog(QDialog):
         fps_row.addWidget(self._anim_fps_spin)
         fps_row.addStretch()
         anim_form.addRow(self.tr("FPS"), fps_row)
+
+        # Frame step: keep every Nth frame (faster + smaller, choppier). FPS
+        # above is the pre-decimation timeline, so playback stays real-time.
+        step_row = QHBoxLayout()
+        self._anim_step_spin = QSpinBox()
+        self._anim_step_spin.setRange(1, 20)
+        self._anim_step_spin.setValue(1)
+        self._anim_step_spin.setFixedWidth(60)
+        self._anim_step_spin.setToolTip(self.tr(
+            "Export every Nth frame (1 = every frame). Higher is faster and "
+            "smaller\nbut looks choppier. Playback duration is preserved (the "
+            "FPS above is the pre-decimation rate)."))
+        step_row.addWidget(self._anim_step_spin)
+        step_row.addStretch()
+        anim_form.addRow(self.tr("Frame step"), step_row)
 
         self._anim_colorbar_check = QCheckBox(self.tr("Include colorbar"))
         self._anim_colorbar_check.setChecked(True)
@@ -1460,6 +1477,7 @@ class ExportDialog(QDialog):
             anim_format=self._anim_fmt_combo.currentText().lower(),
             anim_fps=self._anim_fps_spin.value(),
             anim_output_max_dim=int(self._anim_res_combo.currentData()),
+            anim_frame_step=self._anim_step_spin.value(),
             anim_show_deformed=self._anim_def_rb.isChecked(),
             anim_bg_mode="current_frame" if self._anim_def_rb.isChecked() else "ref_frame",
             anim_frame_start=anim_start,

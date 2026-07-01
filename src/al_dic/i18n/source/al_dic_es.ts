@@ -315,453 +315,465 @@ Solo relevante para el modo de estimación inicial FFT.</translation>
 <context>
     <name>ExportDialog</name>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="387"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="728"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="871"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="389"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="730"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="873"/>
         <source>Auto</source>
         <translation>Auto</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="411"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="413"/>
         <source>Opacity</source>
         <translation>Opacidad</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="415"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="417"/>
         <source>Field opacity (0 = transparent, 1 = fully opaque)</source>
         <translation>Opacidad del campo (0 = transparente, 1 = completamente opaco)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="483"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="485"/>
         <source>All</source>
         <translation>Todos</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="485"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="487"/>
         <source>None</source>
         <translation>Ninguno</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="514"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="516"/>
         <source>Export Results</source>
         <translation>Exportar resultados</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="534"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="536"/>
         <source>OUTPUT FOLDER</source>
         <translation>CARPETA DE SALIDA</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="542"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="544"/>
         <source>Select output folder…</source>
         <translation>Seleccionar carpeta de salida…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="546"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="548"/>
         <source>Browse…</source>
         <translation>Examinar…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="551"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="553"/>
         <source>Open Folder</source>
         <translation>Abrir carpeta</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="559"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="561"/>
         <source>PHYSICAL UNITS</source>
         <translation>UNIDADES FÍSICAS</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="563"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="565"/>
         <source>Enable physical units</source>
         <translation>Activar unidades físicas</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="568"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="570"/>
         <source>Scale displacement values by pixel size and show physical units on colorbar labels. Strain is dimensionless and unaffected.</source>
         <translation>Escalar los valores de desplazamiento por el tamaño del píxel y mostrar unidades físicas en las etiquetas de la barra de color. La deformación es adimensional y no se ve afectada.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="583"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="585"/>
         <source>/ pixel</source>
         <translation>/ píxel</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="585"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="587"/>
         <source>Pixel size</source>
         <translation>Tamaño del píxel</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="594"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="596"/>
         <source>fps</source>
         <translation>fps</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="596"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="598"/>
         <source>Frame rate</source>
         <translation>Fotogramas por segundo</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="604"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="606"/>
         <source>Data</source>
         <translation>Datos</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="605"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="607"/>
         <source>Images</source>
         <translation>Imágenes</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="606"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="608"/>
         <source>Animation</source>
         <translation>Animación</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="607"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="609"/>
         <source>Report</source>
         <translation>Informe</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="627"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="629"/>
         <source>FORMAT</source>
         <translation>FORMATO</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="629"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="631"/>
         <source>NumPy Archive (.npz)</source>
         <translation>Archivo NumPy (.npz)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="631"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="633"/>
         <source>MATLAB (.mat)</source>
         <translation>MATLAB (.mat)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="633"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="635"/>
         <source>CSV (per frame)</source>
         <translation>CSV (por fotograma)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="636"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="638"/>
         <source>NPZ: one file per frame (default: single merged file)</source>
         <translation>NPZ: un archivo por fotograma (predeterminado: un único archivo combinado)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="644"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="646"/>
         <source>DISPLACEMENT</source>
         <translation>DESPLAZAMIENTO</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="653"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="680"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="655"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="682"/>
         <source>Select:</source>
         <translation>Seleccionar:</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="668"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="670"/>
         <source>STRAIN</source>
         <translation>DEFORMACIÓN</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="671"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="673"/>
         <source>Run Compute Strain first.</source>
         <translation>Ejecute primero «Calcular deformación».</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="698"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="700"/>
         <source>✓ Parameters file (JSON) always exported</source>
         <translation>✓ El archivo de parámetros (JSON) siempre se exporta</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="704"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="706"/>
         <source>Export Data</source>
         <translation>Exportar datos</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="725"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="868"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="727"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="870"/>
         <source>Export</source>
         <translation>Exportar</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="726"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="869"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="728"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="871"/>
         <source>Field</source>
         <translation>Campo</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="727"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="870"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="729"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="872"/>
         <source>Colormap</source>
         <translation>Mapa de colores</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="729"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="872"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="731"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="874"/>
         <source>Min</source>
         <translation>Mín</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="730"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="873"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="732"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="875"/>
         <source>Max</source>
         <translation>Máx</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="749"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="751"/>
         <source>IMAGE SETTINGS</source>
         <translation>AJUSTES DE IMAGEN</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="759"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="902"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="761"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="904"/>
         <source>Format</source>
         <translation>Formato</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="768"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="910"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="769"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="912"/>
         <source>Full resolution</source>
         <translation>Resolución completa</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="773"/>
-        <source>Cap the exported image&apos;s long edge (default 1536 px).
+        <location filename="../../gui/dialogs/export_dialog.py" line="775"/>
+        <source>Cap the exported image&apos;s long edge (the larger of width/height; aspect ratio is kept).
 Field detail is bounded by the mesh, so a smaller cap is near-lossless
-but much smaller on disk and faster to encode. &apos;Full resolution&apos; keeps the native image size.</source>
-        <translation>Limita el borde largo de la imagen exportada (predeterminado 1536 px).
+but much smaller on disk and faster to encode. Lower = faster. &apos;Full resolution&apos; keeps the native size.</source>
+        <translation>Limita el borde largo de la imagen exportada (el mayor de ancho/alto; se mantiene la relación de aspecto).
 El detalle del campo está limitado por la malla, por lo que un límite menor es casi sin pérdida,
-pero mucho más pequeño y rápido de codificar. «Resolución completa» mantiene el tamaño de imagen nativo.</translation>
+pero mucho más pequeño y rápido de codificar. Menor = más rápido. «Resolución completa» mantiene el tamaño nativo.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="776"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="917"/>
-        <source>Resolution</source>
-        <translation>Resolución</translation>
+        <location filename="../../gui/dialogs/export_dialog.py" line="778"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="919"/>
+        <source>Resolution (long edge)</source>
+        <translation>Resolución (borde largo)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="784"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="916"/>
+        <source>Cap the animation&apos;s long edge (the larger of width/height).
+Lower = faster and much smaller. Strongly recommended for GIF, whose size explodes at native resolution.</source>
+        <translation>Limita el borde largo de la animación (el mayor de ancho/alto).
+Menor = más rápido y mucho más pequeño. Muy recomendable para GIF, cuyo tamaño se dispara a resolución nativa.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="786"/>
         <source>JPEG quality (higher = larger file). Ignored for PNG/TIFF.</source>
         <translation>Calidad JPEG (mayor = archivo más grande). Se ignora para PNG/TIFF.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="787"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="789"/>
         <source>JPEG quality</source>
         <translation>Calidad JPEG</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="796"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="798"/>
         <source>DPI</source>
         <translation>PPP</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="798"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="928"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="800"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="945"/>
         <source>Include colorbar</source>
         <translation>Incluir barra de color</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="803"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="805"/>
         <source>Append a vertical colorbar strip to the right of each image.
 Tick labels update per frame when Auto range is enabled.</source>
         <translation>Añade una barra de color vertical a la derecha de cada imagen.
 Las etiquetas se actualizan por fotograma cuando el rango auto está activo.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="808"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="938"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="810"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="955"/>
         <source>Original (frame 1 background)</source>
         <translation>Original (fotograma 1 como fondo)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="813"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="943"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="815"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="960"/>
         <source>Field is drawn at the original (undeformed) node positions.
 Background image is always the first frame.</source>
         <translation>El campo se dibuja en las posiciones originales (no deformadas) de los nodos.
 La imagen de fondo es siempre el primer fotograma.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="816"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="946"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="818"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="963"/>
         <source>Deformed (current frame background)</source>
         <translation>Deformado (fotograma actual como fondo)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="822"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="952"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="824"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="969"/>
         <source>Field is drawn at the displaced node positions (reference + displacement).
 Background image follows each frame&apos;s own photo.</source>
         <translation>El campo se dibuja en las posiciones de nodo desplazadas (referencia + desplazamiento).
 La imagen de fondo sigue la foto de cada fotograma.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="826"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="956"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="828"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="973"/>
         <source>Render as</source>
         <translation>Representar como</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="844"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="972"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="846"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="989"/>
         <source>Cancel Export</source>
         <translation>Cancelar exportación</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="849"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="851"/>
         <source>Export Images</source>
         <translation>Exportar imágenes</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="892"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="894"/>
         <source>ANIMATION SETTINGS</source>
         <translation>AJUSTES DE ANIMACIÓN</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="914"/>
-        <source>Cap the animation&apos;s long edge (default 1536 px).
-Strongly recommended for GIF, whose size explodes at native resolution.</source>
-        <translation>Limita el borde largo de la animación (predeterminado 1536 px).
-Muy recomendable para GIF, cuyo tamaño se dispara a resolución nativa.</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="926"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="928"/>
         <source>FPS</source>
         <translation>FPS</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="933"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="940"/>
+        <source>Export every Nth frame (1 = every frame). Higher is faster and smaller
+but looks choppier. Playback duration is preserved (the FPS above is the pre-decimation rate).</source>
+        <translation>Exporta uno de cada N fotogramas (1 = todos). Mayor = más rápido y pequeño,
+pero se ve más entrecortado. La duración se conserva (los FPS de arriba son la tasa antes de diezmar).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="943"/>
+        <source>Frame step</source>
+        <translation>Paso de fotogramas</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="950"/>
         <source>Append a vertical colorbar strip to the right of each frame.
 Tick labels update per frame when Auto range is enabled.</source>
         <translation>Añade una barra de color vertical a la derecha de cada fotograma.
 Las etiquetas se actualizan por fotograma cuando el rango auto está activo.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="977"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="994"/>
         <source>Export Animation</source>
         <translation>Exportar animación</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="994"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1011"/>
         <source>CONTENT</source>
         <translation>CONTENIDO</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="996"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1013"/>
         <source>Parameter summary table</source>
         <translation>Tabla resumen de parámetros</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1000"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1017"/>
         <source>Field statistics (min/max/mean/std per frame)</source>
         <translation>Estadísticas de campo (mín/máx/media/desv.típ. por fotograma)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1002"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1019"/>
         <source>Sample field images</source>
         <translation>Imágenes de campo de muestra</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1009"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1026"/>
         <source>Sample every</source>
         <translation>Muestrear cada</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1015"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1032"/>
         <source>frames</source>
         <comment>Report: sample every N frames</comment>
         <translation>fotogramas</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1021"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1038"/>
         <source>FIELDS</source>
         <translation>CAMPOS</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1024"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1041"/>
         <source>Displacement:</source>
         <translation>Desplazamiento:</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1039"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1056"/>
         <source>Strain:</source>
         <translation>Deformación:</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1062"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1079"/>
         <source>Format: HTML (self-contained, view in any browser)</source>
         <translation>Formato: HTML (autocontenido, se puede ver en cualquier navegador)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1068"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1085"/>
         <source>Generate Report</source>
         <translation>Generar informe</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1082"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1099"/>
         <source>FRAME RANGE</source>
         <translation>RANGO DE FOTOGRAMAS</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1085"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1102"/>
         <source>All frames</source>
         <translation>Todos los fotogramas</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1091"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1108"/>
         <source>From</source>
         <comment>Frame range: starting frame</comment>
         <translation>Desde</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1099"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1116"/>
         <source>to</source>
         <comment>Frame range: ending frame</comment>
         <translation>a</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1130"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1147"/>
         <source>Select Output Folder</source>
         <translation>Seleccionar carpeta de salida</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1189"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1206"/>
         <source>Exported %1 files → %2</source>
         <translation>Exportados %1 archivos → %2</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1198"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1273"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1352"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1394"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1215"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1290"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1369"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1411"/>
         <source>Error: %1</source>
         <translation>Error: %1</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1223"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1301"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1240"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1318"/>
         <source>Starting…</source>
         <translation>Iniciando…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1246"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1324"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1263"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1341"/>
         <source>Rendering %1 (%2/%3)</source>
         <translation>Renderizando %1 (%2/%3)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1252"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1330"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1269"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1347"/>
         <source>Frame %1/%2</source>
         <translation>Fotograma %1/%2</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1262"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1279"/>
         <source>Exported %1 images → %2</source>
         <translation>%1 imágenes exportadas → %2</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1387"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1404"/>
         <source>Report saved → %1</source>
         <translation>Informe guardado → %1</translation>
     </message>

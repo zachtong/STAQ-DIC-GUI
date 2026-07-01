@@ -130,6 +130,27 @@ def test_export_jpeg_smaller_than_png(tmp_path):
 
 # --- export_animation streaming + resolution ------------------------------
 
+def test_export_animation_frame_step(tmp_path):
+    """frame_step keeps every Nth frame and scales fps to preserve duration."""
+    res = _big_result(256)  # 6 disp frames
+    cfg = FieldImageConfig("disp_u", True, "jet", True, 0, 1, 0.7)
+    # add more frames so decimation is observable
+    res.result_disp.extend([res.result_disp[0]] * 4)  # 6 total
+    paths = export_animation(
+        dest_dir=tmp_path, prefix="a", timestamp="ts", results=res,
+        configs=[cfg], image_files=[], bg_mode="ref_frame", roi_mask=None,
+        fmt="mp4", fps=10, show_deformed=False, frame_start=0,
+        frame_end=len(res.result_disp) - 1, include_colorbar=False,
+        output_max_dim=256, frame_step=2)
+    assert len(paths) == 1 and paths[0].exists()
+    cap = cv2.VideoCapture(str(paths[0]))
+    nframes = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = cap.get(cv2.CAP_PROP_FPS); cap.release()
+    total = len(res.result_disp)
+    assert nframes == len(range(0, total, 2))   # decimated frame count
+    assert round(fps) == 5                        # 10 / 2, duration preserved
+
+
 @pytest.mark.parametrize("fmt", ["mp4", "gif"])
 def test_export_animation_caps_resolution(tmp_path, fmt):
     res = _big_result(512)

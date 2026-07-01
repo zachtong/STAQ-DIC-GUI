@@ -49,6 +49,7 @@ def export_animation(
     pixel_size: float = 1.0,
     pixel_unit: str = "mm",
     render_max_dim: int = 1536,
+    frame_step: int = 1,
     output_max_dim: int = 0,
 ) -> list[Path]:
     """Export one animation file per enabled field.
@@ -107,7 +108,14 @@ def export_animation(
     # Output resolution cap (file size + encode time).
     out_shape = output_shape_for(img_shape, output_max_dim)
 
-    total_frames = frame_end - frame_start + 1
+    # Frame decimation: keep every Nth frame (faster + smaller, choppier). The
+    # given fps is the pre-decimation timeline, so scale the playback fps down
+    # by the same factor to keep the real-time duration unchanged.
+    frame_step = max(1, int(frame_step))
+    out_fps = max(1, round(fps / frame_step))
+
+    frame_indices = list(range(frame_start, frame_end + 1, frame_step))
+    total_frames = len(frame_indices)
     fmt = fmt.lower()
     paths: list[Path] = []
 
@@ -129,7 +137,7 @@ def export_animation(
         # hundreds of 4K frames would otherwise pin tens of GB of RAM.
         writer: _StreamingAnimWriter | None = None
 
-        for t in range(frame_start, frame_end + 1):
+        for t in frame_indices:
             if stop_event is not None and stop_event.is_set():
                 break
 
@@ -223,7 +231,7 @@ def export_animation(
             # (that size includes the colorbar strip when present).
             if writer is None:
                 w = _StreamingAnimWriter(
-                    fmt, anim_dir, cfg.field_name, fps, img.shape[:2])
+                    fmt, anim_dir, cfg.field_name, out_fps, img.shape[:2])
                 if not w.ok:
                     w.close()
                     break
