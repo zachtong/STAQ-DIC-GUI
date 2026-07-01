@@ -39,6 +39,25 @@ def test_reused_delaunay_is_byte_identical():
         np.testing.assert_array_equal(reused, fresh)
 
 
+def test_scattered_uv_tri_cache_byte_identical():
+    """tri_cache must not change results, and reuses one Delaunay across
+    calls sharing the same points + valid mask (the cumulative-transform
+    cross-frame speedup)."""
+    pts = _pts(70, 20)
+    query = pts + np.random.default_rng(21).standard_normal(pts.shape) * 0.5
+    rng = np.random.default_rng(22)
+    cache: dict = {}
+    for _ in range(4):
+        u = rng.standard_normal(70)
+        v = rng.standard_normal(70)
+        eu, ev = scattered_interpolant_uv(pts, u, v, query)
+        cu, cv = scattered_interpolant_uv(pts, u, v, query, tri_cache=cache)
+        np.testing.assert_array_equal(cu, eu)
+        np.testing.assert_array_equal(cv, ev)
+    # same points + all-finite -> one shared triangulation across all 4 calls
+    assert len(cache) == 1
+
+
 class TestScatteredInterpolantUV:
     def test_no_nan_non_identity(self):
         pts = _pts(60, 0)

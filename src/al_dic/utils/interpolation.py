@@ -75,6 +75,7 @@ def scattered_interpolant_uv(
     v: NDArray[np.float64],
     query_points: NDArray[np.float64],
     fill_method: str = "nearest",
+    tri_cache: dict | None = None,
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Interpolate two co-located scalar fields (u, v) at ``query_points``,
     building the triangulation ONCE for both.
@@ -97,6 +98,10 @@ def scattered_interpolant_uv(
         u, v: (N,) co-located scalar fields (may contain NaN).
         query_points: (M, 2) query coordinates.
         fill_method: 'nearest' or 'nan' for out-of-hull queries.
+        tri_cache: optional {points.tobytes(): Delaunay} cache to reuse the
+            triangulation across calls sharing the same points + valid mask
+            (e.g. every frame of the cumulative transform on a uniform mesh).
+            Byte-identical; only avoids the redundant Delaunay build.
 
     Returns:
         (disp_u, disp_v), each (M,), identical to the per-field calls.
@@ -124,8 +129,18 @@ def scattered_interpolant_uv(
     vals = np.column_stack([u[valid], v[valid]])
     # One LinearNDInterpolator over a 2-column value array builds a single
     # Delaunay internally (identical to the per-field path) and interpolates
-    # both columns through it.
-    interp = LinearNDInterpolator(pts, vals, fill_value=np.nan)
+    # both columns through it. With a tri_cache the Delaunay is reused across
+    # calls sharing the same (points, valid mask) -- the build dominates the
+    # cost, so this is ~Nx on a uniform mesh -- while staying byte-identical.
+    pts_or_tri = pts
+    if tri_cache is not None:
+        key = pts.tobytes()
+        tri = tri_cache.get(key)
+        if tri is None:
+            tri = Delaunay(pts)
+            tri_cache[key] = tri
+        pts_or_tri = tri
+    interp = LinearNDInterpolator(pts_or_tri, vals, fill_value=np.nan)
     result = interp(query_points)
 
     if fill_method == "nearest":

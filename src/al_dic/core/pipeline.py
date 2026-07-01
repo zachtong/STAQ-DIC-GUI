@@ -453,6 +453,11 @@ def _compute_cumulative_displacements_tree(
     # Cache: cum_coords[frame_idx] = absolute coordinates after tracking
     # from frame 0 to frame_idx.  frame 0 = ref_coords.
     cum_coords_cache: dict[int, NDArray[np.float64]] = {0: ref_coords.copy()}
+    # Reuse the mesh triangulation across frames: every frame interpolates on
+    # the same mesh, and the Delaunay build (~98% of the transform) would
+    # otherwise be repeated per frame. Keyed by (points, valid mask) -- one
+    # build per uniform-mesh run instead of one per frame, byte-identical.
+    tri_cache: dict = {}
 
     for i in range(n_frames - 1):
         frame = i + 1  # 1-based deformed frame index
@@ -501,6 +506,7 @@ def _compute_cumulative_displacements_tree(
             # scattered_interpolant calls when u/v share the same NaN nodes.
             disp_x, disp_y = scattered_interpolant_uv(
                 child_mesh.coordinates_fem, u_inc, v_inc, coord_curr,
+                tri_cache=tri_cache,
             )
             coord_curr = coord_curr + np.column_stack([disp_x, disp_y])
 
