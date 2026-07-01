@@ -167,6 +167,19 @@ def test_identical_meshes_are_deduped():
     assert n_diff > n_same
 
 
+def test_save_progress_is_monotonic_to_one():
+    res = _make_result(n_frames=6)
+    fracs = []
+    buf = io.BytesIO()
+    save_result_npz(buf, res, progress=fracs.append)
+    assert fracs
+    assert fracs[-1] == pytest.approx(1.0)
+    assert all(0.0 < f <= 1.0 for f in fracs)
+    assert fracs == sorted(fracs)          # monotonic non-decreasing
+    buf.seek(0)
+    _assert_eq(res, load_result_npz(buf))  # still round-trips
+
+
 def test_load_rejects_pickle(tmp_path):
     """Loader must refuse pickled object arrays (allow_pickle=False)."""
     p = tmp_path / "evil.npz"

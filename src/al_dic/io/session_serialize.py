@@ -15,7 +15,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import fields, is_dataclass
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 
@@ -167,18 +167,40 @@ def deserialize_result(
     return obj
 
 
-def save_result_npz(file: Any, result: PipelineResult, *, compress: bool = True) -> None:
+def save_result_npz(
+    file: Any,
+    result: PipelineResult,
+    *,
+    compress: bool = True,
+    progress: Callable[[float], None] | None = None,
+) -> None:
     """Write *result* to *file* (path or file-like) as a .npz archive.
 
     The JSON manifest is embedded as a uint8 array under ``__manifest__``.
+    Writes the arrays one at a time (like ``np.savez`` does internally) so a
+    *progress* callback can report a real fraction on gigabyte-scale saves,
+    instead of a single opaque blocking call.
     """
+    import zipfile
+    from numpy.lib.format import write_array
+
     arrays, manifest = serialize_result(result)
     payload: dict[str, np.ndarray] = dict(arrays)
     payload[_MANIFEST_KEY] = np.frombuffer(
         json.dumps(manifest).encode("utf-8"), dtype=np.uint8
     )
-    saver = np.savez_compressed if compress else np.savez
-    saver(file, **payload)
+    compression = zipfile.ZIP_DEFLATED if compress else zipfile.ZIP_STORED
+    total = len(payload)
+    done = 0
+    with zipfile.ZipFile(file, "w", compression=compression, allowZip64=True) as zf:
+        for key, arr in payload.items():
+            # ``np.savez`` stores each array as ``<key>.npy``; matching that
+            # naming lets ``np.load`` read the archive back transparently.
+            with zf.open(key + ".npy", "w", force_zip64=True) as fid:
+                write_array(fid, np.asanyarray(arr), allow_pickle=False)
+            done += 1
+            if progress is not None:
+                progress(done / total)
 
 
 def estimated_nbytes(result: PipelineResult) -> int:

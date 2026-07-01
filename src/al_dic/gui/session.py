@@ -257,12 +257,16 @@ def save_session(
     try:
         if results is not None:
             # Stream results to a temp .npz first (low peak memory), then add
-            # it to the bundle without a second full copy in RAM.
+            # it to the bundle without a second full copy in RAM. Per-array
+            # progress maps onto 10-80% so the bar tracks a gigabyte-scale save.
             _report(0.10, "Serializing results…")
             results_tmp = path.with_name(path.name + ".results.tmp.npz")
-            save_result_npz(str(results_tmp), results, compress=True)
+            save_result_npz(
+                str(results_tmp), results, compress=True,
+                progress=lambda f: _report(0.10 + 0.70 * f, "Serializing results…"),
+            )
 
-        _report(0.80, "Writing bundle…")
+        _report(0.85, "Writing bundle…")
         with zipfile.ZipFile(tmp, "w", zipfile.ZIP_STORED) as zf:
             zf.writestr(_CONFIG_NAME, json.dumps(config, indent=2))
             if results_tmp is not None:
