@@ -420,6 +420,7 @@ def _compute_cumulative_displacements_tree(
     n_frames: int,
     schedule: FrameSchedule,
     progress_fn: Callable[[float, str], None] | None = None,
+    progress_start: float = 0.90,
 ) -> list[FrameResult | None]:
     """Transform per-pair displacements to cumulative via tree-based composition.
 
@@ -462,11 +463,14 @@ def _compute_cumulative_displacements_tree(
     for i in range(n_frames - 1):
         frame = i + 1  # 1-based deformed frame index
         if progress_fn is not None and n_frames > 1:
-            # The main frame loop fills 0.0-0.90 (see _loop_end); map this
-            # cumulative phase to [0.90, 1.0] so the bar does not sit frozen
-            # at 90% for the whole transform on large datasets.
+            # The main frame loop fills 0.0-progress_start (see _loop_end);
+            # map this cumulative phase to [progress_start, 1.0]. Now that the
+            # transform is fast (cross-frame Delaunay cache), progress_start is
+            # near 1.0 so this final sliver is imperceptible rather than a
+            # jarring 90%->100% jump on a slow-looking tail.
             progress_fn(
-                0.90 + 0.10 * (i + 1) / (n_frames - 1),
+                progress_start
+                + (1.0 - progress_start) * (i + 1) / (n_frames - 1),
                 "Composing cumulative displacements...",
             )
         if result_disp[i] is None or result_fe_mesh[i] is None:
@@ -762,8 +766,11 @@ def run_aldic(
     # =====================================================================
     # Main frame loop (Sections 3-6)
     # =====================================================================
-    # Progress budget: frame loop always fills 0–90%; strain is post-hoc
-    _loop_end = 0.90
+    # Progress budget: frame loop (incl. per-frame strain, Section 8) fills
+    # 0–99%; the cumulative transform is the final phase and, now that it is
+    # fast (cross-frame Delaunay cache), only needs the last 1%. This keeps
+    # the bar advancing smoothly to completion instead of jumping 90->100.
+    _loop_end = 0.99
     _n_pairs = max(1, n_frames - 2)
     _frame_budget = _loop_end / _n_pairs
 
@@ -1514,7 +1521,7 @@ def run_aldic(
 
     result_disp = _compute_cumulative_displacements_tree(
         result_disp, result_fe_mesh, n_frames, schedule,
-        progress_fn=progress,
+        progress_fn=progress, progress_start=_loop_end,
     )
 
     # Validate cumulative result
