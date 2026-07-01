@@ -139,8 +139,10 @@ class ExportConfig:
     # Images Tab
     export_images: bool = False
     image_fields: list[FieldImageConfig] = field(default_factory=list)
-    image_format: str = "png"
+    image_format: str = "jpeg"
     image_dpi: int = 150
+    image_output_max_dim: int = 1536  # cap long edge (0 = native)
+    jpeg_quality: int = 92
     show_deformed: bool = False     # render field at deformed node positions
     bg_mode: str = "ref_frame"      # "ref_frame" | "current_frame"
     frame_start: int = 0
@@ -151,6 +153,7 @@ class ExportConfig:
     anim_fields: list[FieldImageConfig] = field(default_factory=list)
     anim_format: str = "mp4"
     anim_fps: int = 10
+    anim_output_max_dim: int = 1536  # cap long edge (0 = native)
     anim_show_deformed: bool = False
     anim_bg_mode: str = "ref_frame"  # "ref_frame" | "current_frame"
     anim_frame_start: int = 0
@@ -261,6 +264,8 @@ class ExportImagesWorker(QThread):
                 pixel_size=self._config.pixel_size,
                 pixel_unit=self._config.pixel_unit,
                 image_format=self._config.image_format,
+                output_max_dim=self._config.image_output_max_dim,
+                jpeg_quality=self._config.jpeg_quality,
             )
             self.finished.emit(paths)
         except Exception as exc:  # pragma: no cover
@@ -322,6 +327,7 @@ class ExportAnimationWorker(QThread):
                 use_physical_units=self._config.use_physical_units,
                 pixel_size=self._config.pixel_size,
                 pixel_unit=self._config.pixel_unit,
+                output_max_dim=self._config.anim_output_max_dim,
             )
             self.finished.emit(paths)
         except Exception as exc:  # pragma: no cover
@@ -747,10 +753,38 @@ class ExportDialog(QDialog):
         fmt_row = QHBoxLayout()
         self._img_fmt_combo = QComboBox()
         # File-format names stay literal per glossary.
-        self._img_fmt_combo.addItems(["PNG", "JPEG", "TIFF"])
+        self._img_fmt_combo.addItems(["JPEG", "PNG", "TIFF"])
         fmt_row.addWidget(self._img_fmt_combo)
         fmt_row.addStretch()
         img_form.addRow(self.tr("Format"), fmt_row)
+
+        # Output resolution cap: numbers stay literal; only the "native"
+        # option + tooltip are translated.
+        res_row = QHBoxLayout()
+        self._img_res_combo = QComboBox()
+        self._img_res_combo.addItem("1536 px", 1536)
+        self._img_res_combo.addItem("2048 px", 2048)
+        self._img_res_combo.addItem("1024 px", 1024)
+        self._img_res_combo.addItem(self.tr("Full resolution"), 0)
+        self._img_res_combo.setToolTip(self.tr(
+            "Cap the exported image's long edge (default 1536 px).\n"
+            "Field detail is bounded by the mesh, so a smaller cap is "
+            "near-lossless\nbut much smaller on disk and faster to encode. "
+            "'Full resolution' keeps the native image size."))
+        res_row.addWidget(self._img_res_combo)
+        res_row.addStretch()
+        img_form.addRow(self.tr("Resolution"), res_row)
+
+        quality_row = QHBoxLayout()
+        self._img_quality_spin = QSpinBox()
+        self._img_quality_spin.setRange(60, 100)
+        self._img_quality_spin.setValue(92)
+        self._img_quality_spin.setFixedWidth(70)
+        self._img_quality_spin.setToolTip(self.tr(
+            "JPEG quality (higher = larger file). Ignored for PNG/TIFF."))
+        quality_row.addWidget(self._img_quality_spin)
+        quality_row.addStretch()
+        img_form.addRow(self.tr("JPEG quality"), quality_row)
 
         dpi_row = QHBoxLayout()
         self._img_dpi_spin = QSpinBox()
@@ -866,6 +900,21 @@ class ExportDialog(QDialog):
         fmt_row.addWidget(self._anim_fmt_combo)
         fmt_row.addStretch()
         anim_form.addRow(self.tr("Format"), fmt_row)
+
+        # Output resolution cap (crucial for GIF: a 4K GIF is hundreds of MB).
+        anim_res_row = QHBoxLayout()
+        self._anim_res_combo = QComboBox()
+        self._anim_res_combo.addItem("1536 px", 1536)
+        self._anim_res_combo.addItem("1024 px", 1024)
+        self._anim_res_combo.addItem("2048 px", 2048)
+        self._anim_res_combo.addItem(self.tr("Full resolution"), 0)
+        self._anim_res_combo.setToolTip(self.tr(
+            "Cap the animation's long edge (default 1536 px).\n"
+            "Strongly recommended for GIF, whose size explodes at native "
+            "resolution."))
+        anim_res_row.addWidget(self._anim_res_combo)
+        anim_res_row.addStretch()
+        anim_form.addRow(self.tr("Resolution"), anim_res_row)
 
         fps_row = QHBoxLayout()
         self._anim_fps_spin = QSpinBox()
@@ -1399,6 +1448,8 @@ class ExportDialog(QDialog):
             image_fields=[r.get_config() for r in self._img_field_rows],
             image_format=self._img_fmt_combo.currentText().lower(),
             image_dpi=self._img_dpi_spin.value(),
+            image_output_max_dim=int(self._img_res_combo.currentData()),
+            jpeg_quality=self._img_quality_spin.value(),
             show_deformed=self._img_def_rb.isChecked(),
             bg_mode="current_frame" if self._img_def_rb.isChecked() else "ref_frame",
             frame_start=img_start,
@@ -1408,6 +1459,7 @@ class ExportDialog(QDialog):
             anim_fields=[r.get_config() for r in self._anim_field_rows],
             anim_format=self._anim_fmt_combo.currentText().lower(),
             anim_fps=self._anim_fps_spin.value(),
+            anim_output_max_dim=int(self._anim_res_combo.currentData()),
             anim_show_deformed=self._anim_def_rb.isChecked(),
             anim_bg_mode="current_frame" if self._anim_def_rb.isChecked() else "ref_frame",
             anim_frame_start=anim_start,

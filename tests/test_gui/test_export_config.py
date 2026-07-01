@@ -46,7 +46,13 @@ class TestExportConfig:
         assert cfg.export_csv is True
         assert cfg.data_fields == []
         assert cfg.export_images is False
-        assert cfg.image_format == "png"
+        # Default format is JPEG: on a speckle background it is ~4x smaller and
+        # ~7x faster to encode than PNG (near-lossless for field visualisation).
+        assert cfg.image_format == "jpeg"
+        assert cfg.jpeg_quality == 92
+        # Output capped to 1536 px by default (near-lossless, far smaller/faster)
+        assert cfg.image_output_max_dim == 1536
+        assert cfg.anim_output_max_dim == 1536
         assert cfg.anim_format == "mp4"
         assert cfg.export_report is False
         # Colorbar default must stay ON — otherwise exported images

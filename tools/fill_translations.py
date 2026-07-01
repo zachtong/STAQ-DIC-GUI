@@ -389,6 +389,75 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "zh_CN": "DPI", "zh_TW": "DPI", "ja": "DPI",
         "ko": "DPI", "de": "DPI", "fr": "DPI", "es": "PPP",
     },
+    # ========== Export: output resolution + JPEG quality (all 8 locales) ==========
+    "Resolution": {
+        "zh_CN": "分辨率", "zh_TW": "解析度", "ja": "解像度",
+        "ko": "해상도", "de": "Auflösung", "fr": "Résolution",
+        "es": "Resolución",
+    },
+    "Full resolution": {
+        "zh_CN": "原始分辨率", "zh_TW": "原始解析度", "ja": "フル解像度",
+        "ko": "전체 해상도", "de": "Volle Auflösung",
+        "fr": "Résolution native", "es": "Resolución completa",
+    },
+    "JPEG quality": {
+        "zh_CN": "JPEG 质量", "zh_TW": "JPEG 品質", "ja": "JPEG 品質",
+        "ko": "JPEG 품질", "de": "JPEG-Qualität", "fr": "Qualité JPEG",
+        "es": "Calidad JPEG",
+    },
+    "JPEG quality (higher = larger file). Ignored for PNG/TIFF.": {
+        "zh_CN": "JPEG 质量（越高文件越大）。对 PNG/TIFF 无效。",
+        "zh_TW": "JPEG 品質（越高檔案越大）。對 PNG/TIFF 無效。",
+        "ja": "JPEG 品質（高いほどファイルが大きくなります）。PNG/TIFF では無視されます。",
+        "ko": "JPEG 품질(높을수록 파일이 커집니다). PNG/TIFF에서는 무시됩니다.",
+        "de": "JPEG-Qualität (höher = größere Datei). Wird für PNG/TIFF ignoriert.",
+        "fr": "Qualité JPEG (plus élevée = fichier plus gros). Ignorée pour PNG/TIFF.",
+        "es": "Calidad JPEG (mayor = archivo más grande). Se ignora para PNG/TIFF.",
+    },
+    "Cap the exported image's long edge (default 1536 px).\n"
+    "Field detail is bounded by the mesh, so a smaller cap is "
+    "near-lossless\nbut much smaller on disk and faster to encode. "
+    "'Full resolution' keeps the native image size.": {
+        "zh_CN": "限制导出图像的长边（默认 1536 px）。\n"
+                 "场的细节由网格密度决定，因此较小的上限几乎无损，\n"
+                 "但文件更小、编码更快。「原始分辨率」保持原生图像尺寸。",
+        "zh_TW": "限制匯出影像的長邊（預設 1536 px）。\n"
+                 "場的細節由網格密度決定，因此較小的上限幾乎無損，\n"
+                 "但檔案更小、編碼更快。「原始解析度」保持原生影像尺寸。",
+        "ja": "書き出す画像の長辺を制限します（既定 1536 px）。\n"
+              "フィールドの詳細はメッシュで決まるため、上限を小さくしてもほぼ無損失で、\n"
+              "ファイルは小さく書き出しも高速です。「フル解像度」は元の画像サイズを保ちます。",
+        "ko": "내보내는 이미지의 긴 변을 제한합니다(기본 1536 px).\n"
+              "필드 세부 정보는 메시로 결정되므로 상한을 낮춰도 거의 무손실이며,\n"
+              "파일이 작고 인코딩이 빠릅니다. '전체 해상도'는 원본 이미지 크기를 유지합니다.",
+        "de": "Begrenzt die lange Kante des exportierten Bildes (Standard 1536 px).\n"
+              "Die Felddetails sind durch das Netz begrenzt, daher ist eine kleinere Grenze nahezu verlustfrei,\n"
+              "aber viel kleiner und schneller zu kodieren. „Volle Auflösung“ behält die native Bildgröße bei.",
+        "fr": "Limite le bord long de l'image exportée (par défaut 1536 px).\n"
+              "Le détail du champ est borné par le maillage, donc une limite plus petite est quasi sans perte,\n"
+              "mais bien plus légère et rapide à encoder. « Résolution native » conserve la taille d'image native.",
+        "es": "Limita el borde largo de la imagen exportada (predeterminado 1536 px).\n"
+              "El detalle del campo está limitado por la malla, por lo que un límite menor es casi sin pérdida,\n"
+              "pero mucho más pequeño y rápido de codificar. «Resolución completa» mantiene el tamaño de imagen nativo.",
+    },
+    "Cap the animation's long edge (default 1536 px).\n"
+    "Strongly recommended for GIF, whose size explodes at native "
+    "resolution.": {
+        "zh_CN": "限制动画的长边（默认 1536 px）。\n"
+                 "强烈建议用于 GIF：其体积在原生分辨率下会急剧膨胀。",
+        "zh_TW": "限制動畫的長邊（預設 1536 px）。\n"
+                 "強烈建議用於 GIF：其體積在原生解析度下會急劇膨脹。",
+        "ja": "アニメーションの長辺を制限します（既定 1536 px）。\n"
+              "GIF に強く推奨されます。ネイティブ解像度ではサイズが急激に増大します。",
+        "ko": "애니메이션의 긴 변을 제한합니다(기본 1536 px).\n"
+              "GIF에 강력히 권장됩니다. 원본 해상도에서는 크기가 급격히 커집니다.",
+        "de": "Begrenzt die lange Kante der Animation (Standard 1536 px).\n"
+              "Dringend empfohlen für GIF, dessen Größe bei nativer Auflösung explodiert.",
+        "fr": "Limite le bord long de l'animation (par défaut 1536 px).\n"
+              "Fortement recommandé pour le GIF, dont la taille explose en résolution native.",
+        "es": "Limita el borde largo de la animación (predeterminado 1536 px).\n"
+              "Muy recomendable para GIF, cuyo tamaño se dispara a resolución nativa.",
+    },
     "Include colorbar": {
         "zh_CN": "包含色条", "zh_TW": "包含色條", "ja": "カラーバーを含める",
         "ko": "컬러바 포함", "de": "Farbleiste einfügen",
