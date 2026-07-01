@@ -260,6 +260,7 @@ class ExportImagesWorker(QThread):
                 use_physical_units=self._config.use_physical_units,
                 pixel_size=self._config.pixel_size,
                 pixel_unit=self._config.pixel_unit,
+                image_format=self._config.image_format,
             )
             self.finished.emit(paths)
         except Exception as exc:  # pragma: no cover

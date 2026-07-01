@@ -35,6 +35,7 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.interpolate import LinearNDInterpolator
 from scipy.spatial import Delaunay
+from scipy.spatial import Delaunay
 
 from al_dic.core.data_structures import PipelineResult, split_uv
 from al_dic.export.export_utils import ensure_dir, frame_tag
@@ -201,6 +202,7 @@ def render_field_frame(
     roi_mask: NDArray | None = None,
     deformed_coords: NDArray | None = None,
     deformed_mask: NDArray | None = None,
+    tri_cache: dict | None = None,
 ) -> NDArray:
     """Render a single field frame to a BGR uint8 image.
 
@@ -253,8 +255,20 @@ def render_field_frame(
         return bg_bgr.copy()
 
     try:
+        # Reuse the Delaunay across frames/fields sharing the same valid
+        # mask. The caller scopes tri_cache so render_coords is constant
+        # within it (non-deformed: shared across frames; deformed: per
+        # frame). Byte-identical to building the interpolator fresh.
+        pts_or_tri = render_coords[valid]
+        if tri_cache is not None:
+            key = valid.tobytes()
+            tri = tri_cache.get(key)
+            if tri is None:
+                tri = Delaunay(render_coords[valid])
+                tri_cache[key] = tri
+            pts_or_tri = tri
         interp = LinearNDInterpolator(
-            render_coords[valid], values[valid], fill_value=np.nan
+            pts_or_tri, values[valid], fill_value=np.nan
         )
         grid_vals = interp(grid_x, grid_y)  # (H, W), NaN outside hull
     except Exception:
@@ -364,8 +378,9 @@ def export_png(
     use_physical_units: bool = False,
     pixel_size: float = 1.0,
     pixel_unit: str = "mm",
+    image_format: str = "png",
 ) -> list[Path]:
-    """Render and save PNG images for each enabled field and frame.
+    """Render and save images for each enabled field and frame.
 
     Args:
         dest_dir:    Parent output directory.
@@ -410,6 +425,14 @@ def export_png(
     if not enabled_configs:
         return []
 
+    # Map the selected image format to a file extension; cv2.imwrite picks
+    # the encoder from the extension (.png / .jpg / .tif). Previously the
+    # format combo was ignored and everything was written as .png.
+    ext = {
+        "png": ".png", "jpeg": ".jpg", "jpg": ".jpg",
+        "tiff": ".tif", "tif": ".tif",
+    }.get(image_format.lower(), ".png")
+
     coords = results.dic_mesh.coordinates_fem
     img_shape = results.dic_para.img_size
     if img_shape == (0, 0):
@@ -418,6 +441,12 @@ def export_png(
     total_frames = frame_end - frame_start + 1
     frames_done = 0
     paths: list[Path] = []
+
+    # Reuse the field triangulation across frames/fields. In non-deformed
+    # mode render_coords == coords is constant, so one Delaunay per valid
+    # mask serves the whole export; deformed frames get a fresh cache each
+    # (their render coordinates change per frame).
+    shared_tri_cache: dict = {}
 
     for t in range(frame_start, frame_end + 1):
         if stop_event is not None and stop_event.is_set():
@@ -463,6 +492,10 @@ def export_png(
                     coords, deformed_coords, roi_mask, img_shape
                 )
 
+        # Deformed frames each carry their own render coordinates -> per-frame
+        # cache; non-deformed frames share the constant reference cache.
+        frame_tri_cache = {} if deformed_coords is not None else shared_tri_cache
+
         for cfg in enabled_configs:
             raw_values = _extract_field_values(cfg.field_name, t, results, fr)
             if raw_values is None:
@@ -501,6 +534,7 @@ def export_png(
                 roi_mask=roi_mask,
                 deformed_coords=deformed_coords,
                 deformed_mask=deformed_mask,
+                tri_cache=frame_tri_cache,
             )
 
             # Append colorbar strip to the right of the image
@@ -515,7 +549,7 @@ def export_png(
 
             field_dir = images_dir / cfg.field_name
             ensure_dir(field_dir)
-            out = field_dir / f"{tag}.png"
+            out = field_dir / f"{tag}{ext}"
             cv2.imwrite(str(out), img)
             paths.append(out)
 

@@ -106,6 +106,11 @@ def export_animation(
     fmt = fmt.lower()
     paths: list[Path] = []
 
+    # Reuse the field triangulation across fields/frames. Non-deformed:
+    # render_coords == coords is constant, so one Delaunay per valid mask
+    # serves the whole animation; deformed: a fresh cache per frame.
+    shared_tri_cache: dict = {}
+
     for cfg in enabled_configs:
         frames_done = 0
         rendered: list[NDArray] = []
@@ -125,6 +130,10 @@ def export_animation(
                 deformed_coords = coords + np.column_stack([u, v])
             else:
                 deformed_coords = None
+
+            frame_tri_cache = (
+                {} if deformed_coords is not None else shared_tri_cache
+            )
 
             # result_disp[t] corresponds to image_files[t + 1] (deformed frame)
             bg_image = _load_frame_image(image_files, t + 1, bg_mode)
@@ -179,6 +188,7 @@ def export_animation(
                     roi_mask=roi_mask,
                     deformed_coords=deformed_coords,
                     deformed_mask=deformed_mask,
+                    tri_cache=frame_tri_cache,
                 )
 
                 # Append colorbar strip

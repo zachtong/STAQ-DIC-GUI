@@ -21,6 +21,24 @@ def _pts(n, seed):
     return np.random.default_rng(seed).random((n, 2)) * 100.0
 
 
+def test_reused_delaunay_is_byte_identical():
+    """The export reuse relies on a cached triangulation being byte-identical
+    to a fresh interpolator: LinearNDInterpolator(Delaunay(pts), vals) ==
+    LinearNDInterpolator(pts, vals) for multiple value sets reusing one tri."""
+    from scipy.interpolate import LinearNDInterpolator
+    from scipy.spatial import Delaunay
+
+    pts = _pts(80, 11)
+    gx, gy = np.meshgrid(np.linspace(0, 100, 40), np.linspace(0, 100, 40))
+    tri = Delaunay(pts)
+    rng = np.random.default_rng(12)
+    for _ in range(3):
+        vals = rng.standard_normal(80)
+        fresh = LinearNDInterpolator(pts, vals, fill_value=np.nan)(gx, gy)
+        reused = LinearNDInterpolator(tri, vals, fill_value=np.nan)(gx, gy)
+        np.testing.assert_array_equal(reused, fresh)
+
+
 class TestScatteredInterpolantUV:
     def test_no_nan_non_identity(self):
         pts = _pts(60, 0)
