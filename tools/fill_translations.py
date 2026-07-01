@@ -483,6 +483,107 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "es": "Exporta uno de cada N fotogramas (1 = todos). Mayor = más rápido y pequeño,\n"
               "pero se ve más entrecortado. La duración se conserva (los FPS de arriba son la tasa antes de diezmar).",
     },
+    # ========== Export: Preview & Colorbar tab (all 8 locales) ==========
+    "Preview & Colorbar": {
+        "zh_CN": "预览与色条", "zh_TW": "預覽與色條",
+        "ja": "プレビューとカラーバー", "ko": "미리보기 및 컬러바",
+        "de": "Vorschau & Farbleiste", "fr": "Aperçu et barre de couleur",
+        "es": "Vista previa y barra de color",
+    },
+    "COLORBAR STYLE": {
+        "zh_CN": "色条样式", "zh_TW": "色條樣式", "ja": "カラーバーのスタイル",
+        "ko": "컬러바 스타일", "de": "FARBLEISTEN-STIL",
+        "fr": "STYLE DE BARRE DE COULEUR", "es": "ESTILO DE BARRA DE COLOR",
+    },
+    "Frame": {
+        "zh_CN": "帧", "zh_TW": "影格", "ja": "フレーム", "ko": "프레임",
+        "de": "Bild", "fr": "Image", "es": "Fotograma",
+    },
+    "Position": {
+        "zh_CN": "位置", "zh_TW": "位置", "ja": "位置", "ko": "위치",
+        "de": "Position", "fr": "Position", "es": "Posición",
+    },
+    "Right": {
+        "zh_CN": "右", "zh_TW": "右", "ja": "右", "ko": "오른쪽",
+        "de": "Rechts", "fr": "Droite", "es": "Derecha",
+    },
+    "Left": {
+        "zh_CN": "左", "zh_TW": "左", "ja": "左", "ko": "왼쪽",
+        "de": "Links", "fr": "Gauche", "es": "Izquierda",
+    },
+    "Top": {
+        "zh_CN": "上", "zh_TW": "上", "ja": "上", "ko": "위",
+        "de": "Oben", "fr": "Haut", "es": "Arriba",
+    },
+    "Bottom": {
+        "zh_CN": "下", "zh_TW": "下", "ja": "下", "ko": "아래",
+        "de": "Unten", "fr": "Bas", "es": "Abajo",
+    },
+    "Font size": {
+        "zh_CN": "字号", "zh_TW": "字級", "ja": "フォントサイズ",
+        "ko": "글꼴 크기", "de": "Schriftgröße", "fr": "Taille de police",
+        "es": "Tamaño de fuente",
+    },
+    "Bar thickness": {
+        "zh_CN": "色条粗细", "zh_TW": "色條粗細", "ja": "バーの太さ",
+        "ko": "막대 두께", "de": "Balkendicke", "fr": "Épaisseur de la barre",
+        "es": "Grosor de la barra",
+    },
+    "Background": {
+        "zh_CN": "背景", "zh_TW": "背景", "ja": "背景", "ko": "배경",
+        "de": "Hintergrund", "fr": "Arrière-plan", "es": "Fondo",
+    },
+    "Black": {
+        "zh_CN": "黑色", "zh_TW": "黑色", "ja": "黒", "ko": "검정",
+        "de": "Schwarz", "fr": "Noir", "es": "Negro",
+    },
+    "White": {
+        "zh_CN": "白色", "zh_TW": "白色", "ja": "白", "ko": "흰색",
+        "de": "Weiß", "fr": "Blanc", "es": "Blanco",
+    },
+    "Refresh preview": {
+        "zh_CN": "刷新预览", "zh_TW": "重新整理預覽", "ja": "プレビューを更新",
+        "ko": "미리보기 새로고침", "de": "Vorschau aktualisieren",
+        "fr": "Actualiser l'aperçu", "es": "Actualizar vista previa",
+    },
+    "FIELD APPEARANCE": {
+        "zh_CN": "字段外观", "zh_TW": "欄位外觀", "ja": "フィールドの外観",
+        "ko": "필드 모양", "de": "FELDDARSTELLUNG",
+        "fr": "APPARENCE DU CHAMP", "es": "APARIENCIA DEL CAMPO",
+    },
+    "Open this tab to render a preview.": {
+        "zh_CN": "打开此选项卡以渲染预览。",
+        "zh_TW": "開啟此分頁以算繪預覽。",
+        "ja": "このタブを開くとプレビューが描画されます。",
+        "ko": "이 탭을 열면 미리보기가 렌더링됩니다.",
+        "de": "Diesen Reiter öffnen, um eine Vorschau zu rendern.",
+        "fr": "Ouvrez cet onglet pour générer un aperçu.",
+        "es": "Abre esta pestaña para generar una vista previa.",
+    },
+    "Enable a field on the Images tab to preview.": {
+        "zh_CN": "在 Images 页启用一个字段以进行预览。",
+        "zh_TW": "在 Images 頁啟用一個欄位以進行預覽。",
+        "ja": "プレビューするには Images タブでフィールドを有効にしてください。",
+        "ko": "미리보려면 Images 탭에서 필드를 활성화하세요.",
+        "de": "Aktivieren Sie ein Feld im Reiter „Images“ für die Vorschau.",
+        "fr": "Activez un champ dans l'onglet Images pour l'aperçu.",
+        "es": "Active un campo en la pestaña Images para la vista previa.",
+    },
+    "No data for this field/frame.": {
+        "zh_CN": "该字段/帧没有数据。",
+        "zh_TW": "該欄位/影格沒有資料。",
+        "ja": "このフィールド/フレームにはデータがありません。",
+        "ko": "이 필드/프레임에 데이터가 없습니다.",
+        "de": "Keine Daten für dieses Feld/Bild.",
+        "fr": "Aucune donnée pour ce champ/cette image.",
+        "es": "No hay datos para este campo/fotograma.",
+    },
+    "Preview failed: ": {
+        "zh_CN": "预览失败：", "zh_TW": "預覽失敗：",
+        "ja": "プレビューに失敗しました：", "ko": "미리보기 실패: ",
+        "de": "Vorschau fehlgeschlagen: ", "fr": "Échec de l'aperçu : ",
+        "es": "Error en la vista previa: ",
+    },
     "Include colorbar": {
         "zh_CN": "包含色条", "zh_TW": "包含色條", "ja": "カラーバーを含める",
         "ko": "컬러바 포함", "de": "Farbleiste einfügen",

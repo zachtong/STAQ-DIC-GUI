@@ -32,9 +32,9 @@ from pathlib import Path
 import numpy as np
 from numpy.typing import NDArray
 from PySide6.QtCore import (
-    QCoreApplication, QSettings, QThread, QUrl, Qt, Signal,
+    QCoreApplication, QSettings, QThread, QTimer, QUrl, Qt, Signal,
 )
-from PySide6.QtGui import QDesktopServices
+from PySide6.QtGui import QDesktopServices, QImage, QPixmap
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -51,6 +51,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QRadioButton,
     QScrollArea,
+    QSlider,
     QSpinBox,
     QTabWidget,
     QVBoxLayout,
@@ -58,6 +59,7 @@ from PySide6.QtWidgets import (
 )
 
 from al_dic.core.data_structures import PipelineResult
+from al_dic.export.colorbar import ColorbarStyle
 from al_dic.gui.app_state import AppState
 from al_dic.gui.theme import COLORS
 
@@ -175,6 +177,9 @@ class ExportConfig:
     pixel_size: float = 1.0
     pixel_unit: str = "mm"
     frame_rate: float = 1.0
+    # Colorbar appearance (position/font/thickness/background), shared by
+    # image + animation export and tuned in the Preview tab.
+    colorbar_style: ColorbarStyle = field(default_factory=ColorbarStyle)
 
 
 # ---------------------------------------------------------------------------
@@ -267,6 +272,7 @@ class ExportImagesWorker(QThread):
                 image_format=self._config.image_format,
                 output_max_dim=self._config.image_output_max_dim,
                 jpeg_quality=self._config.jpeg_quality,
+                colorbar_style=self._config.colorbar_style,
             )
             self.finished.emit(paths)
         except Exception as exc:  # pragma: no cover
@@ -330,6 +336,7 @@ class ExportAnimationWorker(QThread):
                 pixel_unit=self._config.pixel_unit,
                 output_max_dim=self._config.anim_output_max_dim,
                 frame_step=self._config.anim_frame_step,
+                colorbar_style=self._config.colorbar_style,
             )
             self.finished.emit(paths)
         except Exception as exc:  # pragma: no cover
@@ -442,6 +449,44 @@ class _FieldRow(QWidget):
             vmax=self._vmax_spin.value(),
             bg_alpha=self._alpha_spin.value(),
         )
+
+    @property
+    def field_name(self) -> str:
+        return self._field_name
+
+    def get_appearance(self) -> dict:
+        """Colormap / range / opacity as a plain dict (for the preview panel)."""
+        return dict(
+            colormap=self._cmap_combo.currentText(),
+            auto=self._auto_check.isChecked(),
+            vmin=self._vmin_spin.value(),
+            vmax=self._vmax_spin.value(),
+            opacity=self._alpha_spin.value(),
+        )
+
+    def set_appearance(self, colormap=None, auto=None, vmin=None, vmax=None,
+                       opacity=None) -> None:
+        """Push values into the row's widgets, blocking signals to avoid loops.
+
+        Lets the Preview tab edit a field's appearance while this row stays the
+        single source of truth that export reads via :meth:`get_config`.
+        """
+        for widget, value in ((self._vmin_spin, vmin), (self._vmax_spin, vmax),
+                              (self._alpha_spin, opacity)):
+            if value is not None:
+                widget.blockSignals(True)
+                widget.setValue(value)
+                widget.blockSignals(False)
+        if colormap is not None:
+            self._cmap_combo.blockSignals(True)
+            self._cmap_combo.setCurrentText(colormap)
+            self._cmap_combo.blockSignals(False)
+        if auto is not None:
+            self._auto_check.blockSignals(True)
+            self._auto_check.setChecked(auto)
+            self._auto_check.blockSignals(False)
+            self._vmin_spin.setEnabled(not auto)
+            self._vmax_spin.setEnabled(not auto)
 
 
 # ---------------------------------------------------------------------------
@@ -607,6 +652,10 @@ class ExportDialog(QDialog):
         self._tabs.addTab(self._build_images_tab(), self.tr("Images"))
         self._tabs.addTab(self._build_animation_tab(), self.tr("Animation"))
         self._tabs.addTab(self._build_report_tab(), self.tr("Report"))
+        self._preview_tab_index = self._tabs.addTab(
+            self._build_preview_tab(), self.tr("Preview & Colorbar"))
+        # Render the preview lazily the first time the tab is opened.
+        self._tabs.currentChanged.connect(self._on_tab_changed)
 
         # Sync button enabled state now that all tabs (and buttons) are built
         self._on_folder_changed(self._folder_edit.text())
@@ -1095,6 +1144,304 @@ class ExportDialog(QDialog):
         layout.addStretch()
         return w
 
+    # -- Preview & Colorbar tab -------------------------------------------
+
+    def _build_preview_tab(self) -> QWidget:
+        """WYSIWYG preview of one exported frame + colorbar style controls."""
+        tab = QWidget()
+        layout = QHBoxLayout(tab)
+
+        # Left: preview canvas + field/frame pickers
+        left = QVBoxLayout()
+        self._preview_label = QLabel(self.tr("Open this tab to render a preview."))
+        self._preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._preview_label.setMinimumSize(420, 340)
+        self._preview_label.setStyleSheet(
+            "background:#111; color:#888; border:1px solid #333;")
+        left.addWidget(self._preview_label, 1)
+
+        pick_row = QHBoxLayout()
+        pick_row.addWidget(QLabel(self.tr("Field")))
+        self._preview_field_combo = QComboBox()
+        self._preview_field_combo.currentIndexChanged.connect(
+            self._on_preview_field_changed)
+        pick_row.addWidget(self._preview_field_combo, 1)
+        left.addLayout(pick_row)
+
+        frame_row = QHBoxLayout()
+        frame_row.addWidget(QLabel(self.tr("Frame")))
+        self._preview_frame_slider = QSlider(Qt.Orientation.Horizontal)
+        self._preview_frame_slider.setRange(0, max(0, len(self._results.result_disp) - 1))
+        self._preview_frame_slider.valueChanged.connect(self._on_preview_frame_changed)
+        frame_row.addWidget(self._preview_frame_slider, 1)
+        self._preview_frame_lbl = QLabel("1")
+        self._preview_frame_lbl.setFixedWidth(52)
+        frame_row.addWidget(self._preview_frame_lbl)
+        left.addLayout(frame_row)
+        layout.addLayout(left, 1)
+
+        # Right: colorbar style
+        style_group = QGroupBox(self.tr("COLORBAR STYLE"))
+        form = QFormLayout(style_group)
+        self._cb_pos_combo = QComboBox()
+        for _lbl, _val in ((self.tr("Right"), "right"), (self.tr("Left"), "left"),
+                           (self.tr("Top"), "top"), (self.tr("Bottom"), "bottom")):
+            self._cb_pos_combo.addItem(_lbl, _val)
+        self._cb_pos_combo.currentIndexChanged.connect(self._schedule_preview)
+        form.addRow(self.tr("Position"), self._cb_pos_combo)
+
+        self._cb_font_spin = QSpinBox()
+        self._cb_font_spin.setRange(6, 32)
+        self._cb_font_spin.setValue(9)
+        self._cb_font_spin.valueChanged.connect(self._schedule_preview)
+        form.addRow(self.tr("Font size"), self._cb_font_spin)
+
+        self._cb_width_spin = QDoubleSpinBox()
+        self._cb_width_spin.setRange(0.02, 0.25)
+        self._cb_width_spin.setSingleStep(0.01)
+        self._cb_width_spin.setDecimals(2)
+        self._cb_width_spin.setValue(ColorbarStyle().width_ratio)
+        self._cb_width_spin.valueChanged.connect(self._schedule_preview)
+        form.addRow(self.tr("Bar thickness"), self._cb_width_spin)
+
+        self._cb_bg_combo = QComboBox()
+        for _lbl, _val in ((self.tr("Black"), "black"), (self.tr("White"), "white")):
+            self._cb_bg_combo.addItem(_lbl, _val)
+        self._cb_bg_combo.currentIndexChanged.connect(self._schedule_preview)
+        form.addRow(self.tr("Background"), self._cb_bg_combo)
+
+        refresh = QPushButton(self.tr("Refresh preview"))
+        refresh.clicked.connect(self._render_preview)
+        form.addRow(refresh)
+
+        # Field appearance (colormap / range / opacity) — two-way synced with
+        # the matching row on the Images tab (the single source of truth that
+        # export reads), so editing here also updates the Images tab.
+        appear_group = QGroupBox(self.tr("FIELD APPEARANCE"))
+        aform = QFormLayout(appear_group)
+        self._pv_cmap_combo = QComboBox()
+        self._pv_cmap_combo.addItems([
+            "jet", "viridis", "turbo", "coolwarm",
+            "plasma", "RdBu_r", "seismic", "inferno",
+        ])
+        self._pv_cmap_combo.currentIndexChanged.connect(
+            self._on_preview_appearance_changed)
+        aform.addRow(self.tr("Colormap"), self._pv_cmap_combo)
+
+        self._pv_auto_check = QCheckBox(self.tr("Auto"))
+        self._pv_auto_check.stateChanged.connect(
+            self._on_preview_appearance_changed)
+        aform.addRow(self._pv_auto_check)
+
+        self._pv_vmin_spin = QDoubleSpinBox()
+        self._pv_vmin_spin.setRange(-1e9, 1e9)
+        self._pv_vmin_spin.setDecimals(4)
+        self._pv_vmin_spin.valueChanged.connect(
+            self._on_preview_appearance_changed)
+        aform.addRow(self.tr("Min"), self._pv_vmin_spin)
+
+        self._pv_vmax_spin = QDoubleSpinBox()
+        self._pv_vmax_spin.setRange(-1e9, 1e9)
+        self._pv_vmax_spin.setDecimals(4)
+        self._pv_vmax_spin.valueChanged.connect(
+            self._on_preview_appearance_changed)
+        aform.addRow(self.tr("Max"), self._pv_vmax_spin)
+
+        self._pv_opacity_spin = QDoubleSpinBox()
+        self._pv_opacity_spin.setRange(0.0, 1.0)
+        self._pv_opacity_spin.setSingleStep(0.05)
+        self._pv_opacity_spin.setDecimals(2)
+        self._pv_opacity_spin.valueChanged.connect(
+            self._on_preview_appearance_changed)
+        aform.addRow(self.tr("Opacity"), self._pv_opacity_spin)
+
+        right = QVBoxLayout()
+        right.addWidget(appear_group)
+        right.addWidget(style_group)
+        right.addStretch()
+        layout.addLayout(right)
+
+        # Debounced re-render so dragging a slider is smooth.
+        self._preview_timer = QTimer(self)
+        self._preview_timer.setSingleShot(True)
+        self._preview_timer.setInterval(220)
+        self._preview_timer.timeout.connect(self._render_preview)
+        return tab
+
+    def _current_colorbar_style(self) -> ColorbarStyle:
+        return ColorbarStyle(
+            position=self._cb_pos_combo.currentData(),
+            font_size=float(self._cb_font_spin.value()),
+            width_ratio=float(self._cb_width_spin.value()),
+            background=self._cb_bg_combo.currentData(),
+        )
+
+    def _on_tab_changed(self, idx: int) -> None:
+        if idx == getattr(self, "_preview_tab_index", -1):
+            self._refresh_preview_fields()
+            self._load_preview_appearance()
+            self._schedule_preview()
+
+    def _on_preview_frame_changed(self, value: int) -> None:
+        self._preview_frame_lbl.setText(str(value + 1))
+        self._schedule_preview()
+
+    def _selected_preview_row(self):
+        """The Images-tab _FieldRow for the field currently being previewed."""
+        field = self._preview_field_combo.currentData()
+        if field is None:
+            return None
+        return next((r for r in self._img_field_rows
+                     if r.field_name == field), None)
+
+    def _on_preview_field_changed(self) -> None:
+        self._load_preview_appearance()
+        self._schedule_preview()
+
+    def _load_preview_appearance(self) -> None:
+        """Load the selected field's colormap/range/opacity into the panel."""
+        row = self._selected_preview_row()
+        if row is None:
+            return
+        a = row.get_appearance()
+        widgets = (self._pv_cmap_combo, self._pv_auto_check,
+                   self._pv_vmin_spin, self._pv_vmax_spin, self._pv_opacity_spin)
+        for w in widgets:
+            w.blockSignals(True)
+        self._pv_cmap_combo.setCurrentText(a["colormap"])
+        self._pv_auto_check.setChecked(a["auto"])
+        self._pv_vmin_spin.setValue(a["vmin"])
+        self._pv_vmax_spin.setValue(a["vmax"])
+        self._pv_opacity_spin.setValue(a["opacity"])
+        for w in widgets:
+            w.blockSignals(False)
+        self._pv_vmin_spin.setEnabled(not a["auto"])
+        self._pv_vmax_spin.setEnabled(not a["auto"])
+
+    def _on_preview_appearance_changed(self) -> None:
+        """Push the panel's appearance edits back to the Images-tab row."""
+        row = self._selected_preview_row()
+        if row is None:
+            return
+        auto = self._pv_auto_check.isChecked()
+        row.set_appearance(
+            colormap=self._pv_cmap_combo.currentText(),
+            auto=auto,
+            vmin=self._pv_vmin_spin.value(),
+            vmax=self._pv_vmax_spin.value(),
+            opacity=self._pv_opacity_spin.value(),
+        )
+        self._pv_vmin_spin.setEnabled(not auto)
+        self._pv_vmax_spin.setEnabled(not auto)
+        self._schedule_preview()
+
+    def _refresh_preview_fields(self) -> None:
+        """Repopulate the field picker from the currently enabled image fields."""
+        prev = self._preview_field_combo.currentData()
+        self._preview_field_combo.blockSignals(True)
+        self._preview_field_combo.clear()
+        for row in self._img_field_rows:
+            cfg = row.get_config()
+            if cfg.enabled:
+                self._preview_field_combo.addItem(_label(cfg.field_name), cfg.field_name)
+        if prev is not None:
+            i = self._preview_field_combo.findData(prev)
+            if i >= 0:
+                self._preview_field_combo.setCurrentIndex(i)
+        self._preview_field_combo.blockSignals(False)
+
+    def _schedule_preview(self) -> None:
+        if hasattr(self, "_preview_timer"):
+            self._preview_timer.start()
+
+    def _render_preview(self) -> None:
+        """Render one frame with the exact export path, at a small size."""
+        try:
+            self._render_preview_impl()
+        except Exception as exc:  # never let a preview error break the dialog
+            self._preview_label.setText(self.tr("Preview failed: ") + str(exc))
+
+    def _render_preview_impl(self) -> None:
+        from dataclasses import replace
+        import cv2
+        from al_dic.export.export_png import (
+            render_field_frame, _extract_field_values, _load_frame_image,
+            colorbar_label, attach_colorbar, output_shape_for,
+            _DISPLACEMENT_FIELDS, scale_field_values,
+        )
+        from al_dic.core.data_structures import split_uv
+
+        field = self._preview_field_combo.currentData()
+        if field is None:
+            self._preview_label.setText(
+                self.tr("Enable a field on the Images tab to preview."))
+            return
+        cfg = next((r.get_config() for r in self._img_field_rows
+                    if r.get_config().field_name == field), None)
+        if cfg is None:
+            return
+
+        results = self._results
+        n = len(results.result_disp)
+        frame = max(0, min(self._preview_frame_slider.value(), n - 1))
+        fr = results.result_disp[frame]
+        raw = _extract_field_values(field, frame, results, fr)
+        if raw is None:
+            self._preview_label.setText(self.tr("No data for this field/frame."))
+            return
+
+        coords = results.dic_mesh.coordinates_fem
+        img_shape = results.dic_para.img_size
+        if img_shape == (0, 0):
+            img_shape = (256, 256)
+
+        show_def = self._img_def_rb.isChecked()
+        bg_mode = "current_frame" if show_def else "ref_frame"
+        bg = (_load_frame_image(self._image_files, frame + 1, bg_mode)
+              if self._image_files else None)
+
+        deformed_coords = None
+        if show_def and fr.U_accum is not None:
+            u, v = split_uv(fr.U_accum)
+            deformed_coords = coords + np.column_stack([u, v])
+
+        use_phys = self._phys_units_check.isChecked()
+        values = raw
+        if use_phys and field in _DISPLACEMENT_FIELDS:
+            values = scale_field_values(raw, field, self._pixel_size_spin.value())
+
+        finite = values[np.isfinite(values)]
+        if cfg.auto_range:
+            vmin = float(finite.min()) if finite.size else 0.0
+            vmax = float(finite.max()) if finite.size else 1.0
+        else:
+            vmin, vmax = cfg.vmin, cfg.vmax
+            if use_phys and field in _DISPLACEMENT_FIELDS:
+                vmin *= self._pixel_size_spin.value()
+                vmax *= self._pixel_size_spin.value()
+
+        render_cfg = replace(cfg, auto_range=False, vmin=vmin, vmax=vmax)
+        out_shape = output_shape_for(img_shape, 512)
+        img = render_field_frame(
+            coords, values, img_shape, bg, render_cfg,
+            roi_mask=self._roi_mask, deformed_coords=deformed_coords,
+            render_max_dim=512, output_shape=out_shape)
+
+        if self._img_colorbar_check.isChecked():
+            lbl_txt = colorbar_label(
+                field, use_phys, self._pixel_unit_combo.currentText())
+            img = attach_colorbar(img, self._current_colorbar_style(),
+                                  cfg.colormap, vmin, vmax, lbl_txt, dpi=100)
+
+        rgb = np.ascontiguousarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+        h, w = rgb.shape[:2]
+        qimg = QImage(rgb.data, w, h, 3 * w, QImage.Format.Format_RGB888)
+        pix = QPixmap.fromImage(qimg).scaled(
+            self._preview_label.width(), self._preview_label.height(),
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation)
+        self._preview_label.setPixmap(pix)
+
     def _build_frame_range_widget(self, prefix: str) -> QGroupBox:
         group = QGroupBox(self.tr("FRAME RANGE"))
         vl = QVBoxLayout(group)
@@ -1493,4 +1840,5 @@ class ExportDialog(QDialog):
             pixel_size=self._pixel_size_spin.value(),
             pixel_unit=self._pixel_unit_combo.currentText(),
             frame_rate=self._frame_rate_spin.value(),
+            colorbar_style=self._current_colorbar_style(),
         )
