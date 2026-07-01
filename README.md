@@ -117,7 +117,7 @@ The classical whole-field initial-guess method is also built in. Each node carri
 
 ### Visualization & Export
 
-Full-field displacement and strain overlay with configurable colormaps, alpha blending, and deformed configuration display. Export to MATLAB `.mat`, NumPy `.npz`, CSV, PNG field maps, animated GIF/MP4, and PDF reports.
+Full-field displacement and strain overlay with configurable colormaps, alpha blending, and deformed configuration display. Export to MATLAB `.mat`, NumPy `.npz`, CSV, JPEG/PNG/TIFF field maps, animated GIF/MP4, and PDF reports — with a selectable output resolution and quality so large batches stay small and fast.
 
 <p align="center">
   <!-- TODO: Screenshot of the GUI with displacement overlay and export dialog -->
