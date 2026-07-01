@@ -42,7 +42,7 @@ from al_dic.export.export_utils import ensure_dir, frame_tag
 # Colorbar rendering lives in its own module (no cycle); re-export
 # render_colorbar_strip here for backward-compatible imports.
 from al_dic.export.colorbar import (  # noqa: F401
-    ColorbarStyle, attach_colorbar, render_colorbar_strip,
+    ColorbarStyle, add_margin, attach_colorbar, render_colorbar_strip,
 )
 
 
@@ -408,6 +408,8 @@ def export_png(
     output_max_dim: int = 0,
     jpeg_quality: int = 92,
     colorbar_style: ColorbarStyle | None = None,
+    margin_ratio: float = 0.0,
+    margin_color: str = "white",
 ) -> list[Path]:
     """Render and save images for each enabled field and frame.
 
@@ -589,6 +591,8 @@ def export_png(
                 img = attach_colorbar(
                     img, cb_style, cfg.colormap,
                     actual_vmin, actual_vmax, cb_lbl, dpi)
+            # Expand the canvas outward with a margin (publication layouts)
+            img = add_margin(img, margin_ratio, margin_color)
 
             field_dir = images_dir / cfg.field_name
             ensure_dir(field_dir)

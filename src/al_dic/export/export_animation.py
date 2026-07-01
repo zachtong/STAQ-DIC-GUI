@@ -52,6 +52,8 @@ def export_animation(
     frame_step: int = 1,
     output_max_dim: int = 0,
     colorbar_style: ColorbarStyle | None = None,
+    margin_ratio: float = 0.0,
+    margin_color: str = "white",
 ) -> list[Path]:
     """Export one animation file per enabled field.
 
@@ -87,7 +89,8 @@ def export_animation(
     from al_dic.export.export_png import (
         render_field_frame, _extract_field_values, _load_frame_image,
         _compute_warped_mask, scale_field_values, colorbar_label,
-        attach_colorbar, ColorbarStyle, _DISPLACEMENT_FIELDS, output_shape_for,
+        attach_colorbar, ColorbarStyle, add_margin, _DISPLACEMENT_FIELDS,
+        output_shape_for,
     )
 
     cb_style = colorbar_style if colorbar_style is not None else ColorbarStyle()
@@ -227,6 +230,7 @@ def export_animation(
                     img = attach_colorbar(
                         img, cb_style, cfg.colormap,
                         actual_vmin, actual_vmax, cb_lbl)
+                img = add_margin(img, margin_ratio, margin_color)
 
             # Lazily open the encoder once the first frame's size is known
             # (that size includes the colorbar strip when present).

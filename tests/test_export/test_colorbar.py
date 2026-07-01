@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from al_dic.export.colorbar import (
-    ColorbarStyle, attach_colorbar, render_colorbar_strip,
+    ColorbarStyle, add_margin, attach_colorbar, render_colorbar_strip,
 )
 
 
@@ -63,3 +63,31 @@ def test_width_ratio_controls_thickness(img):
 def test_white_background_supported(img):
     out = attach_colorbar(img, ColorbarStyle(background="white"), "jet", 0, 1, "U", dpi=72)
     assert out.shape[0] == img.shape[0] and out.shape[1] > img.shape[1]
+
+
+@pytest.mark.parametrize("fam", list(ColorbarStyle.FONT_FAMILIES))
+def test_font_family_renders(img, fam):
+    out = attach_colorbar(img, ColorbarStyle(font_family=fam), "jet", 0, 1, "U", dpi=72)
+    assert out.shape[0] == img.shape[0] and out.shape[1] > img.shape[1]
+
+
+def test_font_family_default_is_sans():
+    assert ColorbarStyle().font_family == "sans-serif"
+
+
+def test_add_margin_grows_all_sides(img):
+    out = add_margin(img, 0.1, "white")
+    assert out.shape[0] > img.shape[0]
+    assert out.shape[1] > img.shape[1]
+    assert tuple(int(x) for x in out[0, 0]) == (255, 255, 255)  # white border
+    assert tuple(int(x) for x in out[-1, -1]) == (255, 255, 255)
+
+
+def test_add_margin_black(img):
+    out = add_margin(img, 0.05, "black")
+    assert tuple(int(x) for x in out[0, 0]) == (0, 0, 0)
+
+
+def test_add_margin_zero_is_noop(img):
+    out = add_margin(img, 0.0)
+    assert out.shape == img.shape

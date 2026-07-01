@@ -524,6 +524,11 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "ko": "글꼴 크기", "de": "Schriftgröße", "fr": "Taille de police",
         "es": "Tamaño de fuente",
     },
+    "Font family": {
+        "zh_CN": "字体", "zh_TW": "字型", "ja": "フォント",
+        "ko": "글꼴", "de": "Schriftart", "fr": "Police",
+        "es": "Fuente",
+    },
     "Bar thickness": {
         "zh_CN": "色条粗细", "zh_TW": "色條粗細", "ja": "バーの太さ",
         "ko": "막대 두께", "de": "Balkendicke", "fr": "Épaisseur de la barre",
@@ -583,6 +588,42 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "ja": "プレビューに失敗しました：", "ko": "미리보기 실패: ",
         "de": "Vorschau fehlgeschlagen: ", "fr": "Échec de l'aperçu : ",
         "es": "Error en la vista previa: ",
+    },
+    # ========== Export: apply-to-all + margin (all 8 locales) ==========
+    "Apply to all fields": {
+        "zh_CN": "应用到所有字段", "zh_TW": "套用到所有欄位",
+        "ja": "すべてのフィールドに適用", "ko": "모든 필드에 적용",
+        "de": "Auf alle Felder anwenden", "fr": "Appliquer à tous les champs",
+        "es": "Aplicar a todos los campos",
+    },
+    "Apply this field's colormap, opacity and auto-range to every "
+    "enabled field (each field keeps its own min/max).": {
+        "zh_CN": "将该字段的 colormap、不透明度和自动范围应用到所有已启用字段（每个字段保留各自的 min/max）。",
+        "zh_TW": "將該欄位的 colormap、不透明度和自動範圍套用到所有已啟用欄位（每個欄位保留各自的 min/max）。",
+        "ja": "このフィールドの colormap・不透明度・自動範囲を、有効なすべてのフィールドに適用します（各フィールドの min/max は保持）。",
+        "ko": "이 필드의 colormap, 불투명도, 자동 범위를 활성화된 모든 필드에 적용합니다(각 필드의 min/max는 유지).",
+        "de": "Colormap, Deckkraft und Auto-Bereich dieses Felds auf alle aktivierten Felder anwenden (jedes Feld behält sein eigenes Min/Max).",
+        "fr": "Applique la colormap, l'opacité et l'auto-plage de ce champ à tous les champs activés (chaque champ garde ses propres min/max).",
+        "es": "Aplica el colormap, la opacidad y el rango automático de este campo a todos los campos activados (cada campo conserva su propio mín/máx).",
+    },
+    "Margin": {
+        "zh_CN": "边距", "zh_TW": "邊距", "ja": "余白", "ko": "여백",
+        "de": "Rand", "fr": "Marge", "es": "Margen",
+    },
+    "Margin color": {
+        "zh_CN": "边距颜色", "zh_TW": "邊距顏色", "ja": "余白の色",
+        "ko": "여백 색상", "de": "Randfarbe", "fr": "Couleur de marge",
+        "es": "Color del margen",
+    },
+    "Add a blank border around the exported content, as a fraction of "
+    "the long edge (0 = none).": {
+        "zh_CN": "在导出内容外围加一圈空白边框，宽度为长边的比例（0 = 无）。",
+        "zh_TW": "在匯出內容外圍加一圈空白邊框，寬度為長邊的比例（0 = 無）。",
+        "ja": "書き出す内容の周囲に空白の枠を追加します。幅は長辺に対する割合です（0 = なし）。",
+        "ko": "내보내는 콘텐츠 주위에 여백 테두리를 추가합니다. 너비는 긴 변에 대한 비율입니다(0 = 없음).",
+        "de": "Fügt einen leeren Rand um den exportierten Inhalt hinzu, als Anteil der langen Kante (0 = keiner).",
+        "fr": "Ajoute une bordure vide autour du contenu exporté, en fraction du bord long (0 = aucune).",
+        "es": "Añade un borde en blanco alrededor del contenido exportado, como fracción del borde largo (0 = ninguna).",
     },
     "Include colorbar": {
         "zh_CN": "包含色条", "zh_TW": "包含色條", "ja": "カラーバーを含める",

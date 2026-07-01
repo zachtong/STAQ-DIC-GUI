@@ -40,9 +40,12 @@ class ColorbarStyle:
     font_size: float = 9.0
     width_ratio: float = 0.05
     background: str = "black"
+    font_family: str = "sans-serif"
 
     POSITIONS = ("right", "left", "top", "bottom")
     BACKGROUNDS = ("black", "white")
+    # Generic matplotlib families -> always resolvable, never a missing font.
+    FONT_FAMILIES = ("sans-serif", "serif", "monospace")
 
 
 def _render_bar(
@@ -56,6 +59,7 @@ def _render_bar(
     font_size: float,
     background: str,
     dpi: int,
+    font_family: str = "sans-serif",
 ) -> NDArray:
     """Render a colorbar as a BGR uint8 image via matplotlib.
 
@@ -85,8 +89,13 @@ def _render_bar(
     sm = plt.cm.ScalarMappable(norm=Normalize(vmin=vmin, vmax=vmax), cmap=cmap)
     sm.set_array([])
     cb = fig.colorbar(sm, cax=ax, orientation=orientation)
-    cb.set_label(label, fontsize=font_size, color=fg)
+    fam = font_family if font_family in ColorbarStyle.FONT_FAMILIES else "sans-serif"
+    cb.set_label(label, fontsize=font_size, color=fg, fontfamily=fam)
     cb.ax.tick_params(colors=fg, labelsize=font_size * 0.85)
+    ticklabels = (cb.ax.get_yticklabels() if orientation == "vertical"
+                  else cb.ax.get_xticklabels())
+    for t in ticklabels:
+        t.set_fontfamily(fam)
     cb.outline.set_edgecolor(fg)
     cb.outline.set_linewidth(0.5)
     fig.subplots_adjust(**adjust)
@@ -114,6 +123,7 @@ def render_colorbar_strip(
     font_size: float = 9.0,
     background: str = "black",
     thickness_px: int | None = None,
+    font_family: str = "sans-serif",
 ) -> NDArray:
     """Vertical colorbar strip of the given pixel *height*.
 
@@ -123,7 +133,23 @@ def render_colorbar_strip(
     if thickness_px is None:
         thickness_px = int(round(1.2 * dpi))
     return _render_bar(height, thickness_px, "vertical", cmap_name, vmin, vmax,
-                       label, font_size, background, dpi)
+                       label, font_size, background, dpi, font_family)
+
+
+def add_margin(image: NDArray, ratio: float, color: str = "white") -> NDArray:
+    """Pad *image* with a uniform border of ``ratio`` * long-edge pixels.
+
+    Used to expand the exported canvas outward (whitespace around the content
+    + colorbar) for publication layouts.  ``ratio <= 0`` returns the image
+    unchanged.  ``color`` is ``"white"`` or ``"black"``.
+    """
+    if ratio <= 0:
+        return image
+    m = int(round(max(image.shape[:2]) * ratio))
+    if m <= 0:
+        return image
+    value = (255, 255, 255) if color == "white" else (0, 0, 0)
+    return cv2.copyMakeBorder(image, m, m, m, m, cv2.BORDER_CONSTANT, value=value)
 
 
 def attach_colorbar(
@@ -148,14 +174,14 @@ def attach_colorbar(
             bar = max(10, int(round(W * style.width_ratio)))
             thickness = bar + int(round(style.font_size * 6.0))
             cb = _render_bar(H, thickness, "vertical", cmap_name, vmin, vmax,
-                             label, style.font_size, bg, dpi)
+                             label, style.font_size, bg, dpi, style.font_family)
             if cb.shape[0] != H:
                 cb = cv2.resize(cb, (cb.shape[1], H))
             return np.hstack([cb, image] if pos == "left" else [image, cb])
         bar = max(10, int(round(H * style.width_ratio)))
         thickness = bar + int(round(style.font_size * 4.5))
         cb = _render_bar(W, thickness, "horizontal", cmap_name, vmin, vmax,
-                         label, style.font_size, bg, dpi)
+                         label, style.font_size, bg, dpi, style.font_family)
         if cb.shape[1] != W:
             cb = cv2.resize(cb, (W, cb.shape[0]))
         return np.vstack([cb, image] if pos == "top" else [image, cb])

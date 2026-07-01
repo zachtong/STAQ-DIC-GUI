@@ -55,6 +55,11 @@ class TestExportConfig:
         assert cfg.image_output_max_dim == 1024
         assert cfg.anim_output_max_dim == 1024
         assert cfg.anim_frame_step == 1
+        # Colorbar + margin defaults reproduce the historical look (no margin)
+        assert cfg.colorbar_style.position == "right"
+        assert cfg.colorbar_style.font_family == "sans-serif"
+        assert cfg.export_margin_ratio == 0.0
+        assert cfg.export_margin_color == "white"
         assert cfg.anim_format == "mp4"
         assert cfg.export_report is False
         # Colorbar default must stay ON — otherwise exported images

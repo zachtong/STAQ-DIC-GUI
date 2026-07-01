@@ -61,11 +61,13 @@ def test_colorbar_style_reflects_controls():
     dlg._cb_font_spin.setValue(14)
     dlg._cb_bg_combo.setCurrentIndex(dlg._cb_bg_combo.findData("white"))
     dlg._cb_width_spin.setValue(0.09)
+    dlg._cb_font_combo.setCurrentIndex(dlg._cb_font_combo.findData("serif"))
     st = dlg._current_colorbar_style()
     assert st.position == "bottom"
     assert st.font_size == 14.0
     assert st.background == "white"
     assert abs(st.width_ratio - 0.09) < 1e-9
+    assert st.font_family == "serif"
     dlg.deleteLater()
 
 
@@ -92,6 +94,32 @@ def test_preview_appearance_edits_flow_to_images_row():
     assert abs(cfg.vmin - (-3.5)) < 1e-9
     assert abs(cfg.bg_alpha - 0.4) < 1e-9
     assert cfg.colormap == "viridis"
+    dlg.deleteLater()
+
+
+def test_apply_appearance_to_all_fields():
+    dlg = _dialog()
+    dlg._tabs.setCurrentIndex(dlg._preview_tab_index)
+    dlg._pv_cmap_combo.setCurrentText("plasma")
+    dlg._pv_opacity_spin.setValue(0.5)
+    dlg._apply_appearance_to_all()
+    enabled = [r for r in dlg._img_field_rows if r.get_config().enabled]
+    assert enabled  # sanity: at least one enabled field
+    for row in enabled:
+        c = row.get_config()
+        assert c.colormap == "plasma"
+        assert abs(c.bg_alpha - 0.5) < 1e-9
+    dlg.deleteLater()
+
+
+def test_margin_flows_to_config():
+    dlg = _dialog()
+    dlg._pv_margin_spin.setValue(0.08)
+    dlg._pv_margin_color_combo.setCurrentIndex(
+        dlg._pv_margin_color_combo.findData("black"))
+    cfg = dlg.get_config()
+    assert abs(cfg.export_margin_ratio - 0.08) < 1e-9
+    assert cfg.export_margin_color == "black"
     dlg.deleteLater()
 
 

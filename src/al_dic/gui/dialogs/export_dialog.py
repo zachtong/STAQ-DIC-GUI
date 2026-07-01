@@ -180,6 +180,9 @@ class ExportConfig:
     # Colorbar appearance (position/font/thickness/background), shared by
     # image + animation export and tuned in the Preview tab.
     colorbar_style: ColorbarStyle = field(default_factory=ColorbarStyle)
+    # Outward margin around the exported content (fraction of long edge).
+    export_margin_ratio: float = 0.0
+    export_margin_color: str = "white"
 
 
 # ---------------------------------------------------------------------------
@@ -273,6 +276,8 @@ class ExportImagesWorker(QThread):
                 output_max_dim=self._config.image_output_max_dim,
                 jpeg_quality=self._config.jpeg_quality,
                 colorbar_style=self._config.colorbar_style,
+                margin_ratio=self._config.export_margin_ratio,
+                margin_color=self._config.export_margin_color,
             )
             self.finished.emit(paths)
         except Exception as exc:  # pragma: no cover
@@ -337,6 +342,8 @@ class ExportAnimationWorker(QThread):
                 output_max_dim=self._config.anim_output_max_dim,
                 frame_step=self._config.anim_frame_step,
                 colorbar_style=self._config.colorbar_style,
+                margin_ratio=self._config.export_margin_ratio,
+                margin_color=self._config.export_margin_color,
             )
             self.finished.emit(paths)
         except Exception as exc:  # pragma: no cover
@@ -630,6 +637,12 @@ class ExportDialog(QDialog):
         phys_row.addWidget(QLabel(self.tr("/ pixel")))
         phys_row.addStretch()
         units_form.addRow(self.tr("Pixel size"), phys_row)
+
+        # Physical units drive the colorbar label + value scaling, so refresh
+        # the live preview when any of them change.
+        self._phys_units_check.stateChanged.connect(self._schedule_preview)
+        self._pixel_size_spin.valueChanged.connect(self._schedule_preview)
+        self._pixel_unit_combo.currentIndexChanged.connect(self._schedule_preview)
 
         fr_row = QHBoxLayout()
         self._frame_rate_spin = QDoubleSpinBox()
@@ -1196,6 +1209,12 @@ class ExportDialog(QDialog):
         self._cb_font_spin.valueChanged.connect(self._schedule_preview)
         form.addRow(self.tr("Font size"), self._cb_font_spin)
 
+        self._cb_font_combo = QComboBox()
+        for _fam in ColorbarStyle.FONT_FAMILIES:  # family names stay literal
+            self._cb_font_combo.addItem(_fam, _fam)
+        self._cb_font_combo.currentIndexChanged.connect(self._schedule_preview)
+        form.addRow(self.tr("Font family"), self._cb_font_combo)
+
         self._cb_width_spin = QDoubleSpinBox()
         self._cb_width_spin.setRange(0.02, 0.25)
         self._cb_width_spin.setSingleStep(0.01)
@@ -1209,6 +1228,22 @@ class ExportDialog(QDialog):
             self._cb_bg_combo.addItem(_lbl, _val)
         self._cb_bg_combo.currentIndexChanged.connect(self._schedule_preview)
         form.addRow(self.tr("Background"), self._cb_bg_combo)
+
+        self._pv_margin_spin = QDoubleSpinBox()
+        self._pv_margin_spin.setRange(0.0, 0.30)
+        self._pv_margin_spin.setSingleStep(0.01)
+        self._pv_margin_spin.setDecimals(2)
+        self._pv_margin_spin.setToolTip(self.tr(
+            "Add a blank border around the exported content, as a fraction of "
+            "the long edge (0 = none)."))
+        self._pv_margin_spin.valueChanged.connect(self._schedule_preview)
+        form.addRow(self.tr("Margin"), self._pv_margin_spin)
+
+        self._pv_margin_color_combo = QComboBox()
+        for _lbl, _val in ((self.tr("White"), "white"), (self.tr("Black"), "black")):
+            self._pv_margin_color_combo.addItem(_lbl, _val)
+        self._pv_margin_color_combo.currentIndexChanged.connect(self._schedule_preview)
+        form.addRow(self.tr("Margin color"), self._pv_margin_color_combo)
 
         refresh = QPushButton(self.tr("Refresh preview"))
         refresh.clicked.connect(self._render_preview)
@@ -1255,6 +1290,13 @@ class ExportDialog(QDialog):
             self._on_preview_appearance_changed)
         aform.addRow(self.tr("Opacity"), self._pv_opacity_spin)
 
+        self._pv_apply_all_btn = QPushButton(self.tr("Apply to all fields"))
+        self._pv_apply_all_btn.setToolTip(self.tr(
+            "Apply this field's colormap, opacity and auto-range to every "
+            "enabled field (each field keeps its own min/max)."))
+        self._pv_apply_all_btn.clicked.connect(self._apply_appearance_to_all)
+        aform.addRow(self._pv_apply_all_btn)
+
         right = QVBoxLayout()
         right.addWidget(appear_group)
         right.addWidget(style_group)
@@ -1274,6 +1316,7 @@ class ExportDialog(QDialog):
             font_size=float(self._cb_font_spin.value()),
             width_ratio=float(self._cb_width_spin.value()),
             background=self._cb_bg_combo.currentData(),
+            font_family=self._cb_font_combo.currentData(),
         )
 
     def _on_tab_changed(self, idx: int) -> None:
@@ -1335,6 +1378,19 @@ class ExportDialog(QDialog):
         self._pv_vmax_spin.setEnabled(not auto)
         self._schedule_preview()
 
+    def _apply_appearance_to_all(self) -> None:
+        """Push colormap / opacity / auto-range to every enabled field (image
+        and animation rows).  Per-field min/max are left untouched because
+        different fields have different value scales."""
+        cmap = self._pv_cmap_combo.currentText()
+        auto = self._pv_auto_check.isChecked()
+        opacity = self._pv_opacity_spin.value()
+        for rows in (self._img_field_rows, self._anim_field_rows):
+            for row in rows:
+                if row.get_config().enabled:
+                    row.set_appearance(colormap=cmap, auto=auto, opacity=opacity)
+        self._schedule_preview()
+
     def _refresh_preview_fields(self) -> None:
         """Repopulate the field picker from the currently enabled image fields."""
         prev = self._preview_field_combo.currentData()
@@ -1366,7 +1422,7 @@ class ExportDialog(QDialog):
         import cv2
         from al_dic.export.export_png import (
             render_field_frame, _extract_field_values, _load_frame_image,
-            colorbar_label, attach_colorbar, output_shape_for,
+            colorbar_label, attach_colorbar, add_margin, output_shape_for,
             _DISPLACEMENT_FIELDS, scale_field_values,
         )
         from al_dic.core.data_structures import split_uv
@@ -1432,6 +1488,8 @@ class ExportDialog(QDialog):
                 field, use_phys, self._pixel_unit_combo.currentText())
             img = attach_colorbar(img, self._current_colorbar_style(),
                                   cfg.colormap, vmin, vmax, lbl_txt, dpi=100)
+        img = add_margin(img, self._pv_margin_spin.value(),
+                         self._pv_margin_color_combo.currentData())
 
         rgb = np.ascontiguousarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
         h, w = rgb.shape[:2]
@@ -1841,4 +1899,6 @@ class ExportDialog(QDialog):
             pixel_unit=self._pixel_unit_combo.currentText(),
             frame_rate=self._frame_rate_spin.value(),
             colorbar_style=self._current_colorbar_style(),
+            export_margin_ratio=self._pv_margin_spin.value(),
+            export_margin_color=self._pv_margin_color_combo.currentData(),
         )
