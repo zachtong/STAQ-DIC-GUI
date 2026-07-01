@@ -70,7 +70,7 @@ from ..solver.subpb2_solver import precompute_subpb2, subpb2_solver
 from ..strain.compute_strain import compute_strain as _compute_strain_fn
 from ..strain.nodal_strain_fem import global_nodal_strain_fem
 from ..strain.smooth_field import compute_node_local_spacing, smooth_field_sparse
-from ..utils.interpolation import scattered_interpolant
+from ..utils.interpolation import scattered_interpolant_uv
 from ..utils.region_analysis import NodeRegionMap, precompute_node_regions
 
 logger = logging.getLogger(__name__)
@@ -419,6 +419,7 @@ def _compute_cumulative_displacements_tree(
     result_fe_mesh: list[DICMesh | None],
     n_frames: int,
     schedule: FrameSchedule,
+    progress_fn: Callable[[float, str], None] | None = None,
 ) -> list[FrameResult | None]:
     """Transform per-pair displacements to cumulative via tree-based composition.
 
@@ -455,6 +456,14 @@ def _compute_cumulative_displacements_tree(
 
     for i in range(n_frames - 1):
         frame = i + 1  # 1-based deformed frame index
+        if progress_fn is not None and n_frames > 1:
+            # The main frame loop fills 0.0-0.90 (see _loop_end); map this
+            # cumulative phase to [0.90, 1.0] so the bar does not sit frozen
+            # at 90% for the whole transform on large datasets.
+            progress_fn(
+                0.90 + 0.10 * (i + 1) / (n_frames - 1),
+                "Composing cumulative displacements...",
+            )
         if result_disp[i] is None or result_fe_mesh[i] is None:
             continue
 
@@ -486,12 +495,12 @@ def _compute_cumulative_displacements_tree(
             u_inc = child_U[0::2]
             v_inc = child_U[1::2]
 
-            # Interpolate incremental displacement at current coordinates
-            disp_x = scattered_interpolant(
-                child_mesh.coordinates_fem, u_inc, coord_curr,
-            )
-            disp_y = scattered_interpolant(
-                child_mesh.coordinates_fem, v_inc, coord_curr,
+            # Interpolate incremental displacement at current coordinates.
+            # u and v are interpolated through ONE shared triangulation
+            # (built once instead of twice) -- byte-identical to two
+            # scattered_interpolant calls when u/v share the same NaN nodes.
+            disp_x, disp_y = scattered_interpolant_uv(
+                child_mesh.coordinates_fem, u_inc, v_inc, coord_curr,
             )
             coord_curr = coord_curr + np.column_stack([disp_x, disp_y])
 
@@ -1499,6 +1508,7 @@ def run_aldic(
 
     result_disp = _compute_cumulative_displacements_tree(
         result_disp, result_fe_mesh, n_frames, schedule,
+        progress_fn=progress,
     )
 
     # Validate cumulative result
