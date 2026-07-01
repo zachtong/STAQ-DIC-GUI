@@ -51,6 +51,7 @@ def export_animation(
     render_max_dim: int = 1536,
     frame_step: int = 1,
     output_max_dim: int = 0,
+    colorbar_style: ColorbarStyle | None = None,
 ) -> list[Path]:
     """Export one animation file per enabled field.
 
@@ -86,8 +87,10 @@ def export_animation(
     from al_dic.export.export_png import (
         render_field_frame, _extract_field_values, _load_frame_image,
         _compute_warped_mask, scale_field_values, colorbar_label,
-        render_colorbar_strip, _DISPLACEMENT_FIELDS, output_shape_for,
+        attach_colorbar, ColorbarStyle, _DISPLACEMENT_FIELDS, output_shape_for,
     )
+
+    cb_style = colorbar_style if colorbar_style is not None else ColorbarStyle()
 
     anim_dir = dest_dir / f"{prefix}_animation_{timestamp}"
     ensure_dir(anim_dir)
@@ -217,15 +220,13 @@ def export_animation(
                     output_shape=out_shape,
                 )
 
-                # Append colorbar strip
+                # Append the styled colorbar
                 if include_colorbar:
                     cb_lbl = colorbar_label(
                         cfg.field_name, use_physical_units, pixel_unit)
-                    cb = render_colorbar_strip(
-                        img.shape[0], cfg.colormap,
+                    img = attach_colorbar(
+                        img, cb_style, cfg.colormap,
                         actual_vmin, actual_vmax, cb_lbl)
-                    if cb is not None:
-                        img = np.hstack([img, cb])
 
             # Lazily open the encoder once the first frame's size is known
             # (that size includes the colorbar strip when present).

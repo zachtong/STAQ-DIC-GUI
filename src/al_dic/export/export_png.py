@@ -39,6 +39,11 @@ from scipy.spatial import Delaunay
 
 from al_dic.core.data_structures import PipelineResult, split_uv
 from al_dic.export.export_utils import ensure_dir, frame_tag
+# Colorbar rendering lives in its own module (no cycle); re-export
+# render_colorbar_strip here for backward-compatible imports.
+from al_dic.export.colorbar import (  # noqa: F401
+    ColorbarStyle, attach_colorbar, render_colorbar_strip,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -90,68 +95,6 @@ def scale_field_values(
     if field_name in _DISPLACEMENT_FIELDS and pixel_size != 1.0:
         return values * pixel_size
     return values
-
-
-def render_colorbar_strip(
-    height: int,
-    cmap_name: str,
-    vmin: float,
-    vmax: float,
-    label: str,
-    dpi: int = 150,
-) -> NDArray:
-    """Render a vertical colorbar as a BGR uint8 image matching *height*.
-
-    Uses matplotlib for high-quality tick labels and gradient rendering.
-    The strip has a black background with white text to match DIC imagery.
-
-    Returns:
-        (height, strip_width, 3) BGR uint8 array.
-    """
-    import io
-
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    from matplotlib.colors import Normalize
-
-    fig_h = max(2.0, height / dpi)
-    fig_w = 1.2  # inches
-
-    fig, ax = plt.subplots(figsize=(fig_w, fig_h), dpi=dpi)
-    fig.patch.set_facecolor("black")
-
-    norm = Normalize(vmin=vmin, vmax=vmax)
-    try:
-        cmap = plt.get_cmap(cmap_name)
-    except ValueError:
-        cmap = plt.get_cmap("jet")
-
-    sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
-    sm.set_array([])
-    cb = fig.colorbar(sm, cax=ax)
-
-    cb.set_label(label, fontsize=9, color="white")
-    cb.ax.tick_params(colors="white", labelsize=8)
-    cb.outline.set_edgecolor("white")
-    cb.outline.set_linewidth(0.5)
-
-    fig.subplots_adjust(left=0.15, right=0.55, top=0.97, bottom=0.03)
-
-    buf = io.BytesIO()
-    fig.savefig(buf, format="png", dpi=dpi, facecolor="black")
-    plt.close(fig)
-    buf.seek(0)
-
-    arr = np.frombuffer(buf.read(), dtype=np.uint8)
-    bgr = cv2.imdecode(arr, cv2.IMREAD_COLOR)
-
-    if bgr is not None and bgr.shape[0] != height:
-        scale_f = height / bgr.shape[0]
-        new_w = max(1, int(bgr.shape[1] * scale_f))
-        bgr = cv2.resize(bgr, (new_w, height), interpolation=cv2.INTER_AREA)
-
-    return bgr
 
 
 # ---------------------------------------------------------------------------
@@ -464,6 +407,7 @@ def export_png(
     render_max_dim: int = 1536,
     output_max_dim: int = 0,
     jpeg_quality: int = 92,
+    colorbar_style: ColorbarStyle | None = None,
 ) -> list[Path]:
     """Render and save images for each enabled field and frame.
 
@@ -526,6 +470,7 @@ def export_png(
     # Output resolution cap (file size + encode time) and encode parameters.
     out_shape = output_shape_for(img_shape, output_max_dim)
     enc_params = encode_params_for(ext, jpeg_quality)
+    cb_style = colorbar_style if colorbar_style is not None else ColorbarStyle()
 
     total_frames = frame_end - frame_start + 1
     frames_done = 0
@@ -637,15 +582,13 @@ def export_png(
                 output_shape=out_shape,
             )
 
-            # Append colorbar strip to the right of the image
+            # Append the styled colorbar (position/font/thickness/background)
             if include_colorbar:
                 cb_lbl = colorbar_label(
                     cfg.field_name, use_physical_units, pixel_unit)
-                cb = render_colorbar_strip(
-                    img.shape[0], cfg.colormap,
+                img = attach_colorbar(
+                    img, cb_style, cfg.colormap,
                     actual_vmin, actual_vmax, cb_lbl, dpi)
-                if cb is not None:
-                    img = np.hstack([img, cb])
 
             field_dir = images_dir / cfg.field_name
             ensure_dir(field_dir)
