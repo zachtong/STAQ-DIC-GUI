@@ -48,6 +48,12 @@ def export_animation(
     use_physical_units: bool = False,
     pixel_size: float = 1.0,
     pixel_unit: str = "mm",
+    render_max_dim: int = 1536,
+    frame_step: int = 1,
+    output_max_dim: int = 0,
+    colorbar_style: ColorbarStyle | None = None,
+    margin_ratio: float = 0.0,
+    margin_color: str = "white",
 ) -> list[Path]:
     """Export one animation file per enabled field.
 
@@ -83,8 +89,11 @@ def export_animation(
     from al_dic.export.export_png import (
         render_field_frame, _extract_field_values, _load_frame_image,
         _compute_warped_mask, scale_field_values, colorbar_label,
-        render_colorbar_strip, _DISPLACEMENT_FIELDS,
+        attach_colorbar, ColorbarStyle, add_margin, _DISPLACEMENT_FIELDS,
+        output_shape_for,
     )
+
+    cb_style = colorbar_style if colorbar_style is not None else ColorbarStyle()
 
     anim_dir = dest_dir / f"{prefix}_animation_{timestamp}"
     ensure_dir(anim_dir)
@@ -102,15 +111,39 @@ def export_animation(
     if img_shape == (0, 0):
         img_shape = (256, 256)
 
-    total_frames = frame_end - frame_start + 1
+    # Output resolution cap (file size + encode time).
+    out_shape = output_shape_for(img_shape, output_max_dim)
+
+    # Frame decimation: keep every Nth frame (faster + smaller, choppier). The
+    # given fps is the pre-decimation timeline, so scale the playback fps down
+    # by the same factor to keep the real-time duration unchanged.
+    frame_step = max(1, int(frame_step))
+    out_fps = max(1, round(fps / frame_step))
+
+    frame_indices = list(range(frame_start, frame_end + 1, frame_step))
+    total_frames = len(frame_indices)
     fmt = fmt.lower()
     paths: list[Path] = []
 
+    # Reuse the field triangulation across fields/frames. Non-deformed:
+    # render_coords == coords is constant, so one Delaunay per valid mask
+    # serves the whole animation; deformed: a fresh cache per frame.
+    shared_tri_cache: dict = {}
+
+    # "ref_frame" mode uses image 0 as background for every frame and field;
+    # decode it once instead of re-reading the file inside both loops.
+    ref_bg = (
+        _load_frame_image(image_files, 0, "ref_frame")
+        if bg_mode == "ref_frame" else None
+    )
+
     for cfg in enabled_configs:
         frames_done = 0
-        rendered: list[NDArray] = []
+        # Stream frames straight to the encoder instead of collecting them:
+        # hundreds of 4K frames would otherwise pin tens of GB of RAM.
+        writer: _StreamingAnimWriter | None = None
 
-        for t in range(frame_start, frame_end + 1):
+        for t in frame_indices:
             if stop_event is not None and stop_event.is_set():
                 break
 
@@ -126,8 +159,14 @@ def export_animation(
             else:
                 deformed_coords = None
 
-            # result_disp[t] corresponds to image_files[t + 1] (deformed frame)
-            bg_image = _load_frame_image(image_files, t + 1, bg_mode)
+            frame_tri_cache = (
+                {} if deformed_coords is not None else shared_tri_cache
+            )
+
+            # result_disp[t] corresponds to image_files[t + 1] (deformed frame);
+            # reuse the pre-decoded reference image in "ref_frame" mode.
+            bg_image = ref_bg if ref_bg is not None else _load_frame_image(
+                image_files, t + 1, bg_mode)
 
             # Resolve deformed mask (same logic as export_png)
             deformed_mask: NDArray | None = None
@@ -144,8 +183,8 @@ def export_animation(
 
             raw_values = _extract_field_values(cfg.field_name, t, results, fr)
             if raw_values is None:
-                # Insert a blank frame to keep timing consistent
-                rendered.append(np.zeros((*img_shape, 3), dtype=np.uint8))
+                # Blank frame (at output size) keeps timing consistent
+                img = np.zeros((*out_shape, 3), dtype=np.uint8)
             else:
                 # Physical-unit scaling
                 values = (scale_field_values(raw_values, cfg.field_name, pixel_size)
@@ -179,79 +218,86 @@ def export_animation(
                     roi_mask=roi_mask,
                     deformed_coords=deformed_coords,
                     deformed_mask=deformed_mask,
+                    tri_cache=frame_tri_cache,
+                    render_max_dim=render_max_dim,
+                    output_shape=out_shape,
                 )
 
-                # Append colorbar strip
+                # Append the styled colorbar
                 if include_colorbar:
                     cb_lbl = colorbar_label(
                         cfg.field_name, use_physical_units, pixel_unit)
-                    cb = render_colorbar_strip(
-                        img.shape[0], cfg.colormap,
+                    img = attach_colorbar(
+                        img, cb_style, cfg.colormap,
                         actual_vmin, actual_vmax, cb_lbl)
-                    if cb is not None:
-                        img = np.hstack([img, cb])
+                img = add_margin(img, margin_ratio, margin_color)
 
-                rendered.append(img)
+            # Lazily open the encoder once the first frame's size is known
+            # (that size includes the colorbar strip when present).
+            if writer is None:
+                w = _StreamingAnimWriter(
+                    fmt, anim_dir, cfg.field_name, out_fps, img.shape[:2])
+                if not w.ok:
+                    w.close()
+                    break
+                writer = w
+            writer.append(img)
 
             frames_done += 1
             if progress_callback is not None:
                 progress_callback(frames_done, total_frames, cfg.field_name)
 
-        if not rendered:
-            continue
-
-        # Determine output frame size from first rendered frame
-        out_shape = (rendered[0].shape[0], rendered[0].shape[1])
-
-        if fmt == "gif":
-            out = anim_dir / f"{cfg.field_name}.gif"
-            _write_gif(rendered, out, fps)
-        else:
-            out = anim_dir / f"{cfg.field_name}.mp4"
-            if not _write_mp4(rendered, out, fps, out_shape):
-                # Fallback to AVI if mp4v fails
-                out = anim_dir / f"{cfg.field_name}.avi"
-                _write_avi(rendered, out, fps, out_shape)
-
-        paths.append(out)
+        if writer is not None:
+            writer.close()
+            paths.append(writer.out)
 
     return paths
 
 
-def _write_gif(frames: list[NDArray], out: Path, fps: int) -> None:
-    """Write BGR frames as an animated GIF via imageio."""
-    import imageio
+class _StreamingAnimWriter:
+    """Append BGR frames to a GIF/MP4/AVI encoder one at a time.
 
-    # imageio expects RGB uint8
-    rgb_frames = [cv2.cvtColor(f, cv2.COLOR_BGR2RGB) for f in frames]
-    duration = 1.0 / max(fps, 1)
-    imageio.mimwrite(str(out), rgb_frames, format="GIF", duration=duration, loop=0)
+    Streaming avoids holding every rendered frame in RAM (hundreds of 4K
+    frames = tens of GB).  The output frame size is fixed by the first frame;
+    later frames are resized to match (as the old batch writers did).  For
+    MP4 the mp4v codec is tried first, falling back to XVID/.avi.
+    """
 
+    def __init__(self, fmt: str, anim_dir: Path, field_name: str,
+                 fps: int, frame_hw: tuple[int, int]) -> None:
+        self.fmt = fmt
+        self.h, self.w = frame_hw
+        self.fps = fps
+        self.ok = True
+        if fmt == "gif":
+            import imageio
+            self.out = anim_dir / f"{field_name}.gif"
+            self._w = imageio.get_writer(
+                str(self.out), format="GIF", mode="I",
+                duration=1.0 / max(fps, 1), loop=0)
+            return
+        # MP4 (mp4v) with AVI (XVID) fallback
+        self.out = anim_dir / f"{field_name}.mp4"
+        self._w = cv2.VideoWriter(
+            str(self.out), cv2.VideoWriter_fourcc(*"mp4v"),
+            float(fps), (self.w, self.h))
+        if not self._w.isOpened():
+            self.out = anim_dir / f"{field_name}.avi"
+            self._w = cv2.VideoWriter(
+                str(self.out), cv2.VideoWriter_fourcc(*"XVID"),
+                float(fps), (self.w, self.h))
+            self.ok = self._w.isOpened()
 
-def _write_mp4(frames: list[NDArray], out: Path, fps: int,
-               img_shape: tuple[int, int]) -> bool:
-    """Write BGR frames as MP4 via cv2.VideoWriter. Returns True on success."""
-    H, W = img_shape
-    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    writer = cv2.VideoWriter(str(out), fourcc, float(fps), (W, H))
-    if not writer.isOpened():
-        return False
-    for frame in frames:
-        if frame.shape[:2] != (H, W):
-            frame = cv2.resize(frame, (W, H))
-        writer.write(frame)
-    writer.release()
-    return out.exists() and out.stat().st_size > 0
+    def append(self, frame: NDArray) -> None:
+        if frame.shape[:2] != (self.h, self.w):
+            frame = cv2.resize(frame, (self.w, self.h))
+        if self.fmt == "gif":
+            self._w.append_data(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        else:
+            self._w.write(frame)
 
-
-def _write_avi(frames: list[NDArray], out: Path, fps: int,
-               img_shape: tuple[int, int]) -> None:
-    """Fallback: write BGR frames as AVI (XVID)."""
-    H, W = img_shape
-    fourcc = cv2.VideoWriter_fourcc(*"XVID")
-    writer = cv2.VideoWriter(str(out), fourcc, float(fps), (W, H))
-    for frame in frames:
-        if frame.shape[:2] != (H, W):
-            frame = cv2.resize(frame, (W, H))
-        writer.write(frame)
-    writer.release()
+    def close(self) -> None:
+        if self.fmt == "gif":
+            self._w.close()
+        else:
+            self._w.release()

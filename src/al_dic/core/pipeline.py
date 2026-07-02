@@ -34,6 +34,7 @@ from __future__ import annotations
 import logging
 import time
 import warnings
+from collections import OrderedDict
 from dataclasses import replace
 from typing import Callable
 
@@ -44,12 +45,13 @@ from ._brush_warp import warp_brush_mask_to_ref
 from .data_structures import (
     DICMesh,
     DICPara,
+    FrameProvider,
     FrameResult,
     FrameSchedule,
     PipelineResult,
     StrainResult,
 )
-from ..io.image_ops import compute_image_gradient, normalize_images
+from ..io.image_ops import ListFrameProvider, compute_image_gradient
 from ..mesh.criteria.brush_region import BrushRegionCriterion
 from ..mesh.mark_inside import mark_inside
 from ..mesh.mesh_setup import mesh_setup
@@ -68,7 +70,7 @@ from ..solver.subpb2_solver import precompute_subpb2, subpb2_solver
 from ..strain.compute_strain import compute_strain as _compute_strain_fn
 from ..strain.nodal_strain_fem import global_nodal_strain_fem
 from ..strain.smooth_field import compute_node_local_spacing, smooth_field_sparse
-from ..utils.interpolation import scattered_interpolant
+from ..utils.interpolation import scattered_interpolant_uv
 from ..utils.region_analysis import NodeRegionMap, precompute_node_regions
 
 logger = logging.getLogger(__name__)
@@ -417,6 +419,8 @@ def _compute_cumulative_displacements_tree(
     result_fe_mesh: list[DICMesh | None],
     n_frames: int,
     schedule: FrameSchedule,
+    progress_fn: Callable[[float, str], None] | None = None,
+    progress_start: float = 0.90,
 ) -> list[FrameResult | None]:
     """Transform per-pair displacements to cumulative via tree-based composition.
 
@@ -450,9 +454,25 @@ def _compute_cumulative_displacements_tree(
     # Cache: cum_coords[frame_idx] = absolute coordinates after tracking
     # from frame 0 to frame_idx.  frame 0 = ref_coords.
     cum_coords_cache: dict[int, NDArray[np.float64]] = {0: ref_coords.copy()}
+    # Reuse the mesh triangulation across frames: every frame interpolates on
+    # the same mesh, and the Delaunay build (~98% of the transform) would
+    # otherwise be repeated per frame. Keyed by (points, valid mask) -- one
+    # build per uniform-mesh run instead of one per frame, byte-identical.
+    tri_cache: dict = {}
 
     for i in range(n_frames - 1):
         frame = i + 1  # 1-based deformed frame index
+        if progress_fn is not None and n_frames > 1:
+            # The main frame loop fills 0.0-progress_start (see _loop_end);
+            # map this cumulative phase to [progress_start, 1.0]. Now that the
+            # transform is fast (cross-frame Delaunay cache), progress_start is
+            # near 1.0 so this final sliver is imperceptible rather than a
+            # jarring 90%->100% jump on a slow-looking tail.
+            progress_fn(
+                progress_start
+                + (1.0 - progress_start) * (i + 1) / (n_frames - 1),
+                "Composing cumulative displacements...",
+            )
         if result_disp[i] is None or result_fe_mesh[i] is None:
             continue
 
@@ -484,12 +504,13 @@ def _compute_cumulative_displacements_tree(
             u_inc = child_U[0::2]
             v_inc = child_U[1::2]
 
-            # Interpolate incremental displacement at current coordinates
-            disp_x = scattered_interpolant(
-                child_mesh.coordinates_fem, u_inc, coord_curr,
-            )
-            disp_y = scattered_interpolant(
-                child_mesh.coordinates_fem, v_inc, coord_curr,
+            # Interpolate incremental displacement at current coordinates.
+            # u and v are interpolated through ONE shared triangulation
+            # (built once instead of twice) -- byte-identical to two
+            # scattered_interpolant calls when u/v share the same NaN nodes.
+            disp_x, disp_y = scattered_interpolant_uv(
+                child_mesh.coordinates_fem, u_inc, v_inc, coord_curr,
+                tri_cache=tri_cache,
             )
             coord_curr = coord_curr + np.column_stack([disp_x, disp_y])
 
@@ -513,9 +534,23 @@ def _compute_cumulative_displacements_tree(
 # ---------------------------------------------------------------------------
 
 
+_REF_BUNDLE_CACHE_SIZE = 2  # max cached reference bundles (bounded LRU).
+# Must be >= 1 so the single reference in accumulative mode (ref_idx == 0)
+# never evicts (zero regression). 2 optimally serves incremental mode
+# (ref = frame-1). Eviction is correctness-safe: a miss deterministically
+# recomputes the identical bundle from the frame provider.
+
+_PRECOMPUTE_CACHE_SIZE = 2  # max cached solver precompute contexts (LRU):
+# icgn_ctx_cache (6-DOF, keyed by ref+mesh) and subpb1_precompute_cache
+# (2-DOF, keyed by ref). Each entry is the heavy ~3 GB (N, Sy, Sx) subset
+# cube set; left unbounded they leak O(N_refs) in incremental mode. Bounded
+# like the ref bundles; recompute on a miss is byte-identical. Must be >= 1
+# so a just-inserted entry survives its own post-insert evict check.
+
+
 def run_aldic(
     para: DICPara,
-    images: list[NDArray[np.float64]],
+    images: list[NDArray[np.float64]] | FrameProvider,
     masks: list[NDArray[np.float64]],
     progress_fn: Callable[[float, str], None] | None = None,
     stop_fn: Callable[[], bool] | None = None,
@@ -566,6 +601,9 @@ def run_aldic(
     # =====================================================================
     # Validation & defaults
     # =====================================================================
+    # Validate up front, before any eager normalization, so an invalid call
+    # raises immediately without allocating the normalized frame stack.
+    # len(images) works for both a raw list and a streaming provider.
     if len(images) < 2:
         raise ValueError(
             f"At least 2 images required (got {len(images)})"
@@ -574,6 +612,16 @@ def run_aldic(
         raise ValueError(
             f"masks length ({len(masks)}) != images length ({len(images)})"
         )
+
+    # Resolve the frame provider. A raw list is wrapped in ListFrameProvider
+    # (eager-normalized -- byte-identical to the previous normalize_images
+    # path); an object already exposing get_normalized() is used as-is. From
+    # here on run_aldic touches only the FrameProvider interface, so a
+    # streaming provider can later supply frames lazily with no core change.
+    if hasattr(images, "get_normalized"):
+        provider: FrameProvider = images  # type: ignore[assignment]
+    else:
+        provider = ListFrameProvider(images, para.gridxy_roi_range)
 
     progress = progress_fn or _default_progress
     should_stop = stop_fn or _default_stop
@@ -584,8 +632,8 @@ def run_aldic(
     progress(0.0, "Section 2b: Normalizing images...")
     logger.info("--- Section 2b Start ---")
 
-    img_normalized, clamped_roi = normalize_images(images, para.gridxy_roi_range)
-    img_h, img_w = images[0].shape
+    clamped_roi = provider.clamped_roi
+    img_h, img_w = provider.shape
     para = replace(para, gridxy_roi_range=clamped_roi, img_size=(img_h, img_w))
 
     # Auto-scale FFT search region. Constraint is FFT-grid-specific:
@@ -607,7 +655,7 @@ def run_aldic(
             warnings.warn(msg, stacklevel=2)
             progress(0.0, msg)
 
-    n_frames = len(img_normalized)
+    n_frames = len(provider)
     result_disp: list[FrameResult | None] = [None] * (n_frames - 1)
     result_def_grad: list[FrameResult | None] = [None] * (n_frames - 1)
     result_strain: list[StrainResult | None] = [None] * (n_frames - 1)
@@ -673,12 +721,19 @@ def run_aldic(
     # Caches for reference image precomputation
     # =====================================================================
     # ref_cache[ref_idx] = (f_img, f_img_raw, f_mask, Df)
-    ref_cache: dict[int, tuple[
-        NDArray[np.float64], NDArray[np.float64], object,
-    ]] = {}
+    # Bounded LRU (OrderedDict): in incremental mode ref_idx changes every
+    # frame, so an unbounded dict accumulates every reference's full bundle
+    # (O(N) memory leak). _REF_BUNDLE_CACHE_SIZE keeps only the most-recently
+    # -used references; an evicted reference is recomputed identically on the
+    # next miss, so DIC results are unchanged.
+    ref_cache: OrderedDict[int, tuple[
+        NDArray[np.float64], NDArray[np.float64],
+        NDArray[np.float64], object,
+    ]] = OrderedDict()
 
-    # subpb1_cache[ref_idx] = precomputed subpb1 data (depends on ref image)
-    subpb1_precompute_cache: dict[int, object] = {}
+    # subpb1_cache[ref_idx] = precomputed subpb1 data (depends on ref image).
+    # Bounded LRU: unbounded this leaks ~3 GB per reference in incremental.
+    subpb1_precompute_cache: OrderedDict[int, object] = OrderedDict()
 
     # local_icgn 6-DOF context cache, keyed by ref_idx + mesh hash. The
     # 6-DOF precompute (ref_all, gx_all, gy_all, ... at every node) is
@@ -688,7 +743,8 @@ def run_aldic(
     # doubling the per-frame peak. With this cache, frames sharing a
     # reference reuse the same arrays. Invalidated on ref switch +
     # whenever the mesh changes (mid-run refinement).
-    icgn_ctx_cache: dict[tuple[int, int], object] = {}
+    # Bounded LRU: unbounded this leaks ~3 GB per reference in incremental.
+    icgn_ctx_cache: OrderedDict[tuple[int, int], object] = OrderedDict()
 
     # Cross-frame FFT search-radius memo: once auto-expand grows the
     # search radius to cover a frame's actual displacement, subsequent
@@ -710,8 +766,11 @@ def run_aldic(
     # =====================================================================
     # Main frame loop (Sections 3-6)
     # =====================================================================
-    # Progress budget: frame loop always fills 0–90%; strain is post-hoc
-    _loop_end = 0.90
+    # Progress budget: frame loop (incl. per-frame strain, Section 8) fills
+    # 0–99%; the cumulative transform is the final phase and, now that it is
+    # fast (cross-frame Delaunay cache), only needs the last 1%. This keeps
+    # the bar advancing smoothly to completion instead of jumping 90->100.
+    _loop_end = 0.99
     _n_pairs = max(1, n_frames - 2)
     _frame_budget = _loop_end / _n_pairs
 
@@ -750,13 +809,16 @@ def run_aldic(
 
         # --- Load reference image (with cache) ---
         if ref_idx in ref_cache:
+            ref_cache.move_to_end(ref_idx)  # mark most-recently-used
             f_img, f_img_raw, f_mask, Df = ref_cache[ref_idx]
         else:
             f_mask = masks[ref_idx].astype(np.float64)
-            f_img_raw = img_normalized[ref_idx].copy()
+            f_img_raw = provider.get_normalized(ref_idx).copy()
             f_img = f_img_raw * f_mask  # masked version for gradient computation
             Df = compute_image_gradient(f_img, f_mask, img_raw=f_img_raw)
             ref_cache[ref_idx] = (f_img, f_img_raw, f_mask, Df)
+            if len(ref_cache) > _REF_BUNDLE_CACHE_SIZE:
+                ref_cache.popitem(last=False)  # evict least-recently-used
 
         # --- Load deformed image ---
         g_mask = masks[frame_idx].astype(np.float64)
@@ -766,7 +828,7 @@ def run_aldic(
         # to float32 internally, IC-GN samples via map_coordinates.
         # Share a single copy instead of allocating two identical
         # buffers per frame (saves ~134 MB per frame at 4096²).
-        g_img_fft = img_normalized[frame_idx].copy()
+        g_img_fft = provider.get_normalized(frame_idx).copy()
         g_img_icgn = g_img_fft
         para = replace(para, img_ref_mask=f_mask)
 
@@ -1192,6 +1254,10 @@ def run_aldic(
                 dic_mesh.coordinates_fem, Df, f_img_raw, para,
             )
             icgn_ctx_cache[_icgn_key] = icgn_ctx
+            if len(icgn_ctx_cache) > _PRECOMPUTE_CACHE_SIZE:
+                icgn_ctx_cache.popitem(last=False)  # evict LRU
+        else:
+            icgn_ctx_cache.move_to_end(_icgn_key)
         (
             U_subpb1, F_subpb1, local_time, conv_iter_s4,
             bad_pt_num_s4, mark_hole_strain,
@@ -1340,6 +1406,10 @@ def run_aldic(
                 subpb1_precompute_cache[ref_idx] = precompute_subpb1(
                     dic_mesh.coordinates_fem, Df, f_img_raw, para,
                 )
+                if len(subpb1_precompute_cache) > _PRECOMPUTE_CACHE_SIZE:
+                    subpb1_precompute_cache.popitem(last=False)  # evict LRU
+            else:
+                subpb1_precompute_cache.move_to_end(ref_idx)
             subpb1_pre = subpb1_precompute_cache[ref_idx]
 
             # subpb2 cache already created before S5 solve above
@@ -1451,6 +1521,7 @@ def run_aldic(
 
     result_disp = _compute_cumulative_displacements_tree(
         result_disp, result_fe_mesh, n_frames, schedule,
+        progress_fn=progress, progress_start=_loop_end,
     )
 
     # Validate cumulative result

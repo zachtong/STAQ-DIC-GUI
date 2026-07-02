@@ -14,13 +14,33 @@ from __future__ import annotations
 
 import warnings
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, Protocol
 
 import numpy as np
 from numpy.typing import NDArray
 
 if TYPE_CHECKING:
     from ..solver.seed_propagation import SeedSet
+
+
+class FrameProvider(Protocol):
+    """Structural interface for per-frame normalized-image access.
+
+    ``run_aldic`` depends only on this protocol, never on a concrete list,
+    so frames can be eagerly materialized (``ListFrameProvider``) or
+    streamed on demand (``StreamingFrameProvider``) without the core
+    knowing or caring which.
+    """
+
+    def __len__(self) -> int: ...
+
+    @property
+    def shape(self) -> tuple[int, int]: ...
+
+    @property
+    def clamped_roi(self) -> GridxyROIRange: ...
+
+    def get_normalized(self, idx: int) -> NDArray[np.float64]: ...
 
 
 # ---------------------------------------------------------------------------

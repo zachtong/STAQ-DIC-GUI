@@ -19,12 +19,13 @@ from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
-    QDoubleSpinBox,
     QFormLayout,
     QHBoxLayout,
     QLabel,
     QWidget,
 )
+
+from al_dic.gui.widgets.double_spin import LocaleSafeDoubleSpinBox
 
 
 _UNIT_OPTIONS: tuple[str, ...] = ("nm", "µm", "mm", "cm", "m", "inch")
@@ -48,7 +49,7 @@ class VelocitySettingsWidget(QWidget):
         layout.addRow(self._use_phy)
 
         # Pixel size: [spinbox] [unit combo] / pixel
-        self._px_size_spin = QDoubleSpinBox()
+        self._px_size_spin = LocaleSafeDoubleSpinBox()
         self._px_size_spin.setDecimals(4)
         self._px_size_spin.setRange(1e-9, 1e9)
         self._px_size_spin.setValue(1.0)
@@ -71,7 +72,7 @@ class VelocitySettingsWidget(QWidget):
         layout.addRow("Pixel size", px_widget)
 
         # Frame rate: [spinbox] frame/s
-        self._fps_spin = QDoubleSpinBox()
+        self._fps_spin = LocaleSafeDoubleSpinBox()
         self._fps_spin.setDecimals(2)
         self._fps_spin.setRange(1e-6, 1e9)
         self._fps_spin.setValue(1.0)

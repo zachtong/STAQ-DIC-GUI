@@ -176,19 +176,17 @@ class PipelineWorker(QThread):
     def __init__(
         self,
         para,
-        images: list[np.ndarray],
+        image_provider,
         masks: list[np.ndarray],
         refinement_policy: RefinementPolicy | None = None,
     ) -> None:
         super().__init__()
         self._para = para
-        # No defensive copy: the worker is the sole consumer and treats
-        # images/masks as read-only (normalize_images and gradient calcs
-        # allocate new arrays; nothing mutates these in place). The old
-        # per-array .copy() duplicated the entire full-image float64 stack
-        # (+ masks) at compute start. Snapshot the list containers (cheap)
-        # while sharing the underlying arrays with ImageController's cache.
-        self._images = list(images)
+        # image_provider streams + normalizes frames on demand from disk via
+        # its own private LRU. It never touches ImageController's caches and
+        # shares no mutable state, so this worker thread can use it safely
+        # with no lock. masks stay a small list (snapshot to be safe).
+        self._provider = image_provider
         self._masks = list(masks)
         self._refinement_policy = refinement_policy
 
@@ -203,25 +201,29 @@ class PipelineWorker(QThread):
         # panels across the project; keep the English keys (images,
         # shape, masks, …) literal and translate only the surrounding
         # sentence so numeric values are unambiguous across locales.
-        self.log.emit(
-            f"  images={len(self._images)}, "
-            f"shape={self._images[0].shape}, "
-            f"masks={len(self._masks)}, "
-            f"mask_shape={self._masks[0].shape}",
-            "info",
-        )
-        self.log.emit(
-            f"  winsize={self._para.winsize}, "
-            f"step={self._para.winstepsize}, "
-            f"search={self._para.size_of_fft_search_region}, "
-            f"mode={self._para.reference_mode}",
-            "info",
-        )
         t0 = time.perf_counter()
         try:
+            # First access to self._provider.shape lazily decodes frame 0;
+            # keep these logs inside the try so an unreadable reference frame
+            # surfaces as a fatal dialog (and exits RUNNING) instead of an
+            # uncaught worker-thread exception that hangs the GUI.
+            self.log.emit(
+                f"  images={len(self._provider)}, "
+                f"shape={self._provider.shape}, "
+                f"masks={len(self._masks)}, "
+                f"mask_shape={self._masks[0].shape}",
+                "info",
+            )
+            self.log.emit(
+                f"  winsize={self._para.winsize}, "
+                f"step={self._para.winstepsize}, "
+                f"search={self._para.size_of_fft_search_region}, "
+                f"mode={self._para.reference_mode}",
+                "info",
+            )
             result = run_aldic(
                 para=self._para,
-                images=self._images,
+                images=self._provider,
                 masks=self._masks,
                 progress_fn=self._on_progress,
                 stop_fn=self._should_stop,
@@ -527,16 +529,21 @@ class PipelineController:
                 QCoreApplication.translate(
                     "PipelineController", "Loading images..."),
                 "info")
-            images = [
-                self._image_ctrl.read_image(i)
-                for i in range(n_images)
-            ]
+            from al_dic.gui.controllers.frame_provider import StreamingFrameProvider
+            # Stream frames on demand instead of materializing the whole
+            # stack: the provider decodes + normalizes lazily via its own
+            # private LRU (it never touches ImageController's caches and
+            # shares no mutable state across the worker-thread boundary).
+            # Frames are byte-identical to the old eager read_image path.
+            provider = StreamingFrameProvider(
+                list(state.image_files), para.gridxy_roi_range,
+            )
             state.log_message.emit(
                 QCoreApplication.translate(
                     "PipelineController",
                     "  Loaded %1 images, shape=%2",
-                ).replace("%1", str(len(images))).replace(
-                    "%2", str(images[0].shape)
+                ).replace("%1", str(len(provider))).replace(
+                    "%2", str(roi_mask_0.shape)
                 ),
                 "info",
             )
@@ -659,7 +666,7 @@ class PipelineController:
 
             # Launch worker
             self._worker = PipelineWorker(
-                para, images, masks, refinement_policy=refinement_policy
+                para, provider, masks, refinement_policy=refinement_policy
             )
             self._worker.progress.connect(self._on_progress)
             self._worker.log.connect(

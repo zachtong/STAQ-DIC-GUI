@@ -114,6 +114,34 @@ def _make_default_para(h: int = 64, w: int = 64, **overrides):
 # ---------------------------------------------------------------------------
 
 
+class TestRunALDICProviderEquivalence:
+    """B1: run_aldic(ListFrameProvider) is byte-identical to run_aldic(list).
+
+    Proves the frame-provider refactor adds zero numerical change -- the
+    list path is wrapped in the same eager ListFrameProvider internally, and
+    an externally-built provider yields the same PipelineResult.
+    """
+
+    def test_provider_matches_list_byte_for_byte(self):
+        from al_dic.io.image_ops import ListFrameProvider
+
+        ref, deformed = _make_speckle_pair(shift_x=0.5, shift_y=0.3)
+        images = [ref, deformed]
+        masks = [np.ones((64, 64)), np.ones((64, 64))]
+        para = _make_default_para()
+
+        res_list = run_aldic(para, images, masks)
+        provider = ListFrameProvider(images, para.gridxy_roi_range)
+        res_prov = run_aldic(para, provider, masks)
+
+        assert len(res_prov.result_disp) == len(res_list.result_disp)
+        for fr_l, fr_p in zip(res_list.result_disp, res_prov.result_disp):
+            if fr_l is None or fr_p is None:
+                assert fr_l is None and fr_p is None
+                continue
+            np.testing.assert_array_equal(fr_p.U, fr_l.U)
+
+
 class TestRunALDICValidation:
     def test_too_few_images(self):
         """Should raise ValueError with < 2 images."""
@@ -276,6 +304,77 @@ class TestRunALDICMultiFrame:
         )
 
         assert len(result.result_disp) == 2
+
+
+class TestRefCacheLRU:
+    """B2: ref_cache is a bounded LRU. Capacity must not change DIC results --
+    an evicted reference bundle is recomputed identically on the next miss.
+    """
+
+    @staticmethod
+    def _run(reference_mode, capacity, monkeypatch):
+        import al_dic.core.pipeline as pipeline_mod
+        monkeypatch.setattr(pipeline_mod, "_REF_BUNDLE_CACHE_SIZE", capacity)
+        h, w = 64, 64
+        base, f1 = _make_speckle_pair(shift_x=0.2, shift_y=0.1, seed=0)
+        _, f2 = _make_speckle_pair(shift_x=0.4, shift_y=0.2, seed=0)
+        _, f3 = _make_speckle_pair(shift_x=0.6, shift_y=0.3, seed=0)
+        frames = [base, f1, f2, f3]
+        masks = [np.ones((h, w))] * 4
+        para = _make_default_para(
+            h, w, use_global_step=False, reference_mode=reference_mode
+        )
+        return run_aldic(para, frames, masks, compute_strain=False)
+
+    def _assert_capacity_invariant(self, mode, monkeypatch):
+        # capacity=1 forces eviction + recompute at every reference switch;
+        # capacity=1000 never evicts. Results must be byte-identical.
+        res_small = self._run(mode, 1, monkeypatch)
+        res_large = self._run(mode, 1000, monkeypatch)
+        assert len(res_small.result_disp) == len(res_large.result_disp)
+        for a, b in zip(res_small.result_disp, res_large.result_disp):
+            if a is None or b is None:
+                assert a is None and b is None
+                continue
+            np.testing.assert_array_equal(a.U, b.U)
+
+    def test_incremental_capacity_invariant(self, monkeypatch):
+        self._assert_capacity_invariant("incremental", monkeypatch)
+
+    def test_accumulative_capacity_invariant(self, monkeypatch):
+        self._assert_capacity_invariant("accumulative", monkeypatch)
+
+    @staticmethod
+    def _run_all_caps(reference_mode, cap, monkeypatch):
+        # Bound ALL three reference-keyed caches (ref bundle + the two heavy
+        # solver precompute caches) to the same cap. use_global_step=True so
+        # subpb1_precompute_cache is exercised (it is only used under global
+        # step); icgn_ctx_cache is exercised every frame regardless.
+        import al_dic.core.pipeline as pipeline_mod
+        monkeypatch.setattr(pipeline_mod, "_REF_BUNDLE_CACHE_SIZE", cap)
+        monkeypatch.setattr(pipeline_mod, "_PRECOMPUTE_CACHE_SIZE", cap)
+        h, w = 64, 64
+        base, f1 = _make_speckle_pair(shift_x=0.2, shift_y=0.1, seed=0)
+        _, f2 = _make_speckle_pair(shift_x=0.4, shift_y=0.2, seed=0)
+        _, f3 = _make_speckle_pair(shift_x=0.6, shift_y=0.3, seed=0)
+        frames = [base, f1, f2, f3]
+        masks = [np.ones((h, w))] * 4
+        para = _make_default_para(
+            h, w, use_global_step=True, reference_mode=reference_mode
+        )
+        return run_aldic(para, frames, masks, compute_strain=False)
+
+    def test_precompute_caches_capacity_invariant_incremental(self, monkeypatch):
+        # cap=1 forces evict+recompute of the 6-DOF/2-DOF precompute every
+        # reference switch; cap=1000 never evicts. Byte-identical required.
+        small = self._run_all_caps("incremental", 1, monkeypatch)
+        large = self._run_all_caps("incremental", 1000, monkeypatch)
+        assert len(small.result_disp) == len(large.result_disp)
+        for a, b in zip(small.result_disp, large.result_disp):
+            if a is None or b is None:
+                assert a is None and b is None
+                continue
+            np.testing.assert_array_equal(a.U, b.U)
 
 
 class TestRunALDICAccumulative:

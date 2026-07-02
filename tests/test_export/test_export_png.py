@@ -26,6 +26,27 @@ def field_cfg():
     )
 
 
+def test_render_field_frame_tri_cache_byte_identical(minimal_result, field_cfg):
+    """The Delaunay cache must not change ANY rendered pixel, and must reuse
+    one triangulation across fields that share a valid mask."""
+    coords = minimal_result.dic_mesh.coordinates_fem
+    rng = np.random.default_rng(0)
+    shared_cache: dict = {}
+    for _ in range(3):
+        values = rng.standard_normal(coords.shape[0])
+        no_cache = render_field_frame(
+            coords=coords, values=values, image_shape=(64, 64),
+            bg_image=None, field_cfg=field_cfg,
+        )
+        with_cache = render_field_frame(
+            coords=coords, values=values, image_shape=(64, 64),
+            bg_image=None, field_cfg=field_cfg, tri_cache=shared_cache,
+        )
+        np.testing.assert_array_equal(with_cache, no_cache)
+    # all-finite fields share the same valid mask -> one cached triangulation
+    assert len(shared_cache) == 1
+
+
 def test_render_field_frame_returns_bgr(minimal_result, field_cfg):
     coords = minimal_result.dic_mesh.coordinates_fem
     values = np.ones(coords.shape[0], dtype=np.float64)
@@ -115,6 +136,35 @@ def test_export_png_creates_files(tmp_path, minimal_result, field_cfg):
     for p in paths:
         img = cv2.imread(str(p))
         assert img is not None
+
+
+@pytest.mark.parametrize("fmt,ext", [
+    ("png", ".png"), ("jpeg", ".jpg"), ("tiff", ".tif"),
+])
+def test_export_png_honours_image_format(
+    tmp_path, minimal_result, field_cfg, fmt, ext
+):
+    """The Format combo (PNG/JPEG/TIFF) must actually change the written
+    file extension -- previously it was ignored and everything was .png."""
+    paths = export_png(
+        dest_dir=tmp_path,
+        prefix="exp",
+        timestamp="ts",
+        results=minimal_result,
+        configs=[field_cfg],
+        image_files=[],
+        bg_mode="ref_frame",
+        roi_mask=None,
+        dpi=72,
+        show_deformed=False,
+        frame_start=0,
+        frame_end=1,
+        image_format=fmt,
+    )
+    assert len(paths) >= 1
+    for p in paths:
+        assert p.suffix == ext
+        assert cv2.imread(str(p)) is not None   # written + decodable
 
 
 def test_export_png_only_enabled_fields(tmp_path, minimal_result):

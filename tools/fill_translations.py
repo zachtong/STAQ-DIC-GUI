@@ -389,6 +389,333 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "zh_CN": "DPI", "zh_TW": "DPI", "ja": "DPI",
         "ko": "DPI", "de": "DPI", "fr": "DPI", "es": "PPP",
     },
+    # ========== Export: output resolution + JPEG quality (all 8 locales) ==========
+    "Resolution (long edge)": {
+        "zh_CN": "分辨率（长边）", "zh_TW": "解析度（長邊）",
+        "ja": "解像度（長辺）", "ko": "해상도(긴 변)",
+        "de": "Auflösung (lange Kante)", "fr": "Résolution (bord long)",
+        "es": "Resolución (borde largo)",
+    },
+    "Frame step": {
+        "zh_CN": "抽帧间隔", "zh_TW": "抽幀間隔", "ja": "フレーム間引き",
+        "ko": "프레임 간격", "de": "Bildschritt", "fr": "Pas d'image",
+        "es": "Paso de fotogramas",
+    },
+    "Full resolution": {
+        "zh_CN": "原始分辨率", "zh_TW": "原始解析度", "ja": "フル解像度",
+        "ko": "전체 해상도", "de": "Volle Auflösung",
+        "fr": "Résolution native", "es": "Resolución completa",
+    },
+    "JPEG quality": {
+        "zh_CN": "JPEG 质量", "zh_TW": "JPEG 品質", "ja": "JPEG 品質",
+        "ko": "JPEG 품질", "de": "JPEG-Qualität", "fr": "Qualité JPEG",
+        "es": "Calidad JPEG",
+    },
+    "JPEG quality (higher = larger file). Ignored for PNG/TIFF.": {
+        "zh_CN": "JPEG 质量（越高文件越大）。对 PNG/TIFF 无效。",
+        "zh_TW": "JPEG 品質（越高檔案越大）。對 PNG/TIFF 無效。",
+        "ja": "JPEG 品質（高いほどファイルが大きくなります）。PNG/TIFF では無視されます。",
+        "ko": "JPEG 품질(높을수록 파일이 커집니다). PNG/TIFF에서는 무시됩니다.",
+        "de": "JPEG-Qualität (höher = größere Datei). Wird für PNG/TIFF ignoriert.",
+        "fr": "Qualité JPEG (plus élevée = fichier plus gros). Ignorée pour PNG/TIFF.",
+        "es": "Calidad JPEG (mayor = archivo más grande). Se ignora para PNG/TIFF.",
+    },
+    "Cap the exported image's long edge (the larger of width/height; "
+    "aspect ratio is kept).\nField detail is bounded by the mesh, so a "
+    "smaller cap is near-lossless\nbut much smaller on disk and faster "
+    "to encode. Lower = faster. 'Full resolution' keeps the native "
+    "size.": {
+        "zh_CN": "限制导出图像的长边（宽和高中较大的一个；保持宽高比）。\n"
+                 "场的细节由网格密度决定，因此较小的上限几乎无损，\n"
+                 "但文件更小、编码更快。越低越快。「原始分辨率」保持原生尺寸。",
+        "zh_TW": "限制匯出影像的長邊（寬與高中較大的一個；保持長寬比）。\n"
+                 "場的細節由網格密度決定，因此較小的上限幾乎無損，\n"
+                 "但檔案更小、編碼更快。越低越快。「原始解析度」保持原生尺寸。",
+        "ja": "書き出す画像の長辺（幅と高さの大きい方。縦横比は維持）を制限します。\n"
+              "フィールドの詳細はメッシュで決まるため、上限を小さくしてもほぼ無損失で、\n"
+              "ファイルは小さく書き出しも高速です。小さいほど高速。「フル解像度」は元のサイズを保ちます。",
+        "ko": "내보내는 이미지의 긴 변(너비/높이 중 큰 값, 종횡비 유지)을 제한합니다.\n"
+              "필드 세부 정보는 메시로 결정되므로 상한을 낮춰도 거의 무손실이며,\n"
+              "파일이 작고 인코딩이 빠릅니다. 낮을수록 빠름. '전체 해상도'는 원본 크기를 유지합니다.",
+        "de": "Begrenzt die lange Kante des exportierten Bildes (das Größere von Breite/Höhe; Seitenverhältnis bleibt erhalten).\n"
+              "Die Felddetails sind durch das Netz begrenzt, daher ist eine kleinere Grenze nahezu verlustfrei,\n"
+              "aber viel kleiner und schneller zu kodieren. Kleiner = schneller. „Volle Auflösung“ behält die native Größe bei.",
+        "fr": "Limite le bord long de l'image exportée (le plus grand de largeur/hauteur ; le ratio est conservé).\n"
+              "Le détail du champ est borné par le maillage, donc une limite plus petite est quasi sans perte,\n"
+              "mais bien plus légère et rapide à encoder. Plus petit = plus rapide. « Résolution native » conserve la taille native.",
+        "es": "Limita el borde largo de la imagen exportada (el mayor de ancho/alto; se mantiene la relación de aspecto).\n"
+              "El detalle del campo está limitado por la malla, por lo que un límite menor es casi sin pérdida,\n"
+              "pero mucho más pequeño y rápido de codificar. Menor = más rápido. «Resolución completa» mantiene el tamaño nativo.",
+    },
+    "Cap the animation's long edge (the larger of width/height).\n"
+    "Lower = faster and much smaller. Strongly recommended for GIF, "
+    "whose size explodes at native resolution.": {
+        "zh_CN": "限制动画的长边（宽和高中较大的一个）。\n"
+                 "越低越快、越小。强烈建议用于 GIF：其体积在原生分辨率下会急剧膨胀。",
+        "zh_TW": "限制動畫的長邊（寬與高中較大的一個）。\n"
+                 "越低越快、越小。強烈建議用於 GIF：其體積在原生解析度下會急劇膨脹。",
+        "ja": "アニメーションの長辺（幅と高さの大きい方）を制限します。\n"
+              "小さいほど高速・小容量。GIF に強く推奨されます。ネイティブ解像度ではサイズが急激に増大します。",
+        "ko": "애니메이션의 긴 변(너비/높이 중 큰 값)을 제한합니다.\n"
+              "낮을수록 빠르고 작습니다. GIF에 강력히 권장됩니다. 원본 해상도에서는 크기가 급격히 커집니다.",
+        "de": "Begrenzt die lange Kante der Animation (das Größere von Breite/Höhe).\n"
+              "Kleiner = schneller und viel kleiner. Dringend empfohlen für GIF, dessen Größe bei nativer Auflösung explodiert.",
+        "fr": "Limite le bord long de l'animation (le plus grand de largeur/hauteur).\n"
+              "Plus petit = plus rapide et bien plus léger. Fortement recommandé pour le GIF, dont la taille explose en résolution native.",
+        "es": "Limita el borde largo de la animación (el mayor de ancho/alto).\n"
+              "Menor = más rápido y mucho más pequeño. Muy recomendable para GIF, cuyo tamaño se dispara a resolución nativa.",
+    },
+    "Export every Nth frame (1 = every frame). Higher is faster and "
+    "smaller\nbut looks choppier. Playback duration is preserved (the "
+    "FPS above is the pre-decimation rate).": {
+        "zh_CN": "每 N 帧导出一帧（1 = 每帧都导出）。越大越快、越小，\n"
+                 "但看起来更卡顿。播放时长保持不变（上方 FPS 为抽帧前的帧率）。",
+        "zh_TW": "每 N 幀匯出一幀（1 = 每幀都匯出）。越大越快、越小，\n"
+                 "但看起來更卡頓。播放時長保持不變（上方 FPS 為抽幀前的幀率）。",
+        "ja": "N フレームごとに 1 枚書き出します（1 = 全フレーム）。大きいほど高速・小容量ですが、\n"
+              "カクついて見えます。再生時間は維持されます（上の FPS は間引き前のレート）。",
+        "ko": "N 프레임마다 하나씩 내보냅니다(1 = 모든 프레임). 클수록 빠르고 작지만,\n"
+              "더 끊겨 보입니다. 재생 시간은 유지됩니다(위의 FPS는 추출 전 프레임률).",
+        "de": "Jedes N-te Bild exportieren (1 = jedes Bild). Höher = schneller und kleiner,\n"
+              "wirkt aber ruckeliger. Die Abspieldauer bleibt erhalten (die FPS oben sind die Rate vor der Dezimierung).",
+        "fr": "Exporte une image sur N (1 = toutes les images). Plus élevé = plus rapide et plus léger,\n"
+              "mais plus saccadé. La durée de lecture est conservée (les FPS ci-dessus sont le débit avant décimation).",
+        "es": "Exporta uno de cada N fotogramas (1 = todos). Mayor = más rápido y pequeño,\n"
+              "pero se ve más entrecortado. La duración se conserva (los FPS de arriba son la tasa antes de diezmar).",
+    },
+    # ========== Export: Preview & Colorbar tab (all 8 locales) ==========
+    "Preview & Colorbar": {
+        "zh_CN": "预览与色条", "zh_TW": "預覽與色條",
+        "ja": "プレビューとカラーバー", "ko": "미리보기 및 컬러바",
+        "de": "Vorschau & Farbleiste", "fr": "Aperçu et barre de couleur",
+        "es": "Vista previa y barra de color",
+    },
+    "COLORBAR STYLE": {
+        "zh_CN": "色条样式", "zh_TW": "色條樣式", "ja": "カラーバーのスタイル",
+        "ko": "컬러바 스타일", "de": "FARBLEISTEN-STIL",
+        "fr": "STYLE DE BARRE DE COULEUR", "es": "ESTILO DE BARRA DE COLOR",
+    },
+    "Frame": {
+        "zh_CN": "帧", "zh_TW": "影格", "ja": "フレーム", "ko": "프레임",
+        "de": "Bild", "fr": "Image", "es": "Fotograma",
+    },
+    "Position": {
+        "zh_CN": "位置", "zh_TW": "位置", "ja": "位置", "ko": "위치",
+        "de": "Position", "fr": "Position", "es": "Posición",
+    },
+    "Right": {
+        "zh_CN": "右", "zh_TW": "右", "ja": "右", "ko": "오른쪽",
+        "de": "Rechts", "fr": "Droite", "es": "Derecha",
+    },
+    "Left": {
+        "zh_CN": "左", "zh_TW": "左", "ja": "左", "ko": "왼쪽",
+        "de": "Links", "fr": "Gauche", "es": "Izquierda",
+    },
+    "Top": {
+        "zh_CN": "上", "zh_TW": "上", "ja": "上", "ko": "위",
+        "de": "Oben", "fr": "Haut", "es": "Arriba",
+    },
+    "Bottom": {
+        "zh_CN": "下", "zh_TW": "下", "ja": "下", "ko": "아래",
+        "de": "Unten", "fr": "Bas", "es": "Abajo",
+    },
+    "Font size": {
+        "zh_CN": "字号", "zh_TW": "字級", "ja": "フォントサイズ",
+        "ko": "글꼴 크기", "de": "Schriftgröße", "fr": "Taille de police",
+        "es": "Tamaño de fuente",
+    },
+    "Font family": {
+        "zh_CN": "字体", "zh_TW": "字型", "ja": "フォント",
+        "ko": "글꼴", "de": "Schriftart", "fr": "Police",
+        "es": "Fuente",
+    },
+    "Bar thickness": {
+        "zh_CN": "色条粗细", "zh_TW": "色條粗細", "ja": "バーの太さ",
+        "ko": "막대 두께", "de": "Balkendicke", "fr": "Épaisseur de la barre",
+        "es": "Grosor de la barra",
+    },
+    "Background": {
+        "zh_CN": "背景", "zh_TW": "背景", "ja": "背景", "ko": "배경",
+        "de": "Hintergrund", "fr": "Arrière-plan", "es": "Fondo",
+    },
+    "Black": {
+        "zh_CN": "黑色", "zh_TW": "黑色", "ja": "黒", "ko": "검정",
+        "de": "Schwarz", "fr": "Noir", "es": "Negro",
+    },
+    "White": {
+        "zh_CN": "白色", "zh_TW": "白色", "ja": "白", "ko": "흰색",
+        "de": "Weiß", "fr": "Blanc", "es": "Blanco",
+    },
+    "Refresh preview": {
+        "zh_CN": "刷新预览", "zh_TW": "重新整理預覽", "ja": "プレビューを更新",
+        "ko": "미리보기 새로고침", "de": "Vorschau aktualisieren",
+        "fr": "Actualiser l'aperçu", "es": "Actualizar vista previa",
+    },
+    "FIELD APPEARANCE": {
+        "zh_CN": "字段外观", "zh_TW": "欄位外觀", "ja": "フィールドの外観",
+        "ko": "필드 모양", "de": "FELDDARSTELLUNG",
+        "fr": "APPARENCE DU CHAMP", "es": "APARIENCIA DEL CAMPO",
+    },
+    "Open this tab to render a preview.": {
+        "zh_CN": "打开此选项卡以渲染预览。",
+        "zh_TW": "開啟此分頁以算繪預覽。",
+        "ja": "このタブを開くとプレビューが描画されます。",
+        "ko": "이 탭을 열면 미리보기가 렌더링됩니다.",
+        "de": "Diesen Reiter öffnen, um eine Vorschau zu rendern.",
+        "fr": "Ouvrez cet onglet pour générer un aperçu.",
+        "es": "Abre esta pestaña para generar una vista previa.",
+    },
+    "Enable a field on the Images tab to preview.": {
+        "zh_CN": "在 Images 页启用一个字段以进行预览。",
+        "zh_TW": "在 Images 頁啟用一個欄位以進行預覽。",
+        "ja": "プレビューするには Images タブでフィールドを有効にしてください。",
+        "ko": "미리보려면 Images 탭에서 필드를 활성화하세요.",
+        "de": "Aktivieren Sie ein Feld im Reiter „Images“ für die Vorschau.",
+        "fr": "Activez un champ dans l'onglet Images pour l'aperçu.",
+        "es": "Active un campo en la pestaña Images para la vista previa.",
+    },
+    "No data for this field/frame.": {
+        "zh_CN": "该字段/帧没有数据。",
+        "zh_TW": "該欄位/影格沒有資料。",
+        "ja": "このフィールド/フレームにはデータがありません。",
+        "ko": "이 필드/프레임에 데이터가 없습니다.",
+        "de": "Keine Daten für dieses Feld/Bild.",
+        "fr": "Aucune donnée pour ce champ/cette image.",
+        "es": "No hay datos para este campo/fotograma.",
+    },
+    "Preview failed: ": {
+        "zh_CN": "预览失败：", "zh_TW": "預覽失敗：",
+        "ja": "プレビューに失敗しました：", "ko": "미리보기 실패: ",
+        "de": "Vorschau fehlgeschlagen: ", "fr": "Échec de l'aperçu : ",
+        "es": "Error en la vista previa: ",
+    },
+    # ========== Export: apply-to-all + margin (all 8 locales) ==========
+    "Apply to all fields": {
+        "zh_CN": "应用到所有字段", "zh_TW": "套用到所有欄位",
+        "ja": "すべてのフィールドに適用", "ko": "모든 필드에 적용",
+        "de": "Auf alle Felder anwenden", "fr": "Appliquer à tous les champs",
+        "es": "Aplicar a todos los campos",
+    },
+    "Apply this field's colormap, opacity and auto-range to every "
+    "enabled field (each field keeps its own min/max).": {
+        "zh_CN": "将该字段的 colormap、不透明度和自动范围应用到所有已启用字段（每个字段保留各自的 min/max）。",
+        "zh_TW": "將該欄位的 colormap、不透明度和自動範圍套用到所有已啟用欄位（每個欄位保留各自的 min/max）。",
+        "ja": "このフィールドの colormap・不透明度・自動範囲を、有効なすべてのフィールドに適用します（各フィールドの min/max は保持）。",
+        "ko": "이 필드의 colormap, 불투명도, 자동 범위를 활성화된 모든 필드에 적용합니다(각 필드의 min/max는 유지).",
+        "de": "Colormap, Deckkraft und Auto-Bereich dieses Felds auf alle aktivierten Felder anwenden (jedes Feld behält sein eigenes Min/Max).",
+        "fr": "Applique la colormap, l'opacité et l'auto-plage de ce champ à tous les champs activés (chaque champ garde ses propres min/max).",
+        "es": "Aplica el colormap, la opacidad y el rango automático de este campo a todos los campos activados (cada campo conserva su propio mín/máx).",
+    },
+    "Margin": {
+        "zh_CN": "边距", "zh_TW": "邊距", "ja": "余白", "ko": "여백",
+        "de": "Rand", "fr": "Marge", "es": "Margen",
+    },
+    "Margin color": {
+        "zh_CN": "边距颜色", "zh_TW": "邊距顏色", "ja": "余白の色",
+        "ko": "여백 색상", "de": "Randfarbe", "fr": "Couleur de marge",
+        "es": "Color del margen",
+    },
+    "Add a blank border around the exported content, as a fraction of "
+    "the long edge (0 = none).": {
+        "zh_CN": "在导出内容外围加一圈空白边框，宽度为长边的比例（0 = 无）。",
+        "zh_TW": "在匯出內容外圍加一圈空白邊框，寬度為長邊的比例（0 = 無）。",
+        "ja": "書き出す内容の周囲に空白の枠を追加します。幅は長辺に対する割合です（0 = なし）。",
+        "ko": "내보내는 콘텐츠 주위에 여백 테두리를 추가합니다. 너비는 긴 변에 대한 비율입니다(0 = 없음).",
+        "de": "Fügt einen leeren Rand um den exportierten Inhalt hinzu, als Anteil der langen Kante (0 = keiner).",
+        "fr": "Ajoute une bordure vide autour du contenu exporté, en fraction du bord long (0 = aucune).",
+        "es": "Añade un borde en blanco alrededor del contenido exportado, como fracción del borde largo (0 = ninguna).",
+    },
+    # ========== Session persistence (results + file association) ==========
+    "Associate .aldic files with pyALDIC…": {
+        "zh_CN": "将 .aldic 文件关联到 pyALDIC…",
+        "zh_TW": "將 .aldic 檔案關聯到 pyALDIC…",
+        "ja": ".aldic ファイルを pyALDIC に関連付け…",
+        "ko": ".aldic 파일을 pyALDIC에 연결…",
+        "de": ".aldic-Dateien mit pyALDIC verknüpfen…",
+        "fr": "Associer les fichiers .aldic à pyALDIC…",
+        "es": "Asociar archivos .aldic con pyALDIC…",
+    },
+    "Register .aldic so double-clicking a session file opens pyALDIC "
+    "(current user only, no admin rights needed).": {
+        "zh_CN": "注册 .aldic，让双击会话文件即可打开 pyALDIC（仅当前用户，无需管理员权限）。",
+        "zh_TW": "註冊 .aldic，讓雙擊工作階段檔案即可開啟 pyALDIC（僅目前使用者，無需系統管理員權限）。",
+        "ja": ".aldic を登録し、セッションファイルをダブルクリックすると pyALDIC が開くようにします（現在のユーザーのみ、管理者権限は不要）。",
+        "ko": ".aldic를 등록하여 세션 파일을 두 번 클릭하면 pyALDIC가 열리도록 합니다(현재 사용자만, 관리자 권한 불필요).",
+        "de": "Registriert .aldic, sodass ein Doppelklick auf eine Sitzungsdatei pyALDIC öffnet (nur aktueller Benutzer, keine Administratorrechte nötig).",
+        "fr": "Enregistre .aldic pour qu'un double-clic sur un fichier de session ouvre pyALDIC (utilisateur actuel uniquement, sans droits administrateur).",
+        "es": "Registra .aldic para que hacer doble clic en un archivo de sesión abra pyALDIC (solo el usuario actual, sin permisos de administrador).",
+    },
+    "Include Results?": {
+        "zh_CN": "包含结果？", "zh_TW": "包含結果？", "ja": "結果を含めますか？",
+        "ko": "결과를 포함할까요?", "de": "Ergebnisse einbeziehen?",
+        "fr": "Inclure les résultats ?", "es": "¿Incluir resultados?",
+    },
+    "Include the computed results in this session?": {
+        "zh_CN": "在此会话中包含已计算的结果吗？",
+        "zh_TW": "在此工作階段中包含已計算的結果嗎？",
+        "ja": "このセッションに計算済みの結果を含めますか？",
+        "ko": "이 세션에 계산된 결과를 포함하시겠습니까?",
+        "de": "Die berechneten Ergebnisse in diese Sitzung einbeziehen?",
+        "fr": "Inclure les résultats calculés dans cette session ?",
+        "es": "¿Incluir los resultados calculados en esta sesión?",
+    },
+    "Including results (about %1 uncompressed) lets you reopen the "
+    "session without recomputing. Choose No to save a small "
+    "configuration-only file for sharing.": {
+        "zh_CN": "包含结果（未压缩约 %1）可让你下次直接打开会话而无需重新计算。选择“否”则只保存一个小的仅配置文件，便于分享。",
+        "zh_TW": "包含結果（未壓縮約 %1）可讓你下次直接開啟工作階段而無需重新計算。選擇「否」則只儲存一個小的僅設定檔案，便於分享。",
+        "ja": "結果を含めると（非圧縮で約 %1）、再計算せずにセッションを再度開けます。「いいえ」を選ぶと、共有用に設定のみの小さなファイルを保存します。",
+        "ko": "결과를 포함하면(압축 전 약 %1) 다시 계산하지 않고 세션을 다시 열 수 있습니다. '아니요'를 선택하면 공유용으로 구성만 담긴 작은 파일을 저장합니다.",
+        "de": "Mit Ergebnissen (etwa %1 unkomprimiert) können Sie die Sitzung ohne Neuberechnung wieder öffnen. Wählen Sie Nein, um eine kleine reine Konfigurationsdatei zum Teilen zu speichern.",
+        "fr": "Inclure les résultats (environ %1 non compressé) permet de rouvrir la session sans tout recalculer. Choisissez Non pour enregistrer un petit fichier de configuration seule, à partager.",
+        "es": "Incluir los resultados (unos %1 sin comprimir) permite reabrir la sesión sin recalcular. Elija No para guardar un pequeño archivo solo de configuración para compartir.",
+    },
+    "large": {
+        "zh_CN": "较大", "zh_TW": "較大", "ja": "大きい", "ko": "큼",
+        "de": "groß", "fr": "volumineux", "es": "grande",
+    },
+    "Saving Session": {
+        "zh_CN": "正在保存会话", "zh_TW": "正在儲存工作階段",
+        "ja": "セッションを保存中", "ko": "세션 저장 중",
+        "de": "Sitzung wird gespeichert", "fr": "Enregistrement de la session",
+        "es": "Guardando sesión",
+    },
+    "Loading Session": {
+        "zh_CN": "正在加载会话", "zh_TW": "正在載入工作階段",
+        "ja": "セッションを読み込み中", "ko": "세션 불러오는 중",
+        "de": "Sitzung wird geladen", "fr": "Chargement de la session",
+        "es": "Cargando sesión",
+    },
+    "File Association Failed": {
+        "zh_CN": "文件关联失败", "zh_TW": "檔案關聯失敗",
+        "ja": "ファイル関連付けに失敗", "ko": "파일 연결 실패",
+        "de": "Dateiverknüpfung fehlgeschlagen",
+        "fr": "Échec de l'association de fichiers",
+        "es": "Error al asociar archivos",
+    },
+    "Could not register .aldic files: ": {
+        "zh_CN": "无法注册 .aldic 文件：", "zh_TW": "無法註冊 .aldic 檔案：",
+        "ja": ".aldic ファイルを登録できませんでした：",
+        "ko": ".aldic 파일을 등록할 수 없습니다: ",
+        "de": ".aldic-Dateien konnten nicht registriert werden: ",
+        "fr": "Impossible d'enregistrer les fichiers .aldic : ",
+        "es": "No se pudieron registrar los archivos .aldic: ",
+    },
+    "File Association": {
+        "zh_CN": "文件关联", "zh_TW": "檔案關聯", "ja": "ファイル関連付け",
+        "ko": "파일 연결", "de": "Dateiverknüpfung",
+        "fr": "Association de fichiers", "es": "Asociación de archivos",
+    },
+    "Done. Double-clicking a .aldic file will now open pyALDIC and "
+    "restore that session.": {
+        "zh_CN": "完成。现在双击 .aldic 文件即可打开 pyALDIC 并恢复该会话。",
+        "zh_TW": "完成。現在雙擊 .aldic 檔案即可開啟 pyALDIC 並還原該工作階段。",
+        "ja": "完了しました。これで .aldic ファイルをダブルクリックすると pyALDIC が開き、そのセッションが復元されます。",
+        "ko": "완료되었습니다. 이제 .aldic 파일을 두 번 클릭하면 pyALDIC가 열리고 해당 세션이 복원됩니다.",
+        "de": "Fertig. Ein Doppelklick auf eine .aldic-Datei öffnet nun pyALDIC und stellt diese Sitzung wieder her.",
+        "fr": "Terminé. Un double-clic sur un fichier .aldic ouvrira désormais pyALDIC et restaurera cette session.",
+        "es": "Listo. Ahora, hacer doble clic en un archivo .aldic abrirá pyALDIC y restaurará esa sesión.",
+    },
     "Include colorbar": {
         "zh_CN": "包含色条", "zh_TW": "包含色條", "ja": "カラーバーを含める",
         "ko": "컬러바 포함", "de": "Farbleiste einfügen",
@@ -1022,6 +1349,42 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
     },
 
     # ========== BatchImportDialog — size pre-scan & 1:N assignment ==========
+
+    # ========== AutoFixedSelector — explicit Auto/Fixed color-range mode ====
+    "Auto": {
+        "zh_CN": "自动", "zh_TW": "自動",
+        "ja": "自動", "ko": "자동",
+        "de": "Auto", "fr": "Auto", "es": "Auto",
+    },
+    "Fixed": {
+        "zh_CN": "固定", "zh_TW": "固定",
+        "ja": "固定", "ko": "고정",
+        "de": "Fest", "fr": "Fixe", "es": "Fijo",
+    },
+    "Rescale the color range to each frame's data range": {
+        "zh_CN": "根据每帧的数据范围自动缩放颜色范围",
+        "zh_TW": "根據每幀的資料範圍自動縮放顏色範圍",
+        "ja":    "各フレームのデータ範囲に合わせてカラーレンジを再スケールします",
+        "ko":    "각 프레임의 데이터 범위에 맞춰 색상 범위를 다시 조정합니다",
+        "de":    "Farbbereich an den Datenbereich jedes Frames anpassen",
+        "fr":    "Ajuster la plage de couleurs à la plage de données de chaque image",
+        "es":    "Ajustar el rango de colores al rango de datos de cada fotograma",
+    },
+    "Keep the manual Min/Max bounds for every frame": {
+        "zh_CN": "所有帧都使用手动设置的最小/最大值",
+        "zh_TW": "所有幀都使用手動設定的最小/最大值",
+        "ja":    "すべてのフレームで手動の最小/最大値を使用します",
+        "ko":    "모든 프레임에서 수동 최소/최대 값을 유지합니다",
+        "de":    "Manuelle Min/Max-Grenzen für alle Frames beibehalten",
+        "fr":    "Conserver les bornes Min/Max manuelles pour toutes les images",
+        "es":    "Mantener los límites Mín/Máx manuales en todos los fotogramas",
+    },
+    # "Range" label reused by the ExportDialog preview tab
+    "Range": {
+        "zh_CN": "范围", "zh_TW": "範圍",
+        "ja": "範囲", "ko": "범위",
+        "de": "Bereich", "fr": "Plage", "es": "Rango",
+    },
 }
 
 

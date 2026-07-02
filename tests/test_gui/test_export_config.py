@@ -46,7 +46,20 @@ class TestExportConfig:
         assert cfg.export_csv is True
         assert cfg.data_fields == []
         assert cfg.export_images is False
-        assert cfg.image_format == "png"
+        # Default format is JPEG: on a speckle background it is ~4x smaller and
+        # ~7x faster to encode than PNG (near-lossless for field visualisation).
+        assert cfg.image_format == "jpeg"
+        assert cfg.jpeg_quality == 92
+        # Output capped to 1024 px (long edge) by default; near-lossless since
+        # field detail is mesh-bounded, and much smaller/faster than native.
+        assert cfg.image_output_max_dim == 1024
+        assert cfg.anim_output_max_dim == 1024
+        assert cfg.anim_frame_step == 1
+        # Colorbar + margin defaults reproduce the historical look (no margin)
+        assert cfg.colorbar_style.position == "right"
+        assert cfg.colorbar_style.font_family == "sans-serif"
+        assert cfg.export_margin_ratio == 0.0
+        assert cfg.export_margin_color == "white"
         assert cfg.anim_format == "mp4"
         assert cfg.export_report is False
         # Colorbar default must stay ON — otherwise exported images

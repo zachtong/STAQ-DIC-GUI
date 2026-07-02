@@ -25,7 +25,6 @@ from __future__ import annotations
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
-    QDoubleSpinBox,
     QFormLayout,
     QHBoxLayout,
     QLabel,
@@ -33,6 +32,7 @@ from PySide6.QtWidgets import (
 )
 
 from al_dic.gui.app_state import AppState
+from al_dic.gui.widgets.double_spin import LocaleSafeDoubleSpinBox
 
 
 _UNIT_OPTIONS: tuple[str, ...] = ("nm", "µm", "mm", "cm", "m", "inch")
@@ -56,7 +56,7 @@ class PhysicalUnitsWidget(QWidget):
         layout.addRow(self._enabled_cb)
 
         # Pixel size: [spinbox] [unit combo] / px
-        self._pixel_spin = QDoubleSpinBox()
+        self._pixel_spin = LocaleSafeDoubleSpinBox()
         self._pixel_spin.setDecimals(4)
         self._pixel_spin.setRange(1e-9, 1e9)
         self._pixel_spin.setSingleStep(0.1)
@@ -83,7 +83,7 @@ class PhysicalUnitsWidget(QWidget):
         layout.addRow(self.tr("Pixel size"), px_widget)
 
         # Frame rate
-        self._fps_spin = QDoubleSpinBox()
+        self._fps_spin = LocaleSafeDoubleSpinBox()
         self._fps_spin.setDecimals(3)
         self._fps_spin.setRange(1e-6, 1e9)
         self._fps_spin.setSingleStep(1.0)

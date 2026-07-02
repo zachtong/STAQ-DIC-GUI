@@ -204,3 +204,32 @@ def test_auto_range_disabled_populates_spinboxes(window, state_with_results):
     assert abs(s["vmax"]) < 1.0
     # vmin <= vmax (equality is valid for a uniform-value field)
     assert s["vmin"] <= s["vmax"]
+
+
+# ----------------------------------------------------------------------
+# Initial window size (regression: fixed 800 px height overflowed
+# small laptop screens; on macOS an off-screen bottom edge cannot be
+# grabbed, so the window could not be shrunk)
+# ----------------------------------------------------------------------
+
+def test_initial_size_clamped_to_small_screen():
+    from al_dic.gui.strain_window import initial_window_size
+    # 1366x768 laptop: taskbar already excluded from availableGeometry
+    w, h = initial_window_size(1366, 728)
+    assert w <= 1366 - 40
+    assert h <= 728 - 80
+
+def test_initial_size_keeps_preferred_on_large_screen():
+    from al_dic.gui.strain_window import initial_window_size
+    assert initial_window_size(2560, 1400) == (1280, 800)
+
+def test_initial_size_has_sane_floor():
+    from al_dic.gui.strain_window import initial_window_size
+    w, h = initial_window_size(500, 400)
+    assert (w, h) == (640, 480)
+
+def test_window_opens_within_available_screen(window):
+    """The constructed window must not be taller than the usable screen."""
+    avail = window.screen().availableGeometry()
+    assert window.height() <= max(480, avail.height() - 80)
+    assert window.width() <= max(640, avail.width() - 40)
