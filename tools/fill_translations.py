@@ -1349,6 +1349,42 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
     },
 
     # ========== BatchImportDialog — size pre-scan & 1:N assignment ==========
+
+    # ========== AutoFixedSelector — explicit Auto/Fixed color-range mode ====
+    "Auto": {
+        "zh_CN": "自动", "zh_TW": "自動",
+        "ja": "自動", "ko": "자동",
+        "de": "Auto", "fr": "Auto", "es": "Auto",
+    },
+    "Fixed": {
+        "zh_CN": "固定", "zh_TW": "固定",
+        "ja": "固定", "ko": "고정",
+        "de": "Fest", "fr": "Fixe", "es": "Fijo",
+    },
+    "Rescale the color range to each frame's data range": {
+        "zh_CN": "根据每帧的数据范围自动缩放颜色范围",
+        "zh_TW": "根據每幀的資料範圍自動縮放顏色範圍",
+        "ja":    "各フレームのデータ範囲に合わせてカラーレンジを再スケールします",
+        "ko":    "각 프레임의 데이터 범위에 맞춰 색상 범위를 다시 조정합니다",
+        "de":    "Farbbereich an den Datenbereich jedes Frames anpassen",
+        "fr":    "Ajuster la plage de couleurs à la plage de données de chaque image",
+        "es":    "Ajustar el rango de colores al rango de datos de cada fotograma",
+    },
+    "Keep the manual Min/Max bounds for every frame": {
+        "zh_CN": "所有帧都使用手动设置的最小/最大值",
+        "zh_TW": "所有幀都使用手動設定的最小/最大值",
+        "ja":    "すべてのフレームで手動の最小/最大値を使用します",
+        "ko":    "모든 프레임에서 수동 최소/최대 값을 유지합니다",
+        "de":    "Manuelle Min/Max-Grenzen für alle Frames beibehalten",
+        "fr":    "Conserver les bornes Min/Max manuelles pour toutes les images",
+        "es":    "Mantener los límites Mín/Máx manuales en todos los fotogramas",
+    },
+    # "Range" label reused by the ExportDialog preview tab
+    "Range": {
+        "zh_CN": "范围", "zh_TW": "範圍",
+        "ja": "範囲", "ko": "범위",
+        "de": "Bereich", "fr": "Plage", "es": "Rango",
+    },
 }
 
 

@@ -40,7 +40,6 @@ from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
     QDialogButtonBox,
-    QDoubleSpinBox,
     QFileDialog,
     QFormLayout,
     QGroupBox,
@@ -62,6 +61,8 @@ from al_dic.core.data_structures import PipelineResult
 from al_dic.export.colorbar import ColorbarStyle
 from al_dic.gui.app_state import AppState
 from al_dic.gui.theme import COLORS
+from al_dic.gui.widgets.double_spin import LocaleSafeDoubleSpinBox
+from al_dic.gui.widgets.range_mode import AutoFixedSelector
 
 _SETTINGS_ORG = "AL-DIC"
 _SETTINGS_APP = "ExportDialog"
@@ -398,15 +399,13 @@ class _FieldRow(QWidget):
         self._cmap_combo.setFixedWidth(90)
         row.addWidget(self._cmap_combo)
 
-        self._auto_check = QCheckBox(
-            QCoreApplication.translate("ExportDialog", "Auto")
-        )
+        self._auto_check = AutoFixedSelector()
         self._auto_check.setChecked(_field_auto)
         self._auto_check.setEnabled(has_data)
-        self._auto_check.stateChanged.connect(self._on_auto_changed)
+        self._auto_check.toggled.connect(self._on_auto_changed)
         row.addWidget(self._auto_check)
 
-        self._vmin_spin = QDoubleSpinBox()
+        self._vmin_spin = LocaleSafeDoubleSpinBox()
         self._vmin_spin.setRange(-1e9, 1e9)
         self._vmin_spin.setValue(_field_vmin)
         self._vmin_spin.setDecimals(4)
@@ -414,7 +413,7 @@ class _FieldRow(QWidget):
         self._vmin_spin.setEnabled(has_data and not _field_auto)
         row.addWidget(self._vmin_spin)
 
-        self._vmax_spin = QDoubleSpinBox()
+        self._vmax_spin = LocaleSafeDoubleSpinBox()
         self._vmax_spin.setRange(-1e9, 1e9)
         self._vmax_spin.setValue(_field_vmax)
         self._vmax_spin.setDecimals(4)
@@ -430,7 +429,7 @@ class _FieldRow(QWidget):
             "Field opacity (0 = transparent, 1 = fully opaque)"
         ))
         row.addWidget(opacity_lbl)
-        self._alpha_spin = QDoubleSpinBox()
+        self._alpha_spin = LocaleSafeDoubleSpinBox()
         self._alpha_spin.setRange(0.0, 1.0)
         self._alpha_spin.setSingleStep(0.05)
         self._alpha_spin.setValue(hint.overlay_alpha)
@@ -441,8 +440,7 @@ class _FieldRow(QWidget):
 
         row.addStretch()
 
-    def _on_auto_changed(self, state: int) -> None:
-        auto = state == Qt.CheckState.Checked.value
+    def _on_auto_changed(self, auto: bool) -> None:
         self._vmin_spin.setEnabled(not auto)
         self._vmax_spin.setEnabled(not auto)
 
@@ -623,7 +621,7 @@ class ExportDialog(QDialog):
         units_form.addRow(self._phys_units_check)
 
         phys_row = QHBoxLayout()
-        self._pixel_size_spin = QDoubleSpinBox()
+        self._pixel_size_spin = LocaleSafeDoubleSpinBox()
         self._pixel_size_spin.setRange(1e-6, 1e6)
         self._pixel_size_spin.setValue(hint.pixel_size)
         self._pixel_size_spin.setDecimals(4)
@@ -645,7 +643,7 @@ class ExportDialog(QDialog):
         self._pixel_unit_combo.currentIndexChanged.connect(self._schedule_preview)
 
         fr_row = QHBoxLayout()
-        self._frame_rate_spin = QDoubleSpinBox()
+        self._frame_rate_spin = LocaleSafeDoubleSpinBox()
         self._frame_rate_spin.setRange(1e-3, 1e6)
         self._frame_rate_spin.setValue(hint.frame_rate)
         self._frame_rate_spin.setDecimals(2)
@@ -1215,7 +1213,7 @@ class ExportDialog(QDialog):
         self._cb_font_combo.currentIndexChanged.connect(self._schedule_preview)
         form.addRow(self.tr("Font family"), self._cb_font_combo)
 
-        self._cb_width_spin = QDoubleSpinBox()
+        self._cb_width_spin = LocaleSafeDoubleSpinBox()
         self._cb_width_spin.setRange(0.02, 0.25)
         self._cb_width_spin.setSingleStep(0.01)
         self._cb_width_spin.setDecimals(2)
@@ -1229,7 +1227,7 @@ class ExportDialog(QDialog):
         self._cb_bg_combo.currentIndexChanged.connect(self._schedule_preview)
         form.addRow(self.tr("Background"), self._cb_bg_combo)
 
-        self._pv_margin_spin = QDoubleSpinBox()
+        self._pv_margin_spin = LocaleSafeDoubleSpinBox()
         self._pv_margin_spin.setRange(0.0, 0.30)
         self._pv_margin_spin.setSingleStep(0.01)
         self._pv_margin_spin.setDecimals(2)
@@ -1263,26 +1261,26 @@ class ExportDialog(QDialog):
             self._on_preview_appearance_changed)
         aform.addRow(self.tr("Colormap"), self._pv_cmap_combo)
 
-        self._pv_auto_check = QCheckBox(self.tr("Auto"))
-        self._pv_auto_check.stateChanged.connect(
+        self._pv_auto_check = AutoFixedSelector()
+        self._pv_auto_check.toggled.connect(
             self._on_preview_appearance_changed)
-        aform.addRow(self._pv_auto_check)
+        aform.addRow(self.tr("Range"), self._pv_auto_check)
 
-        self._pv_vmin_spin = QDoubleSpinBox()
+        self._pv_vmin_spin = LocaleSafeDoubleSpinBox()
         self._pv_vmin_spin.setRange(-1e9, 1e9)
         self._pv_vmin_spin.setDecimals(4)
         self._pv_vmin_spin.valueChanged.connect(
             self._on_preview_appearance_changed)
         aform.addRow(self.tr("Min"), self._pv_vmin_spin)
 
-        self._pv_vmax_spin = QDoubleSpinBox()
+        self._pv_vmax_spin = LocaleSafeDoubleSpinBox()
         self._pv_vmax_spin.setRange(-1e9, 1e9)
         self._pv_vmax_spin.setDecimals(4)
         self._pv_vmax_spin.valueChanged.connect(
             self._on_preview_appearance_changed)
         aform.addRow(self.tr("Max"), self._pv_vmax_spin)
 
-        self._pv_opacity_spin = QDoubleSpinBox()
+        self._pv_opacity_spin = LocaleSafeDoubleSpinBox()
         self._pv_opacity_spin.setRange(0.0, 1.0)
         self._pv_opacity_spin.setSingleStep(0.05)
         self._pv_opacity_spin.setDecimals(2)

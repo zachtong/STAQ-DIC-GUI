@@ -32,7 +32,7 @@ from numpy.typing import NDArray
 from dataclasses import replace as _dc_replace
 
 from PySide6.QtCore import QEvent, QThread, QTimer, Qt, Signal
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QGuiApplication, QPixmap
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -76,6 +76,22 @@ except ImportError:  # pragma: no cover
 
 # Namespace prefix for the private VizController cache.
 _FIELD_NS = "strain_window"
+
+
+def initial_window_size(avail_width: int, avail_height: int) -> tuple[int, int]:
+    """Clamp the preferred 1280x800 default to the usable screen area.
+
+    A fixed 800 px height overflows small laptop screens (1366x768 /
+    1280x800 minus menu bar, dock/taskbar and title bar), and on macOS a
+    window whose bottom edge opens off-screen cannot be shrunk because
+    the resize handle is unreachable and the title bar cannot be dragged
+    above the menu bar. The margins keep the whole frame, including the
+    resize edges, on screen.
+    """
+    return (
+        max(640, min(1280, avail_width - 40)),
+        max(480, min(800, avail_height - 80)),
+    )
 
 
 class _StrainWorker(QThread):
@@ -129,11 +145,13 @@ class StrainWindow(QMainWindow):
         # share one visual frame.
         from al_dic.gui.window_chrome import enable_dark_title_bar
         enable_dark_title_bar(self)
-        # Default size chosen to fit common 1366×768 / 1280×800 laptop
-        # screens (after taskbar + title bar reserve ~70 px).  The
-        # right column is wrapped in a QScrollArea so even smaller
-        # screens still reach every control.
-        self.resize(1280, 800)
+        # Default size: 1280×800 clamped to the current screen's usable
+        # area so the bottom edge (frame slider, resize handle) never
+        # opens off-screen. The right column is wrapped in a QScrollArea
+        # so even smaller screens still reach every control.
+        screen = self.screen() or QGuiApplication.primaryScreen()
+        avail = screen.availableGeometry()
+        self.resize(*initial_window_size(avail.width(), avail.height()))
 
         self._state = state
         self._strain_ctrl = StrainController(state)

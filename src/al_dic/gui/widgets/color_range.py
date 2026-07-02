@@ -1,9 +1,6 @@
-"""Color range controls -- auto/manual min/max."""
+"""Color range controls -- explicit Auto/Fixed mode + min/max bounds."""
 
-from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QCheckBox,
-    QDoubleSpinBox,
     QHBoxLayout,
     QLabel,
     QVBoxLayout,
@@ -11,11 +8,12 @@ from PySide6.QtWidgets import (
 )
 
 from al_dic.gui.app_state import AppState
-from al_dic.gui.theme import COLORS
+from al_dic.gui.widgets.double_spin import LocaleSafeDoubleSpinBox
+from al_dic.gui.widgets.range_mode import AutoFixedSelector
 
 
 class ColorRange(QWidget):
-    """Auto toggle + Min/Max spin boxes for color range."""
+    """Auto/Fixed mode selector + Min/Max spin boxes for color range."""
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
@@ -23,15 +21,13 @@ class ColorRange(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(4)
 
-        # Range label + Auto checkbox on same row (no stretch between them)
+        # Range label + Auto/Fixed selector on same row
         auto_row = QHBoxLayout()
         auto_row.setSpacing(6)
         auto_row.addWidget(QLabel(self.tr("Range")))
-        self._auto_cb = QCheckBox(self.tr("Auto"))
-        self._auto_cb.setChecked(True)
-        self._auto_cb.stateChanged.connect(self._on_auto_changed)
-        auto_row.addWidget(self._auto_cb)
-        auto_row.addStretch()
+        self._auto_cb = AutoFixedSelector()
+        self._auto_cb.toggled.connect(self._on_auto_changed)
+        auto_row.addWidget(self._auto_cb, 1)
         layout.addLayout(auto_row)
 
         # Min/Max row
@@ -39,7 +35,7 @@ class ColorRange(QWidget):
         range_row.setSpacing(4)
 
         range_row.addWidget(QLabel(self.tr("Min")))
-        self._min_spin = QDoubleSpinBox()
+        self._min_spin = LocaleSafeDoubleSpinBox()
         self._min_spin.setRange(-1000, 1000)
         self._min_spin.setDecimals(3)
         self._min_spin.setValue(0.0)
@@ -49,7 +45,7 @@ class ColorRange(QWidget):
         range_row.addWidget(self._min_spin)
 
         range_row.addWidget(QLabel(self.tr("Max")))
-        self._max_spin = QDoubleSpinBox()
+        self._max_spin = LocaleSafeDoubleSpinBox()
         self._max_spin.setRange(-1000, 1000)
         self._max_spin.setDecimals(3)
         self._max_spin.setValue(1.0)
@@ -84,9 +80,8 @@ class ColorRange(QWidget):
         self._min_spin.blockSignals(False)
         self._max_spin.blockSignals(False)
 
-    def _on_auto_changed(self, state: int) -> None:
-        """Enable/disable spin boxes based on auto checkbox."""
-        auto = state == Qt.CheckState.Checked.value
+    def _on_auto_changed(self, auto: bool) -> None:
+        """Enable/disable spin boxes based on the Auto/Fixed mode."""
         self._min_spin.setEnabled(not auto)
         self._max_spin.setEnabled(not auto)
         if not auto:

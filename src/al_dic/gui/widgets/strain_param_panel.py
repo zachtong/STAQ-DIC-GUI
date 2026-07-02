@@ -22,7 +22,6 @@ from __future__ import annotations
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QComboBox,
-    QDoubleSpinBox,
     QFormLayout,
     QHBoxLayout,
     QLabel,
@@ -31,6 +30,7 @@ from PySide6.QtWidgets import (
 )
 
 from al_dic.gui.app_state import AppState
+from al_dic.gui.widgets.double_spin import LocaleSafeDoubleSpinBox
 from al_dic.gui.widgets.info_icon import InfoIcon
 from al_dic.i18n import tr_args
 
@@ -137,7 +137,7 @@ class StrainParamPanel(QWidget):
         # one-sided, unreliable plane fit. This coefficient (alpha) sets how
         # wide a boundary band to drop: trim band = alpha * VSG radius.
         # 0 = keep all, 0.7 = recommended, 1 = strictest.
-        self._edge_trim_spin = QDoubleSpinBox()
+        self._edge_trim_spin = LocaleSafeDoubleSpinBox()
         self._edge_trim_spin.setRange(0.0, 1.0)
         self._edge_trim_spin.setSingleStep(0.05)
         self._edge_trim_spin.setDecimals(2)

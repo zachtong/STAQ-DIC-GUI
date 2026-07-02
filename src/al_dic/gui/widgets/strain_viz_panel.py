@@ -22,13 +22,15 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
-    QDoubleSpinBox,
     QFormLayout,
     QHBoxLayout,
     QLabel,
     QSlider,
     QWidget,
 )
+
+from al_dic.gui.widgets.double_spin import LocaleSafeDoubleSpinBox
+from al_dic.gui.widgets.range_mode import AutoFixedSelector
 
 _COLORMAP_OPTIONS: tuple[str, ...] = (
     "jet",
@@ -70,20 +72,19 @@ class StrainVizPanel(QWidget):
         self._cmap_combo.setCurrentIndex(0)   # jet
         layout.addRow(self.tr("Colormap"), self._cmap_combo)
 
-        # --- Auto range ---
-        self._auto_check = QCheckBox(self.tr("Auto"))
-        self._auto_check.setChecked(True)
+        # --- Range mode: explicit Auto / Fixed choice ---
+        self._auto_check = AutoFixedSelector()
         layout.addRow(self.tr("Range"), self._auto_check)
 
         # --- Manual Min / Max (disabled while auto is on) ---
-        self._vmin_spin = QDoubleSpinBox()
+        self._vmin_spin = LocaleSafeDoubleSpinBox()
         self._vmin_spin.setDecimals(6)
         self._vmin_spin.setRange(-1e9, 1e9)
         self._vmin_spin.setSingleStep(1e-3)
         self._vmin_spin.setValue(-0.01)
         self._vmin_spin.setEnabled(False)
 
-        self._vmax_spin = QDoubleSpinBox()
+        self._vmax_spin = LocaleSafeDoubleSpinBox()
         self._vmax_spin.setDecimals(6)
         self._vmax_spin.setRange(-1e9, 1e9)
         self._vmax_spin.setSingleStep(1e-3)
