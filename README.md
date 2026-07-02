@@ -61,8 +61,8 @@ A complete desktop application built with PySide6. Three-column layout with imag
 
 <p align="center">
   <b>📘 User manual (PDF)</b> &nbsp;|&nbsp;
-  <a href="docs/pyALDIC_v0.5.0_user_guide.pdf">Full user guide</a> ·
-  <a href="docs/pyALDIC_v0.5.0_quick_guide.pdf">Quick reference</a>
+  <a href="docs/pyALDIC_v0.6.0_user_guide.pdf">Full user guide</a> ·
+  <a href="docs/pyALDIC_v0.6.0_quick_guide.pdf">Quick reference</a>
 </p>
 
 ### Adaptive Spatial Refinement
@@ -117,17 +117,17 @@ The classical whole-field initial-guess method is also built in. Each node carri
 
 ### Visualization & Export
 
-Full-field displacement and strain overlay with configurable colormaps, alpha blending, and deformed configuration display. Export to MATLAB `.mat`, NumPy `.npz`, CSV, JPEG/PNG/TIFF field maps, animated GIF/MP4, and PDF reports — with a selectable output resolution and quality so large batches stay small and fast.
-
-### Save & Resume Sessions
-
-Save a whole project to a single `.aldic` file — images, ROIs, parameters, the current view, **and the computed displacement/strain results** — then reopen it later to land back exactly where you left off, without recomputing. Double-click a `.aldic` file (after a one-click Windows file association) or pass it on the command line to launch straight into that session.
+Full-field displacement and strain overlay with configurable colormaps, alpha blending, and deformed configuration display. Export to MATLAB `.mat`, NumPy `.npz`, CSV, JPEG/PNG/TIFF field maps, animated GIF/MP4, and PDF reports — with a selectable output resolution and quality so large batches stay small and fast. A WYSIWYG **Preview & Colorbar** tab previews frames through the real export path and styles the colorbar (position, font, thickness, background, margin), and GIF/MP4 animations encode frame-by-frame — with optional frame-step decimation — so long sequences export without a RAM spike.
 
 <p align="center">
   <!-- TODO: Screenshot of the GUI with displacement overlay and export dialog -->
   <!-- <img src="docs/images/feature-visualization.png" alt="Visualization & Export" width="80%"/> -->
   <i>GUI visualization and export — demo coming soon</i>
 </p>
+
+### Save & Resume Sessions
+
+Save a whole project to a single `.aldic` file — the image list, ROIs, parameters, the current view, **and the computed displacement/strain results** — then reopen it later to land back exactly where you left off, without recomputing (source images are re-linked from their original folder). Double-click a `.aldic` file (after a one-click Windows file association) or pass it on the command line to launch straight into that session.
 
 ---
 
@@ -139,7 +139,7 @@ Save a whole project to a single `.aldic` file — images, ROIs, parameters, the
 | **Grid** | <mark>**Adaptive refined grid**</mark> | Uniform grid | Uniform grid | Uniform grid | Uniform grid |
 | **GUI** | <mark>**Built-in desktop**</mark> | Built-in desktop¹ | Built-in desktop | Built-in desktop | Built-in desktop |
 | **Platform** | <mark>**Windows, macOS, Linux**</mark> | Windows, macOS, Linux¹ | Windows, macOS, Linux | Windows only | Windows only |
-| **Latest release**² | <mark>**v0.5.0 (2026)**</mark> | v1.2.2 (2017) | v3.0-beta (2023) | VIC-2D 7 (2022) | MatchID 2D (2026) |
+| **Latest release**² | <mark>**v0.6.0 (2026)**</mark> | v1.2.2 (2017) | v3.0-beta (2023) | VIC-2D 7 (2022) | MatchID 2D (2026) |
 | **Cost** | <mark>**Free**</mark> | Free¹ | Free | Commercial | Commercial |
 
 <sub>¹ Requires a MATLAB license.</sub><br/>
@@ -168,7 +168,7 @@ The AL-DIC method was also independently evaluated in the community benchmark **
 
 †**Solver Time** = IC-GN + ADMM (3 iterations), excluding precomputation. **Pipeline FPS** = full per-frame pipeline (FFT init + IC-GN + ADMM), excluding strain. Numba JIT, post-warmup; first run adds ~0.5 s for compilation. **Using Local DIC mode (no ADMM) is ~3× faster.**
 
-**Memory.** Peak RAM at 4096² × 3 frames is ~12 GB (down from 37 GB in v0.4.x). A chunked NCC search bounds the working buffer at ~4 GB per chunk, preventing out-of-memory failures at large search ranges; tested up to 5472 × 3648 with search range = 350 px.
+**Memory.** Peak RAM at 4096² × 3 frames is ~12 GB (down from 37 GB in v0.4.x). Since v0.6.0, frames stream from disk on demand instead of being pre-loaded as full-sequence stacks (~40 GB less RAM at the start of a 300-frame 4K run), and incremental-mode caches are LRU-bounded, so memory stays flat over long sequences. A chunked NCC search bounds the working buffer at ~4 GB per chunk, preventing out-of-memory failures at large search ranges; tested up to 5472 × 3648 with search range = 350 px.
 
 ---
 
@@ -263,7 +263,7 @@ src/al_dic/
 ├── strain/         Strain computation, deformation gradient, smoothing
 └── utils/          Interpolation, outlier detection, mask warping
 
-tests/              106 test files, 1300+ tests
+tests/              128 test files, 1500+ tests
 ```
 
 </details>

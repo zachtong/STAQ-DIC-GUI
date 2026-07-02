@@ -4,6 +4,76 @@ All notable user-facing changes to pyALDIC are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] — 2026-07-02
+
+This release is about surviving big jobs: full session persistence
+(computed results included), an export pipeline that is ~35× smaller
+and ~5× faster, and streaming memory management for large image sets.
+
+### Added
+
+- **Full session persistence — results included.** `File → Save
+  Session` now writes the whole project — parameters, per-frame ROIs,
+  view state, **and computed results** — into a single `.aldic`
+  bundle (results deduplicated, stored pickle-free). `File → Open
+  Session` restores the exact page — same frame, field, colormap and
+  ranges — with no recompute, so hours of computation survive closing
+  the GUI. Save / load run asynchronously behind a progress dialog
+  with per-array progress for GB-scale writes; legacy v0.5 session
+  JSON files still load.
+- **Windows `.aldic` double-click association (optional).**
+  `File → Associate .aldic files` registers the extension so a saved
+  session opens straight into pyALDIC.
+- **"Preview & Colorbar" tab in the Export dialog.** A WYSIWYG
+  preview rendered through the real export path, plus colorbar
+  styling: position (right / left / top / bottom), font size, font
+  family, bar thickness, background (black / white), and outward
+  margin. Field appearance (colormap / range / opacity) is two-way
+  synced with the Images tab, an **Apply to all fields** button
+  copies the styling across fields, and labels respect the
+  configured physical units.
+- **Export resolution presets & formats.** Long-edge presets
+  512 / 768 / 1024 / 1536 / 2048 / native; **JPEG is the new
+  default** with a quality control, PNG / TIFF still available.
+- **GIF / MP4 frame-step decimation.** Keep every Nth frame while
+  preserving the playback duration.
+
+### Changed
+
+- **Export is ~35× smaller and ~5× faster per image** — LUT colormap,
+  binary-alpha compositing, and rendering at the output resolution.
+  A 90-image 4K batch drops from **3.3 min / 2.8 GB** to
+  **40 s / 80 MB**.
+- **Streaming animation writer.** GIF / MP4 frames encode one at a
+  time instead of accumulating in RAM; GIFs come out ~8× smaller.
+- **Frames stream on demand.** A `FrameProvider` replaces the four
+  full float64 image stacks previously materialised at Run click —
+  about **40 GB less RAM** on a 300-image 4K dataset.
+- **LRU-bounded caches.** `ref_cache`, the IC-GN / subproblem-1
+  precompute caches, and the RGB preview cache are now bounded, so
+  incremental-mode memory stays flat instead of growing O(N) with
+  frame count. The compute worker also drops a redundant image copy
+  and stores ROI masks as uint8.
+- **Color range mode is an explicit choice.** An (o) Auto / ( ) Fixed
+  radio pair replaces the lone "Auto" checkbox in the main window,
+  the strain window, and the export dialog.
+
+### Fixed
+
+- **Numeric input is OS-locale-proof.** On comma-decimal systems
+  (de / fr / es / pt / it / ru), typing `0.070` into a range box was
+  silently parsed as `70`. Both `0.07` and `0,07` now parse as 0.07
+  everywhere.
+- **Strain window opens fitted to the screen.** It was a fixed
+  1280×800, which overflowed small laptops and could not be shrunk
+  on macOS.
+- **Run progress bar no longer jumps 90 → 100** at the end of a run.
+
+### i18n
+
+- All 8 locales (en, zh_CN, zh_TW, ja, ko, de, fr, es) at **100%
+  coverage**, including every new session / export / range string.
+
 ## [0.5.0] — 2026-06-21
 
 ### Added
