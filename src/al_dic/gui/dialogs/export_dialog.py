@@ -34,7 +34,7 @@ from numpy.typing import NDArray
 from PySide6.QtCore import (
     QCoreApplication, QSettings, QThread, QTimer, QUrl, Qt, Signal,
 )
-from PySide6.QtGui import QDesktopServices, QImage, QPixmap
+from PySide6.QtGui import QDesktopServices, QImage, QPixmap, QShowEvent
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -63,6 +63,7 @@ from al_dic.gui.app_state import AppState
 from al_dic.gui.theme import COLORS
 from al_dic.gui.widgets.double_spin import LocaleSafeDoubleSpinBox
 from al_dic.gui.widgets.range_mode import AutoFixedSelector
+from al_dic.gui.window_geometry import fit_dialog_to_screen
 
 _SETTINGS_ORG = "AL-DIC"
 _SETTINGS_APP = "ExportDialog"
@@ -565,6 +566,10 @@ class ExportDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle(self.tr("Export Results"))
         self.setMinimumWidth(780)
+        # Fit-to-screen guard: this modal, taskbar-less dialog must never open
+        # off-screen (it would be unreachable and freeze the app).  Clamped
+        # once on first show via showEvent.
+        self._screen_fitted = False
 
         from al_dic.export.export_utils import make_prefix, make_timestamp
 
@@ -679,6 +684,15 @@ class ExportDialog(QDialog):
     # ------------------------------------------------------------------
     # Tab builders
     # ------------------------------------------------------------------
+
+    def showEvent(self, event: QShowEvent) -> None:  # noqa: N802 (Qt API)
+        super().showEvent(event)
+        # Keep this modal, taskbar-less dialog fully on screen so its title bar
+        # and Close button always stay reachable.  Only on first show: the
+        # layout (and frameGeometry) is realised once the dialog is shown.
+        if not self._screen_fitted:
+            self._screen_fitted = True
+            fit_dialog_to_screen(self, self.parentWidget())
 
     def _build_data_tab(self) -> QWidget:
         w = QWidget()

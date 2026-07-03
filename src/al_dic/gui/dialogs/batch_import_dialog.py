@@ -31,6 +31,7 @@ from PySide6.QtGui import (
     QImage,
     QPainter,
     QPixmap,
+    QShowEvent,
     QWheelEvent,
 )
 from PySide6.QtWidgets import (
@@ -57,6 +58,7 @@ from PySide6.QtWidgets import (
 )
 
 from al_dic.gui.theme import COLORS
+from al_dic.gui.window_geometry import fit_dialog_to_screen
 from al_dic.i18n import tr_args
 
 # Image file extensions accepted as mask files
@@ -367,6 +369,9 @@ class BatchImportDialog(QDialog):
         # Three vertical strips at ~340 px each + padding ≈ 1100; height
         # picked so the preview area is at least 400 px tall.
         self.setMinimumSize(1100, 650)
+        # Fit-to-screen guard: this modal, taskbar-less dialog must never open
+        # off-screen.  Clamped once on first show via showEvent.
+        self._screen_fitted = False
 
         self._image_files = list(image_files)
         # Frames the pipeline will actually consume masks for.  None
@@ -392,6 +397,14 @@ class BatchImportDialog(QDialog):
         self._assignments: dict[int, str] = {}
 
         self._build_ui()
+
+    def showEvent(self, event: QShowEvent) -> None:  # noqa: N802 (Qt API)
+        super().showEvent(event)
+        # Keep this modal, taskbar-less dialog fully on screen so its title bar
+        # and buttons always stay reachable.  Only on first show.
+        if not self._screen_fitted:
+            self._screen_fitted = True
+            fit_dialog_to_screen(self, self.parentWidget())
 
     # ------------------------------------------------------------------
     # UI construction
