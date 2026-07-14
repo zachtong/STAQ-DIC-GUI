@@ -59,8 +59,10 @@ joss-paper/
 # Figma design files
 Figma_design_files/
 
-# Sample datasets (large binary files)
-examples/
+# Sample datasets (large binary files) -- ignore the big datasets,
+# but keep the small quick-start example bundle tracked.
+examples/*
+!examples/quickstart/
 
 # Validation / benchmark / fuzz datasets (downloaded or generated locally)
 datasets/
