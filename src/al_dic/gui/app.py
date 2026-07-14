@@ -38,7 +38,10 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("pyALDIC")
         self.setWindowIcon(icon_app())
-        self.setMinimumSize(1420, 800)
+        # Minimum size tracks the natural layout floor (left sidebar 320 +
+        # canvas toolbar ~520 + right sidebar 280 = 1120) instead of being
+        # padded above it, so the window can shrink onto smaller screens.
+        self.setMinimumSize(1120, 760)
         enable_dark_title_bar(self)
 
         central = QWidget()
