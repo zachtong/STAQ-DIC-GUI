@@ -304,7 +304,7 @@ class DICPara:
     size_of_fft_search_region: int = 20
     init_guess_mode: Literal[
         "auto", "fft", "previous", "seed_propagation",
-    ] = "auto"
+    ] = "fft"
     # When init_guess_mode == "seed_propagation": user-placed seed set.
     # Seeds are automatically warped to new ref coords on ref switches.
     seed_set: SeedSet | None = None
