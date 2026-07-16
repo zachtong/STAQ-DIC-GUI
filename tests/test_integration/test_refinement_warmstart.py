@@ -95,6 +95,12 @@ def _make_para(
         size_of_fft_search_region=20,
         reference_mode=reference_mode,
         init_fft_search_method=1,
+        # These are warm-start (sibling-reuse) regression tests. The package
+        # default init_guess_mode is now "fft" (fresh FFT every frame), under
+        # which sibling reuse is intentionally off -- so pin the warm-start
+        # mode explicitly, otherwise test_a's "integer_search called at most
+        # once" contract no longer applies.
+        init_guess_mode="auto",
         gridxy_roi_range=GridxyROIRange(
             gridx=(margin, w - margin),
             gridy=(margin, h - margin),
