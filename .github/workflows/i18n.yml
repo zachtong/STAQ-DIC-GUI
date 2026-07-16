@@ -36,7 +36,7 @@ jobs:
           # to the version the maintainer develops with so Gate A
           # ("extract drift") doesn't flicker on PySide6 minor bumps.
           # User-facing pyproject.toml stays loose (>=6.6.0).
-          pip install --force-reinstall "PySide6==6.8.3"
+          pip install --force-reinstall "PySide6==6.11.1"
 
       # ----------------------------------------------------------------
       # Gate A: extract drift detection
