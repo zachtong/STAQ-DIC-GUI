@@ -16,8 +16,8 @@ from pathlib import Path
 
 import numpy as np
 
-from al_dic.core.data_structures import PipelineResult, split_uv
-from al_dic.export.export_utils import ensure_dir, frame_tag
+from al_dic.core.data_structures import PipelineResult
+from al_dic.export.export_utils import ensure_dir, frame_tag, world_disp
 
 # Canonical field name sets
 _DISP_FIELDS: frozenset[str] = frozenset([
@@ -63,7 +63,8 @@ def export_csv(
     csv_dir = dest_dir / f"{prefix}_csv_{timestamp}"
     ensure_dir(csv_dir)
 
-    coords = results.dic_mesh.coordinates_fem   # (N, 2) — x, y
+    coords = results.dic_mesh.coordinates_fem   # (N, 2) — x, y (pixels)
+    um2px = results.dic_para.um2px
     n_frames = len(results.result_disp)
 
     fields_set = set(fields)
@@ -76,9 +77,9 @@ def export_csv(
         out = csv_dir / f"{tag}.csv"
 
         fr = results.result_disp[t]
-        # Always use accumulated displacement when available.
+        # Always use accumulated displacement when available; world convention.
         U = fr.U_accum if fr.U_accum is not None else fr.U
-        u, v = split_uv(U)
+        u, v = world_disp(U, um2px)
         mag = np.sqrt(u ** 2 + v ** 2)
 
         # Strain result for this frame (if available and requested)

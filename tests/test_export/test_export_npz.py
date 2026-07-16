@@ -106,3 +106,30 @@ def test_npz_no_accum_fields_exist(tmp_path, minimal_result):
     data = np.load(str(p))
     assert "disp_u_accum" not in data
     assert "disp_v_accum" not in data
+
+
+def test_npz_strain_fewer_frames_than_disp(tmp_path, minimal_result):
+    """Regression: strain computed for fewer frames than displacement.
+
+    Single-file strain columns are aligned to the displacement frame axis
+    (missing frames NaN), and per-frame export must not IndexError past the
+    shorter strain axis (the pre-fix bug).
+    """
+    import dataclasses
+
+    trunc = dataclasses.replace(
+        minimal_result, result_strain=minimal_result.result_strain[:1],
+    )
+    # Single-file: disp and strain share the same column count.
+    p = export_npz(tmp_path, "exp", "ts", trunc,
+                   fields=_ALL_DISP + _ALL_STRAIN, per_frame=False)
+    data = np.load(str(p))
+    assert data["disp_u"].shape == data["strain_exx"].shape
+    assert np.all(np.isnan(data["strain_exx"][:, 1]))  # frame 2 has no strain
+
+    # Per-frame: must not raise (was IndexError before the fix).
+    paths = export_npz(tmp_path, "exp", "ts", trunc,
+                       fields=_ALL_DISP + _ALL_STRAIN, per_frame=True)
+    assert len(paths) == 2
+    for pth in paths:
+        assert "strain_exx" in np.load(str(pth))

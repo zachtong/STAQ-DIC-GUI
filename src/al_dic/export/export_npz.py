@@ -14,8 +14,8 @@ from pathlib import Path
 import numpy as np
 from numpy.typing import NDArray
 
-from al_dic.core.data_structures import PipelineResult, split_uv
-from al_dic.export.export_utils import ensure_dir, frame_tag
+from al_dic.core.data_structures import PipelineResult
+from al_dic.export.export_utils import ensure_dir, frame_tag, world_disp
 
 # Canonical displacement field names (excluding coordinates)
 _DISP_FIELDS: frozenset[str] = frozenset([
@@ -61,12 +61,13 @@ def _collect_all_arrays(
     # falling back to incremental U otherwise.  Users see U/V as total
     # displacement — the incremental vs. accumulated distinction is hidden.
     if requested_disp:
+        um2px = results.dic_para.um2px
         u_mat = np.full((n_nodes, n_frames), np.nan)
         v_mat = np.full((n_nodes, n_frames), np.nan)
 
         for t, fr in enumerate(results.result_disp):
             U = fr.U_accum if fr.U_accum is not None else fr.U
-            u, v = split_uv(U)
+            u, v = world_disp(U, um2px)   # world convention, matches strain
             u_mat[:, t] = u
             v_mat[:, t] = v
 
@@ -78,11 +79,17 @@ def _collect_all_arrays(
             arrays["disp_magnitude"] = np.sqrt(u_mat ** 2 + v_mat ** 2)
 
     # --- Strain fields ---
+    # Align strain columns to the displacement frame axis (N, n_frames) so all
+    # single-file matrices share the same column count and per-frame export
+    # never indexes past a shorter strain axis.  Column t of a strain field
+    # corresponds to frame t of the displacement; frames with no strain result
+    # stay NaN.
     if requested_strain and results.result_strain:
-        n_strain_frames = len(results.result_strain)
         for field_name in requested_strain:
-            mat = np.full((n_nodes, n_strain_frames), np.nan)
+            mat = np.full((n_nodes, n_frames), np.nan)
             for t, sr in enumerate(results.result_strain):
+                if t >= n_frames:
+                    break
                 val = sr.trimmed_field(field_name)  # edge-trim applied
                 if val is not None:
                     mat[:, t] = val

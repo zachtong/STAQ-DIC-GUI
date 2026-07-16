@@ -1,12 +1,15 @@
-"""Export pipeline results to MATLAB .mat format.
+"""Export pipeline results to MATLAB .mat format (scipy v5 MAT-file).
 
-Variable naming follows MATLAB AL-DIC conventions:
-    CoordinatesFEM  (N, 2)
-    disp_U          (N, T)   -- x-displacement (accumulated, all frames)
-    disp_V          (N, T)
-    strain_exx      (N, T)   -- strain components
+Variable names match the other data exports (NPZ / CSV) so a downstream script
+reads the same keys regardless of format:
+    coordinates     (N, 2)   -- reference node positions, pixels
+    disp_u          (N, T)   -- x-displacement (accumulated, world coords)
+    disp_v          (N, T)   -- y-displacement (world y-up, matches strain)
+    disp_magnitude  (N, T)
+    strain_exx      (N, T)   -- strain components (world coords)
     ...
-    DICpara         struct   -- scalar parameters (arrays excluded)
+    DICpara         struct   -- parameters (scalars, numeric tuples, and
+                                nested structs; large arrays excluded)
 """
 
 from __future__ import annotations
@@ -18,8 +21,8 @@ from typing import Any
 import numpy as np
 import scipy.io
 
-from al_dic.core.data_structures import PipelineResult, split_uv
-from al_dic.export.export_utils import ensure_dir
+from al_dic.core.data_structures import PipelineResult
+from al_dic.export.export_utils import ensure_dir, world_disp
 
 # Canonical strain field names (match StrainResult attribute names)
 _STRAIN_FIELDS: frozenset[str] = frozenset([
@@ -33,26 +36,42 @@ _DISP_FIELDS: frozenset[str] = frozenset([
     "disp_u", "disp_v", "disp_magnitude",
 ])
 
-# Mapping from canonical field name -> MATLAB variable name
-_MAT_NAMES: dict[str, str] = {
-    "disp_u":         "disp_U",
-    "disp_v":         "disp_V",
-    "disp_magnitude": "disp_magnitude",
-}
+def _mat_value(v: Any) -> Any:
+    """Convert a DICPara field to a savemat-compatible value, or None to skip.
+
+    Mirrors the JSON parameter export so the .mat ``DICpara`` struct carries
+    the same fields (scalars, numeric tuples, and nested dataclasses such as
+    the ROI range) rather than scalars only.  ``None`` and large arrays are
+    skipped -- savemat cannot store ``None`` and arrays are summarised via
+    ``n_nodes`` / the coordinate array.
+    """
+    if isinstance(v, bool):
+        return int(v)
+    if isinstance(v, (int, float, str)):
+        return v
+    if isinstance(v, (list, tuple)) and v and all(
+        isinstance(x, (int, float)) for x in v
+    ):
+        return np.array(v, dtype=np.float64)
+    if dataclasses.is_dataclass(v) and not isinstance(v, type):
+        sub: dict[str, Any] = {}
+        for f in dataclasses.fields(v):
+            mv = _mat_value(getattr(v, f.name))
+            if mv is not None:
+                sub[f.name] = mv
+        return sub or None
+    return None  # ndarray / None / unsupported -> skip
 
 
 def _dicpara_struct(results: PipelineResult) -> dict[str, Any]:
-    """Build a MATLAB-compatible struct dict from DICPara (scalars only)."""
+    """Build a MATLAB struct dict from DICPara (scalars, numeric tuples, and
+    nested dataclasses; large arrays excluded)."""
     p = results.dic_para
     struct: dict[str, Any] = {}
     for f in dataclasses.fields(p):
-        v = getattr(p, f.name)
-        if isinstance(v, (bool, int, float, str)):
-            struct[f.name] = v
-        elif isinstance(v, (list, tuple)) and all(
-            isinstance(x, (int, float)) for x in v
-        ):
-            struct[f.name] = np.array(v, dtype=np.float64)
+        mv = _mat_value(getattr(p, f.name))
+        if mv is not None:
+            struct[f.name] = mv
     return struct
 
 
@@ -82,7 +101,7 @@ def export_mat(
     n_frames = len(results.result_disp)
 
     mat_dict: dict[str, Any] = {
-        "CoordinatesFEM": results.dic_mesh.coordinates_fem,
+        "coordinates": results.dic_mesh.coordinates_fem,
         "DICpara": _dicpara_struct(results),
         "n_frames": n_frames,
         "n_nodes": n_nodes,
@@ -92,31 +111,33 @@ def export_mat(
     requested_disp = fields_set & _DISP_FIELDS
     requested_strain = fields_set & _STRAIN_FIELDS
 
-    # --- Displacement fields ---
+    # --- Displacement fields (world convention, matches strain) ---
     # Always export accumulated displacement when available.
     if requested_disp and n_frames > 0:
+        um2px = results.dic_para.um2px
         u_mat = np.full((n_nodes, n_frames), np.nan)
         v_mat = np.full((n_nodes, n_frames), np.nan)
 
         for t, fr in enumerate(results.result_disp):
             U = fr.U_accum if fr.U_accum is not None else fr.U
-            u, v = split_uv(U)
+            u, v = world_disp(U, um2px)
             u_mat[:, t] = u
             v_mat[:, t] = v
 
         if "disp_u" in requested_disp:
-            mat_dict["disp_U"] = u_mat
+            mat_dict["disp_u"] = u_mat
         if "disp_v" in requested_disp:
-            mat_dict["disp_V"] = v_mat
+            mat_dict["disp_v"] = v_mat
         if "disp_magnitude" in requested_disp:
             mat_dict["disp_magnitude"] = np.sqrt(u_mat ** 2 + v_mat ** 2)
 
-    # --- Strain fields ---
+    # --- Strain fields (columns aligned to the displacement frame axis) ---
     if requested_strain and results.result_strain:
-        n_strain_frames = len(results.result_strain)
         for field_name in requested_strain:
-            mat = np.full((n_nodes, n_strain_frames), np.nan)
+            mat = np.full((n_nodes, n_frames), np.nan)
             for t, sr in enumerate(results.result_strain):
+                if t >= n_frames:
+                    break
                 val = sr.trimmed_field(field_name)  # edge-trim applied
                 if val is not None:
                     mat[:, t] = val
