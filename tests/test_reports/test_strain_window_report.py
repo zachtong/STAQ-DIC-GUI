@@ -11,6 +11,15 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "report_strain_window_uniform_shear.py"
 
+# scripts/ is gitignored dev tooling: absent on fresh clones (and CI checks out
+# without it, additionally passing --ignore=tests/test_reports). Skip the whole
+# module when the report script is missing rather than failing a plain
+# `pytest` run on a clean clone.
+pytestmark = pytest.mark.skipif(
+    not SCRIPT_PATH.exists(),
+    reason="report script (scripts/, gitignored) not present in this checkout",
+)
+
 
 def _load_report_module():
     """Import the report script as a module without polluting sys.modules."""
