@@ -38,6 +38,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QMainWindow,
+    QMessageBox,
     QProgressBar,
     QPushButton,
     QScrollArea,
@@ -489,6 +490,12 @@ class StrainWindow(QMainWindow):
         self._log(
             tr_args(self.tr("Strain compute failed: %1"), message),
             "error",
+        )
+        # Surface the failure in a modal dialog. The LOG panel is collapsed by
+        # default, so a log-only error was effectively silent -- the user could
+        # unknowingly keep the previous result and export a stale/blank field.
+        QMessageBox.warning(
+            self, self.tr("Strain Computation Failed"), message,
         )
 
     def _on_export_strain(self) -> None:

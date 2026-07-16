@@ -59,6 +59,64 @@ def test_planefit_too_small_vsg_raises_with_actionable_message():
     assert "fem" in msg, f"Error should suggest FEM nodal: {msg!r}"
 
 
+# --- edge-trim removes EVERY node → must raise, not silent all-NaN export ---
+
+def test_planefit_all_nodes_trimmed_raises_not_silent_all_nan():
+    """v0.6.x regression guard.
+
+    When the edge-trim band (alpha * VSG radius) exceeds the ROI's
+    half-thickness, edge_valid_mask flags EVERY node unreliable. The strain
+    VALUES still compute, but every exporter (and the on-screen overlay) NaNs
+    out ~strain_valid, so the field silently exports as all-NaN. compute_strain
+    must raise an actionable error instead of returning that silent all-NaN.
+
+    Thin ROI W=24 px at DEFAULT VSG=41 (rad=20), alpha=0.70 → trim band 14 px
+    > 12 px half-thickness → all nodes trimmed.
+    """
+    import dataclasses
+
+    from al_dic.core.data_structures import DICMesh, DICPara
+    from al_dic.strain.compute_strain import compute_strain
+
+    pad, W, L, step = 48, 24, 160, 16
+    mask = np.zeros((W + 2 * pad, L + 2 * pad), dtype=np.float64)
+    mask[pad:pad + W + 1, pad:pad + L + 1] = 1.0
+    ys = np.arange(pad, pad + W + 1e-9, step)
+    xs = np.arange(pad, pad + L + 1e-9, step)
+    XX, YY = np.meshgrid(xs, ys)
+    coords = np.column_stack([XX.ravel(), YY.ravel()])
+    n = coords.shape[0]
+    U = np.zeros(2 * n, dtype=np.float64)
+    U[0::2] = 0.02 * (coords[:, 0] - coords[:, 0].min())
+
+    mesh = DICMesh(coordinates_fem=coords,
+                   elements_fem=np.zeros((0, 8), dtype=np.int64))
+    para = dataclasses.replace(
+        DICPara(),
+        method_to_compute_strain=2,       # plane fitting
+        strain_plane_fit_rad=20.0,        # GUI VSG 41 → rad 20
+        strain_edge_trim_alpha=0.70,      # default edge trim
+        strain_smoothness=0.0,
+        strain_type=0,
+        img_ref_mask=mask,
+        winstepsize=step,
+        um2px=1.0,
+    )
+    region = np.zeros(n, dtype=np.int32)
+
+    with pytest.raises(ValueError) as exc_info:
+        compute_strain(mesh, para, U, region)
+
+    msg = str(exc_info.value).lower()
+    assert "trim" in msg, f"Error should mention edge trim: {msg!r}"
+    assert "all-nan" in msg or "export" in msg, (
+        f"Error should explain the all-NaN export: {msg!r}"
+    )
+    assert "vsg" in msg and "fem" in msg, (
+        f"Error should be actionable (VSG / FEM): {msg!r}"
+    )
+
+
 # --- fill_nan_idw opt-in raise ---------------------------------------------
 
 def test_fill_nan_idw_default_returns_zeros_with_warning():

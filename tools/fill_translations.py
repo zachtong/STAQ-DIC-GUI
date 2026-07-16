@@ -1213,6 +1213,15 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "fr":    "Échec du calcul de déformation : %1",
         "es":    "Fallo en el cálculo de deformación: %1",
     },
+    "Strain Computation Failed": {
+        "zh_CN": "应变计算失败",
+        "zh_TW": "應變計算失敗",
+        "ja":    "ひずみ計算に失敗しました",
+        "ko":    "변형률 계산 실패",
+        "de":    "Dehnungsberechnung fehlgeschlagen",
+        "fr":    "Échec du calcul de déformation",
+        "es":    "Fallo en el cálculo de deformación",
+    },
     "Strain computation complete.": {
         "zh_CN": "应变计算完成。",
         "zh_TW": "應變計算完成。",

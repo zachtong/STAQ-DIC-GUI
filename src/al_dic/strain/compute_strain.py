@@ -216,6 +216,25 @@ def compute_strain(
             para.strain_plane_fit_rad,
             getattr(para, "strain_edge_trim_alpha", 0.0),
         )
+        # Guard: if edge trimming flags EVERY node unreliable, the exported
+        # and displayed strain would be entirely NaN (trimmed_field NaNs out
+        # ~strain_valid) with no other symptom — the compute "succeeds" but
+        # every field is blank. Fail loudly with an actionable message rather
+        # than silently emitting an all-NaN field.
+        if not strain_valid.any():
+            n = int(strain_valid.size)
+            rad = para.strain_plane_fit_rad
+            alpha = getattr(para, "strain_edge_trim_alpha", 0.0)
+            raise ValueError(
+                f"Edge trimming removed all {n} strain nodes: the trim band "
+                f"alpha * VSG radius = {alpha:.2f} * {rad:g} = "
+                f"{alpha * rad:.1f} px exceeds the ROI's half-thickness, so "
+                f"every plane-fit window crosses the ROI/hole/image boundary "
+                f"and the strain field would export as all-NaN. "
+                f"Fix: reduce VSG Size, lower 'Trim low-confidence edges' "
+                f"toward 0, or switch Method to 'FEM nodal' (no VSG / edge "
+                f"trim)."
+            )
 
     return StrainResult(
         disp_u=disp_u,
