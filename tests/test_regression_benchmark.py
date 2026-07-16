@@ -347,8 +347,8 @@ class TestCategory1Accuracy:
 class TestCategory1Performance:
     """Solver throughput must stay above locked lower bounds.
 
-    Marked ``perf`` — excluded from CI (runner CPU varies).
-    Run locally with: pytest -m slow
+    Marked ``perf`` — skipped by default (machine/JIT-dependent) and excluded
+    from CI. Opt in with: ``pytest --run-perf`` (or ``PYALDIC_RUN_PERF=1``).
     """
 
     @pytest.mark.parametrize(
@@ -496,7 +496,14 @@ class TestCategory2MeshRefinement:
 
     @pytest.mark.perf
     def test_refinement_overhead_reasonable(self, ref_img, warmup):
-        """Refinement + solve should be < 5x the uniform solve time."""
+        """Record refinement+solve overhead vs the uniform solve (not asserted).
+
+        The ratio is dominated by Numba JIT warmup state: as the solver heats
+        up, t_uniform (the denominator) collapses to a few ms while the fixed
+        refine_mesh cost stays put, so the ratio swings widely between runs and
+        tracks warmup order, not the overhead we care about. Measure and print
+        it for trend-watching rather than gating on a machine-dependent value.
+        """
         mask = _make_hole_mask()
         u_fn, v_fn = _field_rotation(deg=2.0)
         def_img = _add_noise(_warp_lagrangian(ref_img, u_fn, v_fn))
@@ -519,8 +526,11 @@ class TestCategory2MeshRefinement:
         t_refined = time.perf_counter() - t0
 
         ratio = t_refined / max(t_uniform, 1e-9)
-        assert ratio < 5.0, (
-            f"Refined/uniform time ratio={ratio:.1f}x (expected < 5x)")
+        print(
+            f"\n[perf] refinement overhead: t_uniform={t_uniform * 1e3:.1f} ms, "
+            f"t_refined={t_refined * 1e3:.1f} ms, ratio={ratio:.1f}x "
+            f"(informational -- dominated by JIT warmup state)"
+        )
 
 
 # ══════════════════════════════════════════════════════════════════════

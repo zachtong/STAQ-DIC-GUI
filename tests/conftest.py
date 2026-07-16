@@ -10,6 +10,7 @@ Provides:
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import numpy as np
@@ -442,3 +443,36 @@ def load_matlab_checkpoint(name: str) -> dict:
     if not path.exists():
         pytest.skip(f"MATLAB checkpoint not found: {path}")
     return sio.loadmat(str(path), squeeze_me=True)
+
+
+# ---------------------------------------------------------------------------
+# perf-benchmark opt-in gate
+# ---------------------------------------------------------------------------
+#
+# ``@pytest.mark.perf`` tests measure wall-clock throughput / timing ratios,
+# which are inherently machine- and load-dependent: Numba JIT warmup shrinks
+# the denominator of timing ratios, and CPU contention inflates absolute
+# timings. A plain ``pytest`` run -- e.g. on a fresh clone -- would see them
+# flake-fail and read main as red even though nothing is broken. CI already
+# excludes them via ``-m "not perf"``. Skip them by default here too and
+# require an explicit opt-in, so only someone deliberately benchmarking runs
+# them.
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--run-perf", action="store_true", default=False,
+        help="run @pytest.mark.perf timing benchmarks (skipped by default; "
+             "they are machine/JIT-dependent, not a correctness gate)",
+    )
+
+
+def pytest_collection_modifyitems(config, items):
+    if config.getoption("--run-perf") or os.environ.get("PYALDIC_RUN_PERF"):
+        return
+    skip_perf = pytest.mark.skip(
+        reason="perf benchmark (machine/JIT-dependent); opt in with "
+               "--run-perf or PYALDIC_RUN_PERF=1",
+    )
+    for item in items:
+        if "perf" in item.keywords:
+            item.add_marker(skip_perf)
