@@ -1610,37 +1610,37 @@ N&apos;affecte que l&apos;initialisation des points de départ ; les autres nœu
 <context>
     <name>PipelineController</name>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="371"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="383"/>
         <source>Building pipeline configuration...</source>
         <translation>Construction de la configuration du pipeline…</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="529"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="541"/>
         <source>Loading images...</source>
         <translation>Chargement des images…</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="542"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="554"/>
         <source>  Loaded %1 images, shape=%2</source>
         <translation>  %1 images chargées, forme=%2</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="555"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="567"/>
         <source>  ROI mask: %1, %2 pixels (%3%)</source>
         <translation>  Masque ROI : %1, %2 pixels (%3%)</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="581"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="593"/>
         <source>Run cancelled: define per-frame Regions of Interest for the missing reference frames or accept the inherited frame-1 mask in the next run.</source>
         <translation>Exécution annulée : définissez les régions d&apos;intérêt par image pour les images de référence manquantes, ou acceptez le masque hérité de l&apos;image 1 au prochain lancement.</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="602"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="614"/>
         <source>  %n frame(s) with custom ROI masks</source>
         <translation>  %n images avec des masques ROI personnalisés</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="732"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="744"/>
         <source>Results received: %n frame(s)</source>
         <translation>Résultats reçus : %n images</translation>
     </message>
@@ -1648,17 +1648,17 @@ N&apos;affecte que l&apos;initialisation des points de départ ; les autres nœu
 <context>
     <name>PipelineWorker</name>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="199"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="209"/>
         <source>Starting DIC analysis...</source>
         <translation>Démarrage de l&apos;analyse DIC…</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="236"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="246"/>
         <source>Analysis complete in %1s</source>
         <translation>Analyse terminée en %1 s</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="244"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="254"/>
         <source>Analysis stopped by user.</source>
         <translation>Analyse arrêtée par l&apos;utilisateur.</translation>
     </message>
