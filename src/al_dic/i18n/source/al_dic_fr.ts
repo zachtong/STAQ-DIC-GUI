@@ -2127,7 +2127,7 @@ Ne s&apos;applique que lorsque Méthode = Ajustement de plan.</translation>
         <translation>Rognés : %1 nœuds (%2%)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="321"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="342"/>
         <source>⚠ VSG radius (%1 px) &lt; DIC node spacing (%2 px); plane fit will fail. Use VSG ≥ %3 px or switch Method to FEM nodal.</source>
         <translation>⚠ Rayon VSG (%1 px) &lt; espacement des nœuds DIC (%2 px) ; l&apos;ajustement de plan échouera. Utilisez VSG ≥ %3 px ou passez la Méthode en FEM nodal.</translation>
     </message>

@@ -2127,7 +2127,7 @@ Gilt nur bei Methode = Ebenenanpassung.</translation>
         <translation>Beschnitten: %1 Knoten (%2%)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="321"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="342"/>
         <source>⚠ VSG radius (%1 px) &lt; DIC node spacing (%2 px); plane fit will fail. Use VSG ≥ %3 px or switch Method to FEM nodal.</source>
         <translation>⚠ VSG-Radius (%1 px) &lt; DIC-Knotenabstand (%2 px); Ebenenanpassung wird fehlschlagen. VSG ≥ %3 px verwenden oder Methode auf FEM nodal wechseln.</translation>
     </message>

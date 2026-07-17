@@ -297,6 +297,22 @@ class StrainParamPanel(QWidget):
             self._edge_trim_readout.setVisible(False)
         self._refresh_vsg_warning()
 
+    def _set_vsg_minimum(self, min_vsg: int) -> None:
+        """Raise the VSG spinbox floor to ``min_vsg`` (forced odd, >= 3).
+
+        Keeps the current value when it already meets the floor; otherwise bumps
+        it up. Signals are blocked so re-deriving the floor from the DIC step
+        does not spuriously mark the panel dirty or recurse through the warning.
+        """
+        min_vsg = max(3, min_vsg | 1)  # odd and at least 3
+        if self._vsg_spin.minimum() == min_vsg:
+            return
+        self._vsg_spin.blockSignals(True)
+        self._vsg_spin.setMinimum(min_vsg)
+        if self._vsg_spin.value() < min_vsg:
+            self._vsg_spin.setValue(min_vsg)
+        self._vsg_spin.blockSignals(False)
+
     def _refresh_vsg_warning(self) -> None:
         """Warn when VSG radius is smaller than the DIC node spacing.
 
@@ -313,8 +329,13 @@ class StrainParamPanel(QWidget):
         subset_step = int(getattr(
             AppState.instance(), "subset_step", 8,
         ) or 8)
-        rad = (self._vsg_spin.value() - 1) / 2.0
         recommended_vsg = 2 * subset_step + 1
+        # Tie the VSG floor to the DIC node spacing (a plane fit needs its
+        # radius >= the node spacing to find neighbours), replacing the abstract
+        # fixed 3-px minimum. rad >= step then holds, so the warning below is a
+        # belt-and-suspenders that only fires if a caller sets a smaller value.
+        self._set_vsg_minimum(recommended_vsg)
+        rad = (self._vsg_spin.value() - 1) / 2.0
         if rad < subset_step:
             msg = tr_args(
                 self.tr(

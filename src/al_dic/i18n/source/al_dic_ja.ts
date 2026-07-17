@@ -2127,7 +2127,7 @@ Only applies when Method = Plane fitting.</source>
         <translation>トリミング: %1 ノード (%2%)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="321"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="342"/>
         <source>⚠ VSG radius (%1 px) &lt; DIC node spacing (%2 px); plane fit will fail. Use VSG ≥ %3 px or switch Method to FEM nodal.</source>
         <translation>⚠ VSG 半径（%1 px）&lt; DIC ノード間隔（%2 px）；平面フィットは失敗します。VSG ≥ %3 px にするか、方法を FEM nodal に切り替えてください。</translation>
     </message>

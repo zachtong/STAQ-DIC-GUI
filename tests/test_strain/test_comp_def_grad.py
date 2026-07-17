@@ -269,3 +269,38 @@ class TestEdgeValidMask:
         a = np.array([[100.0, 100.0]])
         b = np.array([[100.0, 100.0]])
         assert edge_valid_mask(a, mask, rad, alpha)[0] == edge_valid_mask(b, mask, rad, alpha)[0]
+
+
+def test_crack_aware_plane_fit_does_not_span_a_crack():
+    """A large VSG must not pull neighbours across a thin masked crack.
+
+    With opposite uniform u on the two faces of a 2-px crack, a pure-Euclidean
+    plane fit near the crack smears the jump into a spurious du/dy; the
+    line-of-sight filter keeps each fit on one face, so du/dy stays ~0. The two
+    faces are both inside the ROI (joined around the tip), so only the crack
+    itself can separate them.
+    """
+    step, h, w = 16, 200, 300
+    xs = np.arange(step, w, step, dtype=float)
+    ys = np.arange(step, h, step, dtype=float)
+    xx, yy = np.meshgrid(xs, ys, indexing="ij")
+    coords = np.column_stack([xx.ravel(), yy.ravel()])
+    n = coords.shape[0]
+    elems = np.empty((0, 8), dtype=np.int64)
+
+    mask = np.ones((h, w))
+    mask[99:101, 0:250] = 0.0                       # 2-px crack, tip at x=250
+    u = np.where(coords[:, 1] < 100, 1.0, -1.0)     # opposite uniform u per face
+    U = np.empty(2 * n)
+    U[0::2] = u
+    U[1::2] = 0.0
+
+    F_fix = comp_def_grad(U, coords, elems, rad=40.0, mask=mask)
+    F_euclid = comp_def_grad(U, coords, elems, rad=40.0, mask=None)
+
+    along = np.isin(coords[:, 1], [96, 112]) & (coords[:, 0] < 220)
+    dudy_fix = F_fix[2::4][along]
+    dudy_euclid = F_euclid[2::4][along]
+    assert np.nanmax(np.abs(dudy_euclid)) > 0.02      # Euclidean smears the jump
+    np.testing.assert_allclose(
+        dudy_fix[np.isfinite(dudy_fix)], 0.0, atol=1e-9)  # crack-aware does not

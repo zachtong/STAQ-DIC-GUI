@@ -29,6 +29,26 @@ def test_default_override(panel):
     }
 
 
+def test_vsg_minimum_tied_to_subset_step():
+    """The VSG floor tracks the DIC node spacing (2*step+1), not a fixed 3, and
+    a larger step bumps a now-too-small VSG up to the new floor."""
+    from al_dic.gui.app_state import AppState
+
+    state = AppState.instance()
+    saved = state.subset_step
+    try:
+        state.subset_step = 32
+        p = StrainParamPanel()  # __init__ -> _refresh_vsg_warning sets the floor
+        assert p._vsg_spin.minimum() == 2 * 32 + 1        # 65, not 3
+
+        state.subset_step = 64
+        state.params_changed.emit()                       # live re-derive
+        assert p._vsg_spin.minimum() == 2 * 64 + 1        # 129
+        assert p._vsg_spin.value() >= 129                 # value bumped up
+    finally:
+        state.subset_step = saved
+
+
 def test_override_keys_match_whitelist(panel):
     o = panel.get_override()
     assert set(o.keys()) == ALLOWED_OVERRIDES
@@ -60,9 +80,10 @@ def test_vsg_spin_enabled_only_for_plane_fitting(panel):
 
 
 def test_changing_vsg_updates_override(panel):
-    """VSG -> rad conversion: rad = (VSG - 1) / 2."""
-    panel._vsg_spin.setValue(21)   # rad = (21-1)/2 = 10
-    assert panel.get_override()["strain_plane_fit_rad"] == 10.0
+    """VSG -> rad conversion: rad = (VSG - 1) / 2. Values stay above the
+    step-derived floor (2*step+1) so they are not clamped up."""
+    panel._vsg_spin.setValue(51)   # rad = (51-1)/2 = 25
+    assert panel.get_override()["strain_plane_fit_rad"] == 25.0
 
     panel._vsg_spin.setValue(41)   # rad = (41-1)/2 = 20
     assert panel.get_override()["strain_plane_fit_rad"] == 20.0

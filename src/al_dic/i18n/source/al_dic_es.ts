@@ -2127,7 +2127,7 @@ Solo se aplica cuando Método = Ajuste de plano.</translation>
         <translation>Recortados: %1 nodos (%2%)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="321"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="342"/>
         <source>⚠ VSG radius (%1 px) &lt; DIC node spacing (%2 px); plane fit will fail. Use VSG ≥ %3 px or switch Method to FEM nodal.</source>
         <translation>⚠ Radio VSG (%1 px) &lt; espaciado de nodos DIC (%2 px); el ajuste de plano fallará. Use VSG ≥ %3 px o cambie Método a FEM nodal.</translation>
     </message>

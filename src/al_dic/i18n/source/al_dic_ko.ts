@@ -2127,7 +2127,7 @@ Method = 평면 피팅 일 때만 적용됩니다.</translation>
         <translation>잘라냄: 노드 %1개 (%2%)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="321"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="342"/>
         <source>⚠ VSG radius (%1 px) &lt; DIC node spacing (%2 px); plane fit will fail. Use VSG ≥ %3 px or switch Method to FEM nodal.</source>
         <translation>⚠ VSG 반경(%1 px) &lt; DIC 노드 간격(%2 px); 평면 피팅이 실패합니다. VSG ≥ %3 px로 설정하거나 Method를 FEM nodal로 전환하세요.</translation>
     </message>
