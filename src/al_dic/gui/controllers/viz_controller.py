@@ -21,6 +21,7 @@ import numpy as np
 from numpy.typing import NDArray
 from PySide6.QtGui import QImage, QPixmap
 from matplotlib import colormaps
+from scipy.interpolate import NearestNDInterpolator
 
 from al_dic.utils.interpolation import FieldInterpolator, scatter_to_grid
 
@@ -49,6 +50,36 @@ def apply_colormap(
     rgba[nan_mask] = 0
 
     return rgba
+
+
+def _invalid_node_grid(
+    nodes: NDArray[np.float64],
+    values: NDArray[np.float64],
+    x_grid: NDArray[np.float64],
+    y_grid: NDArray[np.float64],
+) -> NDArray[np.bool_] | None:
+    """Grid mask (True = blank) for cells whose nearest node has a NaN value.
+
+    Strain post-processing NaNs edge-trimmed / plane-fit-failed nodes to mark
+    them unreliable, but ``scattered_interpolant`` drops NaN nodes and
+    back-fills their grid cells from valid neighbours -- so the trim vanishes
+    and the trimmed band renders as extrapolated (abnormal) values instead of
+    the intended transparent boundary band.  Rasterising node finite-ness by
+    nearest neighbour restores that band: a grid cell is blanked iff its
+    closest node is invalid.  Being nearest-node based, it is independent of
+    mesh density and matches the deformed / reference node positions passed in.
+
+    Returns ``None`` when every node is finite (nothing to blank).
+    """
+    finite = np.isfinite(values)
+    if bool(finite.all()):
+        return None
+    if not bool(finite.any()):
+        return np.ones(x_grid.shape, dtype=bool)
+    nn = NearestNDInterpolator(nodes, finite.astype(np.float64))
+    query = np.column_stack([x_grid.ravel(), y_grid.ravel()])
+    keep = nn(query).reshape(x_grid.shape) >= 0.5
+    return ~keep
 
 
 class VizController:
@@ -114,6 +145,7 @@ class VizController:
         deformed: bool = False,
         ref_uv: tuple[NDArray[np.float64], NDArray[np.float64]] | None = None,
         deformed_mask: NDArray[np.bool_] | None = None,
+        blank_invalid_nodes: bool = False,
     ) -> tuple[QPixmap, NDArray[np.float64] | None, NDArray[np.float64] | None, int]:
         """Render a displacement field to a QPixmap overlay.
 
@@ -133,6 +165,10 @@ class VizController:
             deformed_mask: Per-frame ground-truth mask in deformed coordinates.
                 When provided with deformed=True, used directly instead of
                 warping the reference roi_mask via inverse displacement.
+            blank_invalid_nodes: When True, grid cells whose nearest node has a
+                NaN value are made transparent (strain edge-trim / plane-fit
+                failures).  Prevents the interpolator's back-fill from hiding
+                the trim.  Leave False for displacement fields.
 
         Returns:
             (pixmap, x_grid, y_grid, output_step) -- pixmap for display,
@@ -141,7 +177,7 @@ class VizController:
         interp_key = (frame_idx, field_name, deformed)
         has_mask = roi_mask is not None
         has_def_mask = deformed_mask is not None
-        pixmap_key = (frame_idx, field_name, cmap, round(vmin, 6), round(vmax, 6), has_mask, deformed, has_def_mask)
+        pixmap_key = (frame_idx, field_name, cmap, round(vmin, 6), round(vmax, 6), has_mask, deformed, has_def_mask, blank_invalid_nodes)
 
         # Tier 2: exact pixmap hit
         cached_interp = self._interp_cache.get(interp_key)
@@ -215,6 +251,19 @@ class VizController:
                 xi = np.clip(np.round(xg).astype(int), 0, roi_mask.shape[1] - 1)
                 yi = np.clip(np.round(yg).astype(int), 0, roi_mask.shape[0] - 1)
                 mask_to_use = ~roi_mask[yi, xi]
+
+        # Re-apply node-level invalidity (NaN values = edge-trimmed or
+        # plane-fit-failed strain nodes) at grid resolution.  Without this the
+        # scattered interpolator would back-fill trimmed cells from valid
+        # neighbours, making the trim invisible and the trimmed band show
+        # extrapolated (abnormal) values instead of a transparent boundary.
+        if blank_invalid_nodes and xg is not None and yg is not None:
+            invalid_grid = _invalid_node_grid(nodes, values, xg, yg)
+            if invalid_grid is not None:
+                mask_to_use = (
+                    invalid_grid if mask_to_use is None
+                    else (mask_to_use | invalid_grid)
+                )
         if mask_to_use is not None and np.any(mask_to_use):
             render_data = grid_data.copy()
             render_data[mask_to_use] = np.nan

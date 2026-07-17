@@ -118,6 +118,52 @@ class TestComputeAllFrames:
         })
 
 
+class TestReferenceMaskResolution:
+    """Strain must use the FRAME-0 reference mask, not the last-frame mask left
+    in ``dic_para.img_ref_mask`` by an incremental pipeline run (which would be
+    inconsistent with the frame-0 mesh + U_accum used for strain)."""
+
+    def test_prefers_frame0_roi_over_last_frame_dicpara_mask(
+        self, state_with_results,
+    ):
+        from dataclasses import replace as _dc_replace
+
+        result = state_with_results.results
+        h, w = result.dic_para.img_ref_mask.shape
+        # Frame-0 reference ROI (what the frame-0 mesh + U_accum agree with).
+        frame0 = np.zeros((h, w), dtype=bool)
+        frame0[10:h - 10, 10:w - 10] = True
+        # A DIFFERENT "last-frame" mask (grown crack) contaminating dic_para.
+        last = np.ones((h, w), dtype=np.float64)
+        last[h // 2 - 1:h // 2 + 1, :] = 0.0
+
+        state_with_results.per_frame_rois[0] = frame0
+        state_with_results.results = _dc_replace(
+            result,
+            dic_para=_dc_replace(result.dic_para, img_ref_mask=last),
+        )
+        ctrl = StrainController(state_with_results)
+        resolved = ctrl._resolve_reference_mask(state_with_results.results)
+        np.testing.assert_array_equal(resolved, frame0.astype(np.float64))
+
+    def test_falls_back_to_dicpara_mask_without_gui_roi(
+        self, state_with_results,
+    ):
+        from dataclasses import replace as _dc_replace
+
+        result = state_with_results.results
+        h, w = result.dic_para.img_ref_mask.shape
+        marker = np.full((h, w), 0.5, dtype=np.float64)
+        state_with_results.per_frame_rois.clear()
+        state_with_results.results = _dc_replace(
+            result,
+            dic_para=_dc_replace(result.dic_para, img_ref_mask=marker),
+        )
+        ctrl = StrainController(state_with_results)
+        resolved = ctrl._resolve_reference_mask(state_with_results.results)
+        np.testing.assert_array_equal(resolved, marker)
+
+
 class TestPureShearAccuracy:
     def test_pure_shear_recovers_exy(self, state_with_results):
         """u = shear * y, v = 0  ->  exy = 0.5 * du/dy = 0.5 * shear."""

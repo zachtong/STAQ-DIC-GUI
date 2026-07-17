@@ -14,8 +14,8 @@ Design principles
 * The base ``DICPara`` is never mutated. Overrides go through
   :func:`dataclasses.replace` and are restricted to a small whitelist so
   that callers cannot accidentally re-tune displacement parameters.
-* The mesh and region map are taken from frame 1, exactly mirroring
-  ``pipeline.py`` Section 8.
+* The mesh, region map, and reference mask are all taken from frame 0
+  (the reference configuration ``U_accum`` refers back to).
 """
 
 from __future__ import annotations
@@ -152,9 +152,11 @@ class StrainController:
     ) -> tuple[DICMesh, NodeRegionMap, DICPara]:
         """Build the (mesh, region_map, para) triple used by ``compute_strain``.
 
-        Mirrors the construction in ``pipeline.py`` Section 8 (frame-1
-        mesh + per-frame mask), but pulls inputs from ``state.results``
-        and the user override instead of from a fresh pipeline run.
+        Uses the frame-0 mesh (``result_fe_mesh_each_frame[0]``) paired with
+        the frame-0 reference mask, because the per-frame displacements fed in
+        are ``U_accum`` -- total displacement referred back to frame 0 -- which
+        is defined on those frame-0 nodes.  Mesh, region map, and edge-trim
+        mask must therefore all live in the frame-0 reference configuration.
         """
         if not result.result_fe_mesh_each_frame:
             raise RuntimeError(
@@ -186,24 +188,37 @@ class StrainController:
     def _resolve_reference_mask(
         self, result: PipelineResult,
     ) -> NDArray[np.float64]:
-        """Find a reference-frame mask for region-map construction.
+        """Find the frame-0 reference mask for region-map + edge-trim.
+
+        Strain here is built on ``result_fe_mesh_each_frame[0]`` (the frame-0
+        mesh) with ``U_accum`` (total displacement referred back to frame 0 --
+        see ``pipeline.py`` cumulative transform), so the mask MUST be the
+        frame-0 reference mask for the mesh, region map, and edge-trim to agree.
 
         Order of preference:
-            1. ``dic_para.img_ref_mask`` (set during pipeline run).
-            2. ``state.per_frame_rois[0]`` (user-painted ROI).
+            1. ``state.per_frame_rois[0]`` -- the frame-0 reference ROI.
+            2. ``dic_para.img_ref_mask`` -- fallback for headless/accumulative.
+
+        Note: ``dic_para.img_ref_mask`` is deliberately NOT preferred.  The
+        pipeline overwrites it once per frame
+        (``para = replace(para, img_ref_mask=f_mask)`` inside the frame loop),
+        so after an *incremental* run it holds the LAST frame's mask -- a grown
+        crack that is inconsistent with the frame-0 mesh, which would trim the
+        wrong nodes and smear strain across regions.  For accumulative runs the
+        two coincide, so the fallback stays correct.
 
         Raises:
             RuntimeError: If neither source is available.
         """
+        gui_mask = self._state.per_frame_rois.get(0)
+        if gui_mask is not None:
+            return np.asarray(gui_mask, dtype=np.float64)
+
         ref_mask = result.dic_para.img_ref_mask
         if ref_mask is not None:
             return np.asarray(ref_mask, dtype=np.float64)
 
-        gui_mask = self._state.per_frame_rois.get(0)
-        if gui_mask is not None:
-            return gui_mask.astype(np.float64)
-
         raise RuntimeError(
             "StrainController: no reference-frame mask available "
-            "(dic_para.img_ref_mask is None and per_frame_rois[0] is unset)."
+            "(per_frame_rois[0] is unset and dic_para.img_ref_mask is None)."
         )

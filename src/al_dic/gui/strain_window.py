@@ -854,6 +854,10 @@ class StrainWindow(QMainWindow):
                 deformed=deformed,
                 ref_uv=ref_uv,
                 deformed_mask=deformed_mask,
+                # Strain fields carry NaN at edge-trimmed / plane-fit-failed
+                # nodes; blank those cells so the trim is visible instead of
+                # interpolator-backfilled.  Displacement fields are not trimmed.
+                blank_invalid_nodes=field_name not in DISP_FIELD_NAMES,
             )
             self._canvas.set_overlay_pixmap(pixmap)
             self._canvas.set_overlay_alpha(float(viz["alpha"]))
