@@ -17,6 +17,7 @@ from al_dic.gui.app_state import AppState, RunState
 from al_dic.mesh.refinement import RefinementPolicy, build_refinement_policy
 from al_dic.solver.seed_propagation import (
     MissingSeedForRegion,
+    PartialResultError,
     SeedICGNDiverged,
     SeedNCCBelowThreshold,
     SeedPropagationError,
@@ -77,6 +78,15 @@ _SEED_ERROR_MESSAGES: dict[type, tuple[str, str]] = {
         "Suggested actions:\n"
         "  - Add a Starting Point in each yellow region before running.\n"
         "  - Or unify the mask so only one connected region exists.",
+    ),
+    PartialResultError: (
+        "Analysis stopped early — partial results kept",
+        "A region could not be given a Starting Point even after "
+        "auto-placement, so the run stopped at that frame. The frames that "
+        "completed before it have been kept and are shown.\n\n"
+        "Suggested actions:\n"
+        "  - Add a Starting Point in the region that failed, then re-run.\n"
+        "  - Or adjust the ROI so that region has usable speckle texture.",
     ),
 }
 
@@ -276,7 +286,9 @@ class PipelineWorker(QThread):
             self.fatal_error.emit(
                 title, f"{suggestions}\n\nDetails: {e}",
             )
-            self.finished_result.emit(None)
+            # PartialResultError carries the frames that completed before the
+            # failing one — deliver those instead of discarding the whole run.
+            self.finished_result.emit(getattr(e, "partial_result", None))
         except Exception as e:
             tb = traceback.format_exc()
             self.log.emit(f"Error: {type(e).__name__}: {e}", "error")

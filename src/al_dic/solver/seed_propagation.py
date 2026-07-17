@@ -77,6 +77,26 @@ class SeedWarpFailure(SeedPropagationError):
     """
 
 
+class PartialResultError(SeedPropagationError):
+    """Run stopped before all frames, but the completed frames were kept.
+
+    Raised by the pipeline when a seed-propagation frame cannot be seeded even
+    after auto-place (a region with no viable candidate). Carries the assembled
+    ``PipelineResult`` for the frames that DID complete, so the caller can
+    surface those partial results instead of discarding the whole run.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        partial_result: object = None,
+        stopped_at_frame: int | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.partial_result = partial_result
+        self.stopped_at_frame = stopped_at_frame
+
+
 # --- Data structures ----------------------------------------------------
 
 
@@ -550,6 +570,31 @@ def warp_seeds_to_new_ref(
         ncc_threshold=old_seed_set.ncc_threshold,
         max_bfs_depth=old_seed_set.max_bfs_depth,
     )
+
+
+def covered_region_ids(
+    seed_set: SeedSet,
+    node_region_map: NodeRegionMap,
+    n_nodes: int,
+) -> set[int]:
+    """Return the region ids that already have at least one seed.
+
+    Maps each seed's node to its actual region via ``node_region_map`` and
+    collects the covered region ids. Seeds whose node lies outside any tracked
+    region are ignored here (``_validate_multi_region_seeds`` reports those
+    separately). Used to decide which regions still need an auto-placed seed
+    before propagation, so a mask change that leaves a region unseeded can be
+    rescued rather than aborting the whole run.
+    """
+    node_to_region = np.full(n_nodes, -1, dtype=np.int64)
+    for region_idx, node_list in enumerate(node_region_map.region_node_lists):
+        node_to_region[node_list] = region_idx
+    covered: set[int] = set()
+    for seed in seed_set.seeds:
+        r = int(node_to_region[seed.node_idx])
+        if r >= 0:
+            covered.add(r)
+    return covered
 
 
 def _validate_multi_region_seeds(

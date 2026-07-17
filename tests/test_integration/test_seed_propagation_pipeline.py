@@ -442,6 +442,67 @@ class TestSeedPropagationReseedFallback:
         # original (which would have failed).
         assert len(state.current_seeds.seeds) >= 1
 
+    def test_uncovered_region_autoplaced_and_continues(self):
+        """A frame whose mask leaves a region unseeded is rescued, not aborted.
+
+        Regression for the incremental-mode failure: a per-frame ROI change
+        (or a warp that lands every seed in one region) leaves another
+        connected region with no seed, and the whole run died at a late frame
+        with MissingSeedForRegion. The uncovered region must now be auto-filled
+        (ReseedEvent) and propagation continue.
+        """
+        from al_dic.io.image_ops import compute_image_gradient
+        from al_dic.mesh.mesh_setup import mesh_setup
+        from al_dic.solver.seed_prop_pipeline import (
+            ReseedEvent,
+            SeedPropagationState,
+            build_grid_for_roi,
+            compute_seed_prop_init_guess,
+        )
+        from al_dic.solver.seed_propagation import covered_region_ids
+        from al_dic.utils.region_analysis import precompute_node_regions
+
+        h, w = 192, 192
+        ref = _speckle(h, w, seed=41)
+        deformed = ref.copy()  # zero displacement -> auto-place NCC ~1
+        # Two disconnected mask bands -> two regions.
+        mask = np.zeros((h, w), dtype=np.float64)
+        mask[24:84, 16:176] = 1.0    # region A (top)
+        mask[120:180, 16:176] = 1.0  # region B (bottom)
+
+        placeholder = SeedSet(
+            seeds=(Seed(node_idx=0, region_id=0),), ncc_threshold=0.3,
+        )
+        para = _make_para(h, w, seed_set=placeholder)
+        x0, y0 = build_grid_for_roi(para, h, w)
+        dic_mesh = mesh_setup(x0, y0, para)
+        coords = dic_mesh.coordinates_fem
+        n_nodes = coords.shape[0]
+
+        rmap = precompute_node_regions(coords, mask, (h, w))
+        assert rmap.n_regions == 2, f"expected 2 regions, got {rmap.n_regions}"
+        # Seed only region 0, leaving region 1 uncovered.
+        node_r0 = int(rmap.region_node_lists[0][0])
+        seed_set = SeedSet(
+            seeds=(Seed(node_idx=node_r0, region_id=0),), ncc_threshold=0.3,
+        )
+        state = SeedPropagationState(current_seeds=seed_set)
+        Df = compute_image_gradient(ref, mask)
+
+        # No ref switch: pre-fix this went straight to propagate and raised
+        # MissingSeedForRegion for region 1. Now the uncovered region is filled.
+        U0 = compute_seed_prop_init_guess(
+            state, dic_mesh, ref, deformed, mask, Df, para,
+            tol=para.tol, ref_switched=False, frame_idx=7, ref_idx=0,
+        )
+        assert U0.shape == (2 * n_nodes,)
+        assert len(state.reseed_events) == 1
+        ev: ReseedEvent = state.reseed_events[0]
+        assert ev.frame_idx == 7
+        assert ev.n_new_seeds >= 1
+        # Both regions covered by the live seed set now.
+        assert covered_region_ids(state.current_seeds, rmap, n_nodes) == {0, 1}
+
     def test_warp_failure_then_autoplace_also_fails_reraises(self):
         """If auto-place itself finds nothing, original SeedWarpFailure wins."""
         from al_dic.io.image_ops import compute_image_gradient
@@ -492,6 +553,68 @@ class TestSeedPropagationReseedFallback:
                 max_snap_distance=50.0,
                 frame_idx=1, ref_idx=1,
             )
+
+    def test_run_aldic_keeps_partial_results_on_seed_failure(self, monkeypatch):
+        """A mid-run seed-prop failure auto-place cannot rescue must raise
+        PartialResultError carrying the frames that already completed, instead
+        of discarding the whole run.
+
+        Regression for the incremental-mode complaint: the run died at a late
+        frame and every earlier frame's result was thrown away.
+        """
+        from al_dic.core import pipeline as pipeline_module
+        from al_dic.solver.seed_propagation import (
+            MissingSeedForRegion,
+            PartialResultError,
+        )
+
+        h, w = 160, 160
+        ref0 = _speckle(h, w, seed=13)
+        images = [
+            ref0,
+            ndimage_shift(ref0, [0.5, 1.0], order=3, mode="reflect"),
+            ndimage_shift(ref0, [1.0, 2.0], order=3, mode="reflect"),
+        ]
+        masks = [np.ones((h, w)) for _ in images]
+
+        probe = run_aldic(
+            _make_para(h, w, seed_set=None, init_mode="fft"),
+            images[:2], masks[:2], compute_strain=False,
+        )
+        coords = probe.dic_mesh.coordinates_fem
+        seed_idx = int(
+            np.argmin(np.linalg.norm(coords - np.array([w / 2, h / 2]), axis=1))
+        )
+        seed_set = SeedSet(
+            seeds=(Seed(node_idx=seed_idx, region_id=0),), ncc_threshold=0.3,
+        )
+        para = _make_para(h, w, seed_set=seed_set)  # accumulative, seed_prop
+
+        # Frame 1 succeeds; frame 2 fails as if a region could not be seeded.
+        real = pipeline_module.compute_seed_prop_init_guess
+        calls = {"n": 0}
+
+        def fake(*args, **kwargs):
+            calls["n"] += 1
+            if calls["n"] >= 2:
+                raise MissingSeedForRegion(
+                    "1 region(s) have no seed: indices [0]. (injected)"
+                )
+            return real(*args, **kwargs)
+
+        monkeypatch.setattr(
+            pipeline_module, "compute_seed_prop_init_guess", fake,
+        )
+
+        with pytest.raises(PartialResultError) as ei:
+            run_aldic(para, images, masks, compute_strain=False)
+
+        err = ei.value
+        assert err.partial_result is not None
+        assert err.partial_result.stopped_early is True
+        assert err.stopped_at_frame == 3         # frame_idx 2 -> 1-based 3
+        # Frame 1 completed and is kept; frame 2 (the failure) is not.
+        assert len(err.partial_result.result_disp) == 1
 
 
 class TestSeedPropagationResultExposure:

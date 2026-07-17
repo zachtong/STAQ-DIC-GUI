@@ -538,6 +538,13 @@ class PipelineResult:
     frame_schedule: FrameSchedule | None = None
     ref_switch_frames: tuple[int, ...] = ()
     reseed_events: tuple = ()  # tuple[ReseedEvent, ...] — avoid import cycle
+    # Partial-run bookkeeping: set when the pipeline stopped before all frames
+    # completed (e.g. a seed-propagation region could not be seeded even after
+    # auto-place). The frames that DID complete are still present in
+    # result_disp/result_strain/etc., so consumers keep partial results.
+    stopped_early: bool = False
+    stopped_at_frame: int | None = None  # 1-based frame index that failed
+    stop_reason: str = ""
 
 
 # ---------------------------------------------------------------------------

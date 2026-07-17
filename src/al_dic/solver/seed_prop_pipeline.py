@@ -17,7 +17,7 @@ slim. Public functions:
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -33,6 +33,7 @@ from .seed_propagation import (
     SeedSet,
     SeedWarpFailure,
     build_node_adjacency,
+    covered_region_ids,
     propagate_from_seeds,
     warp_seeds_to_new_ref,
 )
@@ -249,6 +250,53 @@ def compute_seed_prop_init_guess(
     # seed) isn't worth the extra state and failure modes that come
     # with tracking a rolling hint. The Seed.user_hint_uv field remains
     # part of the algorithm API for callers who have a prior they trust.
+
+    # Ensure every region in this frame's map has a seed before propagating.
+    # In incremental mode with per-frame ROIs the mask (and thus region_map)
+    # changes frame-to-frame; a warp that "succeeds" -- every seed lands in
+    # *some* region -- can still leave a newly-appeared or reshaped region with
+    # no seed, which _validate_multi_region_seeds treats as fatal and aborts
+    # the whole run. Auto-place a seed in each uncovered region only (existing
+    # seeds untouched via skip_region_ids) and continue; if a region still
+    # cannot be seeded, propagate_from_seeds raises as the final safety net.
+    covered = covered_region_ids(state.current_seeds, region_map, n_nodes)
+    uncovered = set(range(region_map.n_regions)) - covered
+    if uncovered:
+        ap_fill = auto_place_seeds_on_mesh(
+            coordinates_fem=dic_mesh.coordinates_fem,
+            elements_fem=dic_mesh.elements_fem,
+            node_region_map=region_map,
+            f_img=f_img,
+            g_img=g_img,
+            mask=f_mask,
+            winsize=para.winsize,
+            search_radius=int(para.size_of_fft_search_region),
+            config=AutoPlaceConfig(
+                ncc_threshold=state.current_seeds.ncc_threshold,
+            ),
+            adjacency=adjacency,
+            skip_region_ids=frozenset(covered),
+        )
+        if ap_fill.seed_set.seeds:
+            state.current_seeds = replace(
+                state.current_seeds,
+                seeds=state.current_seeds.seeds
+                + tuple(ap_fill.seed_set.seeds),
+            )
+            state.reseed_events.append(
+                ReseedEvent(
+                    frame_idx=frame_idx,
+                    ref_idx=ref_idx,
+                    reason=(
+                        f"{len(uncovered)} region(s) had no seed after warp "
+                        f"(mask changed); auto-placed "
+                        f"{len(ap_fill.seed_set.seeds)}."
+                    ),
+                    n_new_seeds=len(ap_fill.seed_set.seeds),
+                ),
+            )
+            for msg in ap_fill.warnings:
+                logger.warning("Auto-place (uncovered region): %s", msg)
 
     ctx = local_icgn_precompute(dic_mesh.coordinates_fem, Df, f_img, para)
     result = propagate_from_seeds(

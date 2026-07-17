@@ -65,6 +65,10 @@ from ..solver.seed_prop_pipeline import (
     capture_for_next_frame,
     compute_seed_prop_init_guess,
 )
+from ..solver.seed_propagation import (
+    PartialResultError,
+    SeedPropagationError,
+)
 from ..solver.subpb1_solver import precompute_subpb1, subpb1_solver
 from ..solver.subpb2_solver import precompute_subpb2, subpb2_solver
 from ..strain.compute_strain import compute_strain as _compute_strain_fn
@@ -695,6 +699,12 @@ def run_aldic(
     # Surfaced via ``PipelineResult.ref_switch_frames`` so consumers
     # (e.g. the GUI frame navigator) can render markers.
     ref_switch_frames: list[int] = []
+    # Partial-results tracking: if a seed-propagation frame fails even after
+    # auto-place (a region with no viable seed), stop the loop and keep the
+    # frames already computed rather than discarding the whole run.
+    stopped_early = False
+    stopped_at_frame: int | None = None
+    stop_reason = ""
 
     # Seed-propagation per-run state (None when mode is anything else).
     # V1 restriction: seed_propagation is incompatible with refinement
@@ -1038,19 +1048,31 @@ def run_aldic(
             # this mode). Mesh is already built/trimmed above. Compute
             # U0 via BFS propagation from the seed set, warping across
             # ref switches when needed.
-            current_U0 = compute_seed_prop_init_guess(
-                seed_prop_state,
-                dic_mesh,
-                f_img_raw,
-                g_img_icgn,
-                f_mask,
-                Df,
-                para,
-                tol=para.tol,
-                ref_switched=ref_switched_this_frame,
-                frame_idx=frame_idx,
-                ref_idx=ref_idx,
-            )
+            try:
+                current_U0 = compute_seed_prop_init_guess(
+                    seed_prop_state,
+                    dic_mesh,
+                    f_img_raw,
+                    g_img_icgn,
+                    f_mask,
+                    Df,
+                    para,
+                    tol=para.tol,
+                    ref_switched=ref_switched_this_frame,
+                    frame_idx=frame_idx,
+                    ref_idx=ref_idx,
+                )
+            except SeedPropagationError as exc:
+                # A region could not be seeded even after auto-place. Keep the
+                # frames already computed instead of aborting the whole run.
+                logger.error(
+                    "Seed propagation failed at frame %d/%d: %s",
+                    frame_idx + 1, n_frames, exc,
+                )
+                stopped_early = True
+                stopped_at_frame = frame_idx + 1
+                stop_reason = str(exc)
+                break
 
         if need_fft and not use_seed_prop:
             # When re-running FFT for a subsequent frame (incremental mode
@@ -1511,7 +1533,19 @@ def run_aldic(
         # BFS propagation), and cache coords+U for the next frame's
         # ref-switch warp if/when one happens.
         if use_seed_prop and seed_prop_state is not None:
-            capture_for_next_frame(seed_prop_state, dic_mesh, U_final)
+            try:
+                capture_for_next_frame(seed_prop_state, dic_mesh, U_final)
+            except SeedPropagationError as exc:
+                # Seed became a bad point this frame; the next frame's warp
+                # would be unreliable. Keep the frames computed so far.
+                logger.error(
+                    "Seed quality gate failed at frame %d/%d: %s",
+                    frame_idx + 1, n_frames, exc,
+                )
+                stopped_early = True
+                stopped_at_frame = frame_idx + 1
+                stop_reason = str(exc)
+                break
 
     # =====================================================================
     # Cumulative displacement transform (tree-based)
@@ -1625,7 +1659,22 @@ def run_aldic(
         frame_schedule=schedule,
         ref_switch_frames=tuple(ref_switch_frames),
         reseed_events=reseed_events,
+        stopped_early=stopped_early,
+        stopped_at_frame=stopped_at_frame,
+        stop_reason=stop_reason,
     )
 
     progress(1.0, "Pipeline complete.")
+    if stopped_early:
+        # Surface the failure (the original message keeps its actionable
+        # guidance) but carry the completed frames so the caller keeps them
+        # instead of losing the whole run.
+        n_done = len(valid_disp)
+        raise PartialResultError(
+            f"{stop_reason} Kept partial results: {n_done} of "
+            f"{n_frames - 1} frame(s) completed before stopping at frame "
+            f"{stopped_at_frame}.",
+            partial_result=pipeline_result,
+            stopped_at_frame=stopped_at_frame,
+        )
     return pipeline_result
