@@ -164,6 +164,49 @@ class TestReferenceMaskResolution:
         np.testing.assert_array_equal(resolved, marker)
 
 
+class TestPerFrameCrack:
+    """Strain edge-trim must follow each frame's OWN crack (rasterised from the
+    per-frame mesh), not freeze on a single frame-0 mask.  A growing crack means
+    a later frame is trimmed differently from frame 0."""
+
+    def test_grown_crack_trims_more_than_frame0(self, state_with_results):
+        from dataclasses import replace as _dc_replace
+
+        result = state_with_results.results
+        ref_mesh = result.result_fe_mesh_each_frame[0]
+        coords = ref_mesh.coordinates_fem
+        elems = ref_mesh.elements_fem
+        mask0 = state_with_results.per_frame_rois[0]
+        h, w = mask0.shape
+        cy = h // 2
+        step = float(np.min(np.diff(np.unique(coords[:, 1]))))
+
+        # Build a "cracked" mesh: drop a ~2-element-tall band over the left half
+        # (a Mode-I crack) -- same coords, fewer elements.  Select by centroid so
+        # the band lands between node rows, not on one.
+        centroid = coords[elems[:, :4]].mean(axis=1)  # (n_elem, 2)
+        crack = (np.abs(centroid[:, 1] - cy) < step) & (centroid[:, 0] < w * 0.5)
+        cracked_mesh = _dc_replace(ref_mesh, elements_fem=elems[~crack])
+
+        # Frame 0 uncracked, last frame cracked.
+        meshes = list(result.result_fe_mesh_each_frame)
+        meshes[0] = ref_mesh
+        meshes[-1] = cracked_mesh
+        state_with_results.results = _dc_replace(
+            result, result_fe_mesh_each_frame=meshes,
+        )
+
+        ctrl = StrainController(state_with_results)
+        out = ctrl.compute_all_frames(override={})  # method 2 -> strain_valid
+        sv0 = out[0].strain_valid
+        sv_last = out[-1].strain_valid
+        assert sv0 is not None and sv_last is not None
+        # The cracked frame trims strictly more nodes (crack band + its edge).
+        assert int((~sv_last).sum()) > int((~sv0).sum())
+        # And the trims are not identical (per-frame, not frozen frame-0).
+        assert not np.array_equal(sv0, sv_last)
+
+
 class TestPureShearAccuracy:
     def test_pure_shear_recovers_exy(self, state_with_results):
         """u = shear * y, v = 0  ->  exy = 0.5 * du/dy = 0.5 * shear."""

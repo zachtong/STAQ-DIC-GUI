@@ -55,6 +55,7 @@ from ..io.image_ops import ListFrameProvider, compute_image_gradient
 from ..mesh.criteria.brush_region import BrushRegionCriterion
 from ..mesh.mark_bridging import trimmed_keep_indices
 from ..mesh.mesh_setup import mesh_setup
+from ..mesh.rasterize import rasterize_element_mask
 from ..mesh.refinement import RefinementContext, RefinementPolicy, refine_mesh
 from ..solver.init_disp import init_disp
 from ..solver.integer_search import integer_search, integer_search_pyramid
@@ -1580,19 +1581,19 @@ def run_aldic(
         progress(0.65, "Section 8: Computing strains...")
         logger.info("--- Section 8 Start ---")
 
-        # Use frame 1 mesh for strain computation (cumulative coords)
-        strain_mesh = DICMesh(
-            coordinates_fem=result_fe_mesh[0].coordinates_fem,
-            elements_fem=result_fe_mesh[0].elements_fem,
-            mark_coord_hole_edge=result_fe_mesh[0].mark_coord_hole_edge,
-        )
-
-        # Region map on frame 1 mask
-        strain_mask = masks[0].astype(np.float64)
-        strain_region_map = precompute_node_regions(
-            strain_mesh.coordinates_fem, strain_mask, (img_h, img_w),
-        )
-        para_s8 = replace(para, img_ref_mask=strain_mask)
+        # Strain is total Lagrangian: coordinates + U_accum both live in the
+        # frame-0 reference configuration, so the strain mesh keeps frame-0
+        # coords.  The crack geometry, however, is taken PER FRAME by
+        # rasterising that frame's own trimmed mesh back to a pixel mask -- so
+        # edge-trim + crack-aware plane fitting follow the current crack (a
+        # grown crack is trimmed and never spanned) rather than freezing on a
+        # single frame-0 mask for every frame.
+        ref_mesh_s8 = result_fe_mesh[0]
+        ref_coords_s8 = ref_mesh_s8.coordinates_fem
+        fallback_mask_s8 = masks[0].astype(np.float64)
+        # Cache (mask, region_map) per distinct crack cut -- consecutive frames
+        # usually share a crack, so this rasterises once per growth step.
+        s8_cache: dict[int, tuple[NDArray[np.float64], NodeRegionMap]] = {}
 
         for i in range(n_frames - 1):
             if result_disp[i] is None:
@@ -1602,19 +1603,52 @@ def run_aldic(
             if U_accum is None:
                 U_accum = result_disp[i].U
 
+            mesh_i = (
+                result_fe_mesh[i] if result_fe_mesh[i] is not None
+                else ref_mesh_s8
+            )
+            key = hash(mesh_i.elements_fem.tobytes())
+            cached = s8_cache.get(key)
+            if cached is None:
+                mask_i = rasterize_element_mask(
+                    mesh_i.coordinates_fem, mesh_i.elements_fem, (img_h, img_w),
+                )
+                if not np.any(mask_i):
+                    mask_i = fallback_mask_s8
+                region_map_i = precompute_node_regions(
+                    ref_coords_s8, mask_i, (img_h, img_w),
+                )
+                s8_cache[key] = (mask_i, region_map_i)
+            else:
+                mask_i, region_map_i = cached
+
+            if (
+                mesh_i.coordinates_fem.shape == ref_coords_s8.shape
+                and np.array_equal(mesh_i.coordinates_fem, ref_coords_s8)
+            ):
+                elems_i = mesh_i.elements_fem
+            else:
+                elems_i = ref_mesh_s8.elements_fem
+            strain_mesh = DICMesh(
+                coordinates_fem=ref_coords_s8,
+                elements_fem=elems_i,
+                mark_coord_hole_edge=ref_mesh_s8.mark_coord_hole_edge,
+            )
+            para_s8 = replace(para, img_ref_mask=mask_i)
+
             # Extra displacement smoothing (Section 8 feature)
             U_local = U_accum.copy()
             if para.smoothness > 0:
                 for _ in range(3):
                     U_local = _smooth_disp(
-                        U_local, strain_mesh.coordinates_fem,
-                        para, strain_region_map,
+                        U_local, ref_coords_s8,
+                        para, region_map_i,
                         mesh=strain_mesh,
                     )
 
             # Compute strain via the strain module
             result_strain[i] = _compute_strain_fn(
-                strain_mesh, para_s8, U_local, strain_region_map,
+                strain_mesh, para_s8, U_local, region_map_i,
             )
 
             s8_frac = 0.65 + 0.25 * (i + 1) / (n_frames - 1)

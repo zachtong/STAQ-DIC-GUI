@@ -14,8 +14,9 @@ Design principles
 * The base ``DICPara`` is never mutated. Overrides go through
   :func:`dataclasses.replace` and are restricted to a small whitelist so
   that callers cannot accidentally re-tune displacement parameters.
-* The mesh, region map, and reference mask are all taken from frame 0
-  (the reference configuration ``U_accum`` refers back to).
+* Coordinates + ``U_accum`` are frame-0 (total Lagrangian), but the crack
+  mask / region map are per frame -- rasterised from each frame's own
+  trimmed mesh so a growing crack is trimmed and never spanned.
 """
 
 from __future__ import annotations
@@ -33,6 +34,7 @@ from al_dic.core.data_structures import (
     StrainResult,
 )
 from al_dic.gui.app_state import AppState
+from al_dic.mesh.rasterize import rasterize_element_mask
 from al_dic.strain.compute_strain import compute_strain
 from al_dic.utils.region_analysis import (
     NodeRegionMap,
@@ -89,14 +91,21 @@ class StrainController:
         result = self._require_results()
         self._validate_override(override)
 
-        strain_mesh, region_map, para_strain = self._build_strain_context(
-            result, override,
-        )
+        ref_mesh, img_shape, fallback_mask = self._strain_common(result)
+        meshes = result.result_fe_mesh_each_frame
+        # Cache (mask, region_map) per distinct crack cut so frames that share a
+        # crack geometry rasterise only once.
+        raster_cache: dict[int, tuple[NDArray[np.float64], NodeRegionMap]] = {}
 
         n_frames = len(result.result_disp)
         out: list[StrainResult] = []
         for i, frame in enumerate(result.result_disp):
             U = frame.U_accum if frame.U_accum is not None else frame.U
+            mesh_i = meshes[i] if (i < len(meshes) and meshes[i] is not None) else ref_mesh
+            strain_mesh, region_map, para_strain = self._build_frame_strain_context(
+                result, override, ref_mesh, mesh_i, img_shape,
+                fallback_mask, raster_cache,
+            )
             sr = compute_strain(strain_mesh, para_strain, U, region_map)
             out.append(sr)
             if progress_cb is not None:
@@ -145,44 +154,79 @@ class StrainController:
                 f"{joined}. Allowed keys: {sorted(ALLOWED_OVERRIDES)}."
             )
 
-    def _build_strain_context(
-        self,
-        result: PipelineResult,
-        override: dict[str, object],
-    ) -> tuple[DICMesh, NodeRegionMap, DICPara]:
-        """Build the (mesh, region_map, para) triple used by ``compute_strain``.
-
-        Uses the frame-0 mesh (``result_fe_mesh_each_frame[0]``) paired with
-        the frame-0 reference mask, because the per-frame displacements fed in
-        are ``U_accum`` -- total displacement referred back to frame 0 -- which
-        is defined on those frame-0 nodes.  Mesh, region map, and edge-trim
-        mask must therefore all live in the frame-0 reference configuration.
-        """
+    def _strain_common(
+        self, result: PipelineResult,
+    ) -> tuple[DICMesh, tuple[int, int], NDArray[np.float64]]:
+        """Shared inputs for per-frame strain: frame-0 mesh, image shape, and a
+        fallback ROI mask (used when a per-frame mesh cannot be rasterised)."""
         if not result.result_fe_mesh_each_frame:
             raise RuntimeError(
                 "StrainController: PipelineResult has no per-frame meshes."
             )
         ref_mesh = result.result_fe_mesh_each_frame[0]
+        fallback_mask = self._resolve_reference_mask(result)
+        img_shape = result.dic_para.img_size
+        if not img_shape or img_shape[0] == 0 or img_shape[1] == 0:
+            img_shape = fallback_mask.shape
+        return ref_mesh, (int(img_shape[0]), int(img_shape[1])), fallback_mask
+
+    def _build_frame_strain_context(
+        self,
+        result: PipelineResult,
+        override: dict[str, object],
+        ref_mesh: DICMesh,
+        mesh_i: DICMesh,
+        img_shape: tuple[int, int],
+        fallback_mask: NDArray[np.float64],
+        cache: dict[int, tuple[NDArray[np.float64], NodeRegionMap]],
+    ) -> tuple[DICMesh, NodeRegionMap, DICPara]:
+        """Per-frame (mesh, region_map, para) for ``compute_strain``.
+
+        Strain is total Lagrangian: the coordinates and ``U_accum`` both live in
+        the frame-0 reference configuration, so ``strain_mesh`` keeps the frame-0
+        coordinates.  The **crack geometry**, however, is taken per frame from
+        ``mesh_i`` -- the frame's own already-trimmed mesh -- rasterised back to
+        a pixel mask.  This makes the edge-trim and crack-aware plane fit follow
+        that frame's crack (a grown crack is trimmed and never spanned), instead
+        of freezing on a single frame-0 mask for every frame.
+        """
+        # Rasterise the frame's crack cut; cache by element identity so frames
+        # that share a crack geometry rasterise (and build a region map) once.
+        key = hash(mesh_i.elements_fem.tobytes())
+        cached = cache.get(key)
+        if cached is None:
+            mask = rasterize_element_mask(
+                mesh_i.coordinates_fem, mesh_i.elements_fem, img_shape,
+            )
+            if not np.any(mask):  # degenerate mesh -> fall back to ROI mask
+                mask = fallback_mask
+            h, w = mask.shape
+            region_map = precompute_node_regions(
+                ref_mesh.coordinates_fem, mask, (h, w),
+            )
+            cache[key] = (mask, region_map)
+        else:
+            mask, region_map = cached
+
+        # Element connectivity: use the per-frame cut when the node set matches
+        # the frame-0 coords (uniform mesh -- the common case).  Otherwise keep
+        # frame-0 elements; method 2 (plane fit) ignores elements and is driven
+        # by the per-frame ``mask`` above, so only method 3 (FEM nodal) on a
+        # refined mesh falls back.
+        if (
+            mesh_i.coordinates_fem.shape == ref_mesh.coordinates_fem.shape
+            and np.array_equal(mesh_i.coordinates_fem, ref_mesh.coordinates_fem)
+        ):
+            elements = mesh_i.elements_fem
+        else:
+            elements = ref_mesh.elements_fem
+
         strain_mesh = DICMesh(
             coordinates_fem=ref_mesh.coordinates_fem,
-            elements_fem=ref_mesh.elements_fem,
+            elements_fem=elements,
             mark_coord_hole_edge=ref_mesh.mark_coord_hole_edge,
         )
-
-        mask = self._resolve_reference_mask(result)
-        h, w = mask.shape
-        region_map = precompute_node_regions(
-            strain_mesh.coordinates_fem, mask, (h, w),
-        )
-
-        # Always layer the resolved mask in so that ``compute_strain``
-        # sees a consistent ROI even if the original ``dic_para``
-        # carried ``img_ref_mask=None``.
-        para_strain = replace(
-            result.dic_para,
-            img_ref_mask=mask,
-            **override,
-        )
+        para_strain = replace(result.dic_para, img_ref_mask=mask, **override)
         return strain_mesh, region_map, para_strain
 
     def _resolve_reference_mask(
