@@ -9,7 +9,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from al_dic.mesh.rasterize import rasterize_element_mask
+from al_dic.mesh.rasterize import crack_mask_from_deformed, rasterize_element_mask
+from al_dic.strain.comp_def_grad import edge_valid_mask
 
 
 def _uniform_grid(h: int, w: int, step: int):
@@ -68,3 +69,63 @@ def test_removed_element_band_leaves_a_gap():
     # The cracked mask is a strict subset of the full mask.
     assert cracked.sum() < full.sum()
     assert np.all(cracked <= full)
+
+
+class TestCrackMaskFromDeformed:
+    """A deformed-frame crack must be warped back to the reference position so
+    the trim is symmetric about both faces -- not offset like a raw rasterisation
+    of the deformed-cut mesh."""
+
+    def _mesh(self, h, w, step):
+        xs = np.arange(step, w - step + 1, step, dtype=float)
+        ys = np.arange(step, h - step + 1, step, dtype=float)
+        XX, YY = np.meshgrid(xs, ys, indexing="ij")
+        coords = np.column_stack([XX.ravel(), YY.ravel()])
+        nx, ny = len(xs), len(ys)
+        ii, jj = np.meshgrid(np.arange(nx - 1), np.arange(ny - 1), indexing="ij")
+        ii, jj = ii.ravel(), jj.ravel()
+        elems = np.full((len(ii), 8), -1, np.int64)
+        elems[:, 0] = ii * ny + jj
+        elems[:, 1] = (ii + 1) * ny + jj
+        elems[:, 2] = (ii + 1) * ny + (jj + 1)
+        elems[:, 3] = ii * ny + (jj + 1)
+        return coords, elems
+
+    def test_zero_displacement_is_identity_cut(self):
+        """With U=0 the warp reduces to cutting at the reference positions."""
+        h, w, step = 200, 400, 12
+        coords, elems = self._mesh(h, w, step)
+        cy = h // 2
+        dm = np.ones((h, w), np.float64)
+        dm[cy:cy + 1, 12: w // 2] = 0.0                 # thin crack, left half
+        u0 = np.zeros(2 * coords.shape[0])
+        mask, kept = crack_mask_from_deformed(coords, elems, u0, dm, (h, w))
+        # gap present at the crack line, none far from it
+        assert mask[cy, w // 4] == 0.0
+        assert mask[cy, int(w * 0.8)] == 1.0
+        assert kept.shape[0] < elems.shape[0]
+
+    def test_offset_deformation_recentres_the_gap(self):
+        """Top face displaced up by A: a raw cut at reference positions would put
+        the gap at the offset (up) location and trim only the top; the warp puts
+        it back on the crack line -> symmetric trim on both faces."""
+        h, w, step = 320, 640, 12
+        coords, elems = self._mesh(h, w, step)
+        cy = h // 2
+        A = 42
+        # Deformed mask: crack gap sits at [cy-A, cy] (offset up from cy).
+        dm = np.ones((h, w), np.float64)
+        dm[cy - A:cy, 12: w // 2] = 0.0
+        # U_accum: top face (y < cy) moved up by A over the crack span.
+        u = np.zeros(2 * coords.shape[0])
+        top = (coords[:, 1] < cy) & (coords[:, 0] < w // 2)
+        u[1::2] = np.where(top, -A, 0.0)
+
+        mask, _ = crack_mask_from_deformed(coords, elems, u, dm, (h, w))
+        valid = edge_valid_mask(coords, mask, 20.0, 0.7)
+        trimmed = ~valid
+        near = (coords[:, 0] < w // 2) & (np.abs(coords[:, 1] - cy) < 60)
+        above = int((trimmed & near & (coords[:, 1] < cy)).sum())
+        below = int((trimmed & near & (coords[:, 1] > cy)).sum())
+        assert above > 0 and below > 0
+        assert min(above, below) >= 0.5 * max(above, below)

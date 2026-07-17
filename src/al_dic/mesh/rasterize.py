@@ -19,6 +19,8 @@ from __future__ import annotations
 import numpy as np
 from numpy.typing import NDArray
 
+from al_dic.mesh.mark_bridging import trimmed_keep_indices
+
 
 def rasterize_element_mask(
     coordinates: NDArray[np.float64],
@@ -64,3 +66,43 @@ def rasterize_element_mask(
     for i in range(elements.shape[0]):
         mask[y0[i]:y1[i] + 1, x0[i]:x1[i] + 1] = 1.0
     return mask
+
+
+def crack_mask_from_deformed(
+    ref_coords: NDArray[np.float64],
+    elements: NDArray[np.int64],
+    u_accum: NDArray[np.float64],
+    deformed_mask: NDArray[np.float64],
+    img_shape: tuple[int, int],
+) -> tuple[NDArray[np.float64], NDArray[np.int64]]:
+    """Reference-coord ROI/crack mask for a frame whose crack is known only in
+    the DEFORMED image (``per_frame_rois[frame]`` is drawn on the deformed frame).
+
+    Strain is total Lagrangian on the frame-0 reference mesh, so the crack must
+    be expressed in frame-0 coordinates.  A per-frame ROI, however, marks the
+    *opened* crack at its deformed position -- rasterising the per-frame mesh (cut
+    with that deformed mask) puts a wide, offset crack onto the reference nodes
+    and over-trims one face.  Instead, displace each frame-0 node to its deformed
+    position (``+ U_accum``), re-cut the mesh there against the deformed mask with
+    the SAME trimmer the solver uses (``trimmed_keep_indices``), then rasterise the
+    surviving elements' REFERENCE footprint.  The crack lands back at the frame-0
+    (reference) position -- thin and symmetric about both faces.
+
+    Args:
+        ref_coords: Frame-0 node coordinates (n_nodes, 2), columns [x, y].
+        elements: Frame-0 element connectivity (n_elements, >=4), 0-based.
+        u_accum: Total displacement (2*n_nodes,), interleaved [u0, v0, u1, ...],
+            defined on ``ref_coords``.
+        deformed_mask: ROI mask (H, W) drawn on this frame's deformed image.
+        img_shape: (height, width) of the reference mask to build.
+
+    Returns:
+        (mask, kept_elements): reference-coord mask (H, W) and the surviving
+        element connectivity (for FEM-nodal strain / method 3).
+    """
+    deformed_coords = ref_coords.copy()
+    deformed_coords[:, 0] += u_accum[0::2]
+    deformed_coords[:, 1] += u_accum[1::2]
+    keep = trimmed_keep_indices(deformed_coords, elements, deformed_mask)
+    kept_elements = elements[keep]
+    return rasterize_element_mask(ref_coords, kept_elements, img_shape), kept_elements

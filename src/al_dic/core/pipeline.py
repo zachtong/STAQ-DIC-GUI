@@ -55,7 +55,7 @@ from ..io.image_ops import ListFrameProvider, compute_image_gradient
 from ..mesh.criteria.brush_region import BrushRegionCriterion
 from ..mesh.mark_bridging import trimmed_keep_indices
 from ..mesh.mesh_setup import mesh_setup
-from ..mesh.rasterize import rasterize_element_mask
+from ..mesh.rasterize import crack_mask_from_deformed
 from ..mesh.refinement import RefinementContext, RefinementPolicy, refine_mesh
 from ..solver.init_disp import init_disp
 from ..solver.integer_search import integer_search, integer_search_pyramid
@@ -1583,17 +1583,15 @@ def run_aldic(
 
         # Strain is total Lagrangian: coordinates + U_accum both live in the
         # frame-0 reference configuration, so the strain mesh keeps frame-0
-        # coords.  The crack geometry, however, is taken PER FRAME by
-        # rasterising that frame's own trimmed mesh back to a pixel mask -- so
-        # edge-trim + crack-aware plane fitting follow the current crack (a
-        # grown crack is trimmed and never spanned) rather than freezing on a
-        # single frame-0 mask for every frame.
+        # coords.  The crack, however, is known only in each frame's DEFORMED
+        # image (masks[i+1]); warp it back to frame-0 coords per frame so
+        # edge-trim + crack-aware plane fitting follow the current crack at the
+        # reference position (thin, symmetric) rather than freezing on the
+        # frame-0 mask for every frame.
         ref_mesh_s8 = result_fe_mesh[0]
         ref_coords_s8 = ref_mesh_s8.coordinates_fem
+        ref_elems_s8 = ref_mesh_s8.elements_fem
         fallback_mask_s8 = masks[0].astype(np.float64)
-        # Cache (mask, region_map) per distinct crack cut -- consecutive frames
-        # usually share a crack, so this rasterises once per growth step.
-        s8_cache: dict[int, tuple[NDArray[np.float64], NodeRegionMap]] = {}
 
         for i in range(n_frames - 1):
             if result_disp[i] is None:
@@ -1603,32 +1601,25 @@ def run_aldic(
             if U_accum is None:
                 U_accum = result_disp[i].U
 
-            mesh_i = (
-                result_fe_mesh[i] if result_fe_mesh[i] is not None
-                else ref_mesh_s8
+            deformed_mask_i = (
+                masks[i + 1].astype(np.float64) if (i + 1) < len(masks) else None
             )
-            key = hash(mesh_i.elements_fem.tobytes())
-            cached = s8_cache.get(key)
-            if cached is None:
-                mask_i = rasterize_element_mask(
-                    mesh_i.coordinates_fem, mesh_i.elements_fem, (img_h, img_w),
+            if (
+                deformed_mask_i is not None
+                and len(U_accum) == 2 * len(ref_coords_s8)
+            ):
+                mask_i, elems_i = crack_mask_from_deformed(
+                    ref_coords_s8, ref_elems_s8, U_accum,
+                    deformed_mask_i, (img_h, img_w),
                 )
                 if not np.any(mask_i):
-                    mask_i = fallback_mask_s8
-                region_map_i = precompute_node_regions(
-                    ref_coords_s8, mask_i, (img_h, img_w),
-                )
-                s8_cache[key] = (mask_i, region_map_i)
+                    mask_i, elems_i = fallback_mask_s8, ref_elems_s8
             else:
-                mask_i, region_map_i = cached
+                mask_i, elems_i = fallback_mask_s8, ref_elems_s8
 
-            if (
-                mesh_i.coordinates_fem.shape == ref_coords_s8.shape
-                and np.array_equal(mesh_i.coordinates_fem, ref_coords_s8)
-            ):
-                elems_i = mesh_i.elements_fem
-            else:
-                elems_i = ref_mesh_s8.elements_fem
+            region_map_i = precompute_node_regions(
+                ref_coords_s8, mask_i, (img_h, img_w),
+            )
             strain_mesh = DICMesh(
                 coordinates_fem=ref_coords_s8,
                 elements_fem=elems_i,

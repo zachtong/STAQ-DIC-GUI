@@ -15,8 +15,9 @@ Design principles
   :func:`dataclasses.replace` and are restricted to a small whitelist so
   that callers cannot accidentally re-tune displacement parameters.
 * Coordinates + ``U_accum`` are frame-0 (total Lagrangian), but the crack
-  mask / region map are per frame -- rasterised from each frame's own
-  trimmed mesh so a growing crack is trimmed and never spanned.
+  mask / region map are per frame -- the deformed per-frame ROI is warped
+  back to frame-0 coords so a growing crack is trimmed (symmetrically) and
+  never spanned.
 """
 
 from __future__ import annotations
@@ -34,7 +35,7 @@ from al_dic.core.data_structures import (
     StrainResult,
 )
 from al_dic.gui.app_state import AppState
-from al_dic.mesh.rasterize import rasterize_element_mask
+from al_dic.mesh.rasterize import crack_mask_from_deformed
 from al_dic.strain.compute_strain import compute_strain
 from al_dic.utils.region_analysis import (
     NodeRegionMap,
@@ -92,19 +93,17 @@ class StrainController:
         self._validate_override(override)
 
         ref_mesh, img_shape, fallback_mask = self._strain_common(result)
-        meshes = result.result_fe_mesh_each_frame
-        # Cache (mask, region_map) per distinct crack cut so frames that share a
-        # crack geometry rasterise only once.
-        raster_cache: dict[int, tuple[NDArray[np.float64], NodeRegionMap]] = {}
 
         n_frames = len(result.result_disp)
         out: list[StrainResult] = []
         for i, frame in enumerate(result.result_disp):
             U = frame.U_accum if frame.U_accum is not None else frame.U
-            mesh_i = meshes[i] if (i < len(meshes) and meshes[i] is not None) else ref_mesh
+            # The per-frame ROI is drawn on the DEFORMED image i+1 (result_disp
+            # index i == image i+1); the crack is warped back to frame-0 coords.
+            deformed_mask = self._state.per_frame_rois.get(i + 1)
             strain_mesh, region_map, para_strain = self._build_frame_strain_context(
-                result, override, ref_mesh, mesh_i, img_shape,
-                fallback_mask, raster_cache,
+                result, override, ref_mesh, U, deformed_mask,
+                img_shape, fallback_mask,
             )
             sr = compute_strain(strain_mesh, para_strain, U, region_map)
             out.append(sr)
@@ -175,54 +174,41 @@ class StrainController:
         result: PipelineResult,
         override: dict[str, object],
         ref_mesh: DICMesh,
-        mesh_i: DICMesh,
+        u_accum: NDArray[np.float64],
+        deformed_mask: NDArray[np.float64] | None,
         img_shape: tuple[int, int],
         fallback_mask: NDArray[np.float64],
-        cache: dict[int, tuple[NDArray[np.float64], NodeRegionMap]],
     ) -> tuple[DICMesh, NodeRegionMap, DICPara]:
         """Per-frame (mesh, region_map, para) for ``compute_strain``.
 
-        Strain is total Lagrangian: the coordinates and ``U_accum`` both live in
-        the frame-0 reference configuration, so ``strain_mesh`` keeps the frame-0
-        coordinates.  The **crack geometry**, however, is taken per frame from
-        ``mesh_i`` -- the frame's own already-trimmed mesh -- rasterised back to
-        a pixel mask.  This makes the edge-trim and crack-aware plane fit follow
-        that frame's crack (a grown crack is trimmed and never spanned), instead
-        of freezing on a single frame-0 mask for every frame.
+        Strain is total Lagrangian: coordinates + ``U_accum`` both live in the
+        frame-0 reference configuration, so ``strain_mesh`` keeps the frame-0
+        coordinates.  The crack, however, is known only in this frame's DEFORMED
+        image (``per_frame_rois[frame]``); :func:`crack_mask_from_deformed`
+        displaces the nodes there, re-cuts, and rasterises the survivors' frame-0
+        footprint so the crack lands back at the reference position -- thin and
+        symmetric.  Falls back to the frame-0 ROI when no per-frame mask / U is
+        available (single-ROI or accumulative runs).
         """
-        # Rasterise the frame's crack cut; cache by element identity so frames
-        # that share a crack geometry rasterise (and build a region map) once.
-        key = hash(mesh_i.elements_fem.tobytes())
-        cached = cache.get(key)
-        if cached is None:
-            mask = rasterize_element_mask(
-                mesh_i.coordinates_fem, mesh_i.elements_fem, img_shape,
-            )
-            if not np.any(mask):  # degenerate mesh -> fall back to ROI mask
-                mask = fallback_mask
-            h, w = mask.shape
-            region_map = precompute_node_regions(
-                ref_mesh.coordinates_fem, mask, (h, w),
-            )
-            cache[key] = (mask, region_map)
-        else:
-            mask, region_map = cached
-
-        # Element connectivity: use the per-frame cut when the node set matches
-        # the frame-0 coords (uniform mesh -- the common case).  Otherwise keep
-        # frame-0 elements; method 2 (plane fit) ignores elements and is driven
-        # by the per-frame ``mask`` above, so only method 3 (FEM nodal) on a
-        # refined mesh falls back.
+        ref_coords = ref_mesh.coordinates_fem
         if (
-            mesh_i.coordinates_fem.shape == ref_mesh.coordinates_fem.shape
-            and np.array_equal(mesh_i.coordinates_fem, ref_mesh.coordinates_fem)
+            deformed_mask is not None
+            and u_accum is not None
+            and len(u_accum) == 2 * len(ref_coords)
         ):
-            elements = mesh_i.elements_fem
+            mask, elements = crack_mask_from_deformed(
+                ref_coords, ref_mesh.elements_fem, u_accum,
+                np.asarray(deformed_mask, dtype=np.float64), img_shape,
+            )
+            if not np.any(mask):  # degenerate warp -> fall back to ROI mask
+                mask, elements = fallback_mask, ref_mesh.elements_fem
         else:
-            elements = ref_mesh.elements_fem
+            mask, elements = fallback_mask, ref_mesh.elements_fem
 
+        h, w = mask.shape
+        region_map = precompute_node_regions(ref_coords, mask, (h, w))
         strain_mesh = DICMesh(
-            coordinates_fem=ref_mesh.coordinates_fem,
+            coordinates_fem=ref_coords,
             elements_fem=elements,
             mark_coord_hole_edge=ref_mesh.mark_coord_hole_edge,
         )
