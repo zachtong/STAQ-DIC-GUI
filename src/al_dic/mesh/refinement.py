@@ -30,7 +30,7 @@ from .generate_mesh import (
     _interpolate_u0,
     _reorder_element_nodes_ccw,
 )
-from .mark_inside import mark_inside
+from .mark_bridging import trimmed_keep_indices
 from .qrefine_r import qrefine_r
 
 logger = logging.getLogger(__name__)
@@ -275,9 +275,10 @@ def refine_mesh(
     # Step 2: Build Q8 with hanging nodes
     elems_q8 = _inject_hanging_nodes(elems_q4, irregular)
 
-    # Step 3: Remove elements inside holes (if mask provided)
+    # Step 3: Remove elements inside holes AND elements a thin continuous mask
+    # barrier (crack) cuts locally, so the refined mesh honours the crack too.
     if mask is not None:
-        _, outside_idx = mark_inside(coords, elems_q8, mask)
+        outside_idx = trimmed_keep_indices(coords, elems_q8, mask)
         elems_q8 = elems_q8[outside_idx]
 
     # Step 4: Find boundary nodes (pass mask for hole-proximity detection)

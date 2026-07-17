@@ -1956,11 +1956,12 @@ class CanvasArea(QWidget):
         elements[:, 2] = n2
         elements[:, 3] = n3
 
-        # Trim elements to ROI mask
-        from al_dic.mesh.mark_inside import mark_inside
+        # Trim elements to ROI mask (holes + thin-crack cut, so the preview
+        # matches what the pipeline computes).
+        from al_dic.mesh.mark_bridging import trimmed_keep_indices
 
         f_mask = roi_mask.astype(np.float64)
-        _, outside_idx = mark_inside(coords, elements, f_mask)
+        outside_idx = trimmed_keep_indices(coords, elements, f_mask)
         if len(outside_idx) < elements.shape[0]:
             elements = elements[outside_idx]
 

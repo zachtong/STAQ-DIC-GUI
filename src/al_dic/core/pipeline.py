@@ -53,7 +53,7 @@ from .data_structures import (
 )
 from ..io.image_ops import ListFrameProvider, compute_image_gradient
 from ..mesh.criteria.brush_region import BrushRegionCriterion
-from ..mesh.mark_inside import mark_inside
+from ..mesh.mark_bridging import trimmed_keep_indices
 from ..mesh.mesh_setup import mesh_setup
 from ..mesh.refinement import RefinementContext, RefinementPolicy, refine_mesh
 from ..solver.init_disp import init_disp
@@ -1014,7 +1014,9 @@ def run_aldic(
         if mask_hash != prev_mask_hash:
             # Start from untrimmed base mesh
             trim_source = base_mesh if base_mesh is not None else dic_mesh
-            _, outside_idx = mark_inside(
+            # Keep = not-in-a-hole AND not bridging a thin continuous barrier
+            # (a crack narrower than an element still cuts the mesh here).
+            outside_idx = trimmed_keep_indices(
                 trim_source.coordinates_fem,
                 trim_source.elements_fem,
                 f_mask,
