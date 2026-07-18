@@ -34,7 +34,7 @@ from typing import Callable
 import cv2
 import numpy as np
 from numpy.typing import NDArray
-from scipy.interpolate import LinearNDInterpolator
+from scipy.interpolate import LinearNDInterpolator, NearestNDInterpolator
 from scipy.spatial import Delaunay
 
 from al_dic.core.data_structures import PipelineResult, split_uv
@@ -293,6 +293,22 @@ def render_field_frame(
             pts_or_tri, values[valid], fill_value=np.nan
         )
         grid_vals = interp(grid_x, grid_y)  # (rh, rw), NaN outside hull
+
+        # Blank cells whose nearest node was edge-trimmed (NaN value).  The
+        # interpolator above drops those nodes and back-fills their cells from
+        # valid neighbours, which would hide the strain edge-trim in the
+        # exported image/animation -- unlike the on-screen view, where
+        # VizController blanks them.  Rasterise node finite-ness by nearest
+        # neighbour (matching VizController._invalid_node_grid) and NaN the
+        # trimmed cells so display and export agree.  No-op when nothing is
+        # trimmed (e.g. displacement fields), so those exports are unchanged.
+        node_ok = np.isfinite(render_coords).all(axis=1)
+        if node_ok.any() and not bool(valid[node_ok].all()):
+            nn = NearestNDInterpolator(
+                render_coords[node_ok], valid[node_ok].astype(np.float64)
+            )
+            keep = nn(grid_x, grid_y) >= 0.5
+            grid_vals = np.where(keep, grid_vals, np.nan)
     except Exception:
         return bg_bgr.copy()
 

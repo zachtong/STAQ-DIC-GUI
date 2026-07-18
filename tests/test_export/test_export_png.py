@@ -96,6 +96,45 @@ def test_render_with_roi_mask(minimal_result, field_cfg):
     assert img.dtype == np.uint8
 
 
+def test_export_blanks_edge_trimmed_strain(minimal_result):
+    """An edge-trimmed (NaN) strain node must render TRANSPARENT in the export,
+    not back-filled from neighbours -- matching the on-screen view.  Regression
+    for display/export trim inconsistency."""
+    coords = minimal_result.dic_mesh.coordinates_fem
+    # Uniform strain, but trim one INTERIOR node (node 5 = middle row/col of the
+    # 3x4 grid) so a plain interpolator would back-fill its cell and hide it.
+    values = np.ones(coords.shape[0], dtype=np.float64)
+    trimmed = 5
+    values[trimmed] = np.nan
+
+    bg = np.zeros((64, 64, 3), dtype=np.uint8)
+    bg[:, :] = (0, 0, 255)  # solid red (BGR) background
+    cfg = FieldImageConfig("strain_exx", True, "jet", False, 0.0, 2.0, bg_alpha=1.0)
+
+    img = render_field_frame(coords, values, (64, 64), bg, cfg)
+
+    # The trimmed node's own pixel shows the background (blanked), not a colour.
+    tx = int(round(coords[trimmed, 0]))
+    ty = int(round(coords[trimmed, 1]))
+    assert tuple(int(c) for c in img[ty, tx]) == (0, 0, 255)
+    # A valid (non-trimmed) node still shows the field, not the background.
+    kx = int(round(coords[0, 0]))
+    ky = int(round(coords[0, 1]))
+    assert tuple(int(c) for c in img[ky, kx]) != (0, 0, 255)
+
+
+def test_export_no_trim_is_unchanged_for_full_field(minimal_result):
+    """A fully-finite field (no trim, e.g. displacement) renders identically --
+    the blanking pass is a no-op."""
+    coords = minimal_result.dic_mesh.coordinates_fem
+    values = np.linspace(0.0, 1.0, coords.shape[0])
+    bg = np.full((64, 64, 3), 40, dtype=np.uint8)
+    cfg = FieldImageConfig("disp_u", True, "jet", False, 0.0, 1.0, bg_alpha=1.0)
+    img = render_field_frame(coords, values, (64, 64), bg, cfg)
+    # Interior of the mesh is fully painted (no spurious transparent holes).
+    assert tuple(int(c) for c in img[32, 32]) != (40, 40, 40)
+
+
 def test_render_alpha_semantics(minimal_result):
     """bg_alpha=1.0 should produce a fully-opaque field; bg_alpha=0.0 should
     produce a fully-transparent field (showing only the background)."""
