@@ -278,6 +278,80 @@ def test_compute_warped_mask_identity(minimal_result):
     assert np.all(warped[20:50, 20:50] == roi[20:50, 20:50])
 
 
+def test_compute_warped_mask_with_nan_deformed_nodes(minimal_result):
+    """Crack-destroyed nodes carry NaN deformed positions (crack-aware
+    cumulative transform).  The warp Delaunay must skip them, not raise
+    'points cannot contain NaN'."""
+    coords = minimal_result.dic_mesh.coordinates_fem
+    deformed = coords.copy()
+    deformed[0] = np.nan  # one destroyed node
+
+    roi = np.zeros((64, 64), dtype=bool)
+    roi[10:55, 10:55] = True
+
+    warped = _compute_warped_mask(coords, deformed, roi, (64, 64))
+    assert warped.shape == (64, 64) and warped.dtype == bool
+    # Away from the destroyed node the warp still matches the ROI.
+    assert np.all(warped[20:50, 20:50] == roi[20:50, 20:50])
+
+
+def test_compute_warped_mask_all_nan_returns_empty(minimal_result):
+    coords = minimal_result.dic_mesh.coordinates_fem
+    deformed = np.full_like(coords, np.nan)
+    warped = _compute_warped_mask(
+        coords, deformed, np.ones((64, 64), bool), (64, 64),
+    )
+    assert not warped.any()
+
+
+def test_render_field_frame_with_nan_deformed_nodes(minimal_result, field_cfg):
+    """Rendering a deformed field with a destroyed node must not raise and
+    must still produce a BGR frame."""
+    coords = minimal_result.dic_mesh.coordinates_fem
+    values = np.linspace(0.0, 1.0, coords.shape[0])
+    deformed = coords + 0.5
+    # Destroyed node: NaN deformed position AND NaN value (as U_accum yields).
+    deformed[1] = np.nan
+    values[1] = np.nan
+
+    img = render_field_frame(
+        coords=coords, values=values, image_shape=(64, 64),
+        bg_image=None, field_cfg=field_cfg, deformed_coords=deformed,
+    )
+    assert img.shape == (64, 64, 3)
+    assert img.dtype == np.uint8
+
+
+def test_export_png_deformed_with_destroyed_node(
+    tmp_path, minimal_result, field_cfg,
+):
+    """End-to-end: a crack-destroyed node (NaN U_accum + NaN field value) must
+    not break deformed-mode PNG export -- regression for the scipy Delaunay
+    'points cannot contain NaN' crash."""
+    from dataclasses import replace
+
+    res = minimal_result
+    dead = 5  # an interior node
+    U_accum = res.result_disp[0].U_accum.copy()
+    U_accum[2 * dead:2 * dead + 2] = np.nan
+    fr = replace(res.result_disp[0], U_accum=U_accum)
+    sr = res.result_strain[0]
+    du = sr.disp_u.copy(); du[dead] = np.nan
+    exx = sr.strain_exx.copy(); exx[dead] = np.nan
+    sr2 = replace(sr, disp_u=du, strain_exx=exx)
+    res2 = replace(res, result_disp=[fr, fr], result_strain=[sr2, sr2])
+
+    roi = np.ones((64, 64), dtype=bool)
+    paths = export_png(
+        dest_dir=tmp_path / "def", prefix="exp", timestamp="ts",
+        results=res2, configs=[field_cfg], image_files=[],
+        bg_mode="ref_frame", roi_mask=roi, dpi=72,
+        show_deformed=True, frame_start=0, frame_end=0,
+    )
+    assert len(paths) >= 1
+    assert all(p.exists() for p in paths)
+
+
 def test_export_png_deformed_uses_warped_mask(tmp_path, minimal_result, field_cfg):
     """export_png with show_deformed=True should use warped mask (not raw roi)."""
     roi = np.zeros((64, 64), dtype=bool)

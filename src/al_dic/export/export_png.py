@@ -250,7 +250,12 @@ def render_field_frame(
     bg_bgr = (_to_bgr(bg_image, Ho, Wo) if bg_image is not None
               else np.zeros((Ho, Wo, 3), dtype=np.uint8))
 
-    valid = np.isfinite(values)
+    # A node contributes only when BOTH its value and its render position are
+    # finite.  Crack-destroyed nodes carry NaN deformed positions (crack-aware
+    # cumulative transform), and Delaunay/qhull rejects non-finite points --
+    # filter them here so the triangulation below never sees a NaN.  Bit-exact
+    # when every position is finite.
+    valid = np.isfinite(values) & np.isfinite(render_coords).all(axis=1)
     if valid.sum() < 3:
         return bg_bgr.copy()
 
@@ -358,10 +363,17 @@ def _compute_warped_mask(
     u_disp = deformed_coords[:, 0] - coords[:, 0]
     v_disp = deformed_coords[:, 1] - coords[:, 1]
 
+    # Crack-destroyed nodes carry NaN deformed positions (crack-aware cumulative
+    # transform); Delaunay/qhull rejects non-finite points, so build the warp
+    # triangulation from the live nodes only.  Bit-exact when all are finite.
+    finite = np.isfinite(deformed_coords).all(axis=1)
+    if finite.sum() < 3:
+        return np.zeros((H, W), dtype=bool)
+
     # Share one Delaunay triangulation for both displacement components
-    tri = Delaunay(deformed_coords)
-    u_interp = LinearNDInterpolator(tri, u_disp, fill_value=np.nan)
-    v_interp = LinearNDInterpolator(tri, v_disp, fill_value=np.nan)
+    tri = Delaunay(deformed_coords[finite])
+    u_interp = LinearNDInterpolator(tri, u_disp[finite], fill_value=np.nan)
+    v_interp = LinearNDInterpolator(tri, v_disp[finite], fill_value=np.nan)
 
     gx = np.arange(W, dtype=np.float64)
     gy = np.arange(H, dtype=np.float64)
