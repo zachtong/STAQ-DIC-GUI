@@ -1610,37 +1610,37 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
 <context>
     <name>PipelineController</name>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="383"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="394"/>
         <source>Building pipeline configuration...</source>
         <translation>파이프라인 설정 구성 중…</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="541"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="552"/>
         <source>Loading images...</source>
         <translation>이미지 불러오는 중…</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="554"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="565"/>
         <source>  Loaded %1 images, shape=%2</source>
         <translation>  %1 개 이미지 로드됨, shape=%2</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="567"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="578"/>
         <source>  ROI mask: %1, %2 pixels (%3%)</source>
         <translation>  ROI 마스크: %1, %2 픽셀 (%3%)</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="593"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="604"/>
         <source>Run cancelled: define per-frame Regions of Interest for the missing reference frames or accept the inherited frame-1 mask in the next run.</source>
         <translation>실행 취소됨: 누락된 참조 프레임에 대해 프레임별 관심 영역을 정의하거나, 다음 실행 시 프레임 1의 마스크를 그대로 사용하도록 허용하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="614"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="625"/>
         <source>  %n frame(s) with custom ROI masks</source>
         <translation>  %n 개 프레임에서 사용자 지정 ROI 마스크 사용</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="744"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="755"/>
         <source>Results received: %n frame(s)</source>
         <translation>결과 수신: %n 프레임</translation>
     </message>
@@ -1653,12 +1653,13 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <translation>DIC 분석 시작 중…</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="246"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="257"/>
         <source>Analysis complete in %1s</source>
         <translation>분석 완료 (%1초)</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="254"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="250"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="265"/>
         <source>Analysis stopped by user.</source>
         <translation>사용자가 분석을 중지했습니다.</translation>
     </message>
@@ -1830,8 +1831,8 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
     </message>
     <message>
         <location filename="../../gui/panels/right_sidebar.py" line="76"/>
-        <source>Cancel the current analysis. Already-computed frames are kept; the run is marked as IDLE (not DONE).</source>
-        <translation>현재 분석을 취소합니다. 이미 계산된 프레임은 유지되며, 실행은 IDLE(DONE 아님) 상태로 표시됩니다.</translation>
+        <source>Cancel the current analysis. Frames already computed are kept so you can review or export the partial run.</source>
+        <translation>현재 분석을 취소합니다. 이미 계산된 프레임은 유지되므로 부분 결과를 검토하거나 내보낼 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../../gui/panels/right_sidebar.py" line="84"/>

@@ -706,6 +706,11 @@ def run_aldic(
     stopped_early = False
     stopped_at_frame: int | None = None
     stop_reason = ""
+    # Distinguishes a user Cancel (deliver the partial results like a success,
+    # no error dialog) from a seed-propagation failure (raise
+    # PartialResultError so the GUI shows a remediation dialog). Both KEEP the
+    # frames already computed; they differ only in how the final block returns.
+    user_cancelled = False
 
     # Seed-propagation per-run state (None when mode is anything else).
     # V1 restriction: seed_propagation is incompatible with refinement
@@ -788,10 +793,21 @@ def run_aldic(
     for frame_idx in range(1, n_frames):
         # --- Stop check ---
         if should_stop():
-            logger.info("User abort at frame %d/%d", frame_idx + 1, n_frames)
-            raise RuntimeError(
-                f"Pipeline aborted by user at frame {frame_idx + 1}"
+            # User pressed Cancel. Keep the frames already computed rather than
+            # discarding the whole run (honours the Cancel button's promise).
+            # Reuse the same partial-result path as a seed-propagation early
+            # stop, but flag it as a user cancel so the final block RETURNS the
+            # result normally instead of raising PartialResultError — a cancel
+            # is not an error and must not pop an error dialog.
+            logger.info(
+                "User cancel at frame %d/%d — keeping %d completed frame(s)",
+                frame_idx + 1, n_frames, frame_idx - 1,
             )
+            stopped_early = True
+            stopped_at_frame = frame_idx + 1
+            stop_reason = "Computation cancelled by user."
+            user_cancelled = True
+            break
 
         frac = (frame_idx - 1) * _frame_budget
         progress(frac, f"Frame {frame_idx}/{n_frames - 1}")
@@ -1692,10 +1708,10 @@ def run_aldic(
     )
 
     progress(1.0, "Pipeline complete.")
-    if stopped_early:
-        # Surface the failure (the original message keeps its actionable
-        # guidance) but carry the completed frames so the caller keeps them
-        # instead of losing the whole run.
+    if stopped_early and not user_cancelled:
+        # Seed-propagation failure: surface the failure (the original message
+        # keeps its actionable guidance) but carry the completed frames so the
+        # caller keeps them instead of losing the whole run.
         n_done = len(valid_disp)
         raise PartialResultError(
             f"{stop_reason} Kept partial results: {n_done} of "
@@ -1704,4 +1720,8 @@ def run_aldic(
             partial_result=pipeline_result,
             stopped_at_frame=stopped_at_frame,
         )
+    # Normal completion OR user cancel: deliver the (possibly partial) result.
+    # For a user cancel, stopped_early / stopped_at_frame / stop_reason are set
+    # on the result so the caller can label it as stopped early, but it is
+    # returned like a success (no exception, no error dialog).
     return pipeline_result

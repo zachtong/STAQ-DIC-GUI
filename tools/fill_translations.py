@@ -95,6 +95,25 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "fr":    "Calcul de déformation annulé.",
         "es":    "Cálculo de deformación cancelado.",
     },
+    # ========== PipelineController — Cancel button tooltip (all 8 locales) ======
+    "Cancel the current analysis. Frames already computed are kept "
+    "so you can review or export the partial run.": {
+        "zh_CN": "取消当前分析。已计算的帧会被保留，你可以查看或导出这部分结果。",
+        "zh_TW": "取消當前分析。已計算的影格會被保留，你可以檢視或匯出這部分結果。",
+        "ja":    "現在の解析をキャンセルします。計算済みのフレームは保持され、"
+                 "途中までの結果を確認またはエクスポートできます。",
+        "ko":    "현재 분석을 취소합니다. 이미 계산된 프레임은 유지되므로 부분 "
+                 "결과를 검토하거나 내보낼 수 있습니다.",
+        "de":    "Aktuelle Analyse abbrechen. Bereits berechnete Bilder bleiben "
+                 "erhalten, sodass Sie den Teillauf ansehen oder exportieren "
+                 "können.",
+        "fr":    "Annuler l'analyse en cours. Les images déjà calculées sont "
+                 "conservées, ce qui permet de consulter ou d'exporter le "
+                 "résultat partiel.",
+        "es":    "Cancelar el análisis actual. Los fotogramas ya calculados se "
+                 "conservan, por lo que puede revisar o exportar la ejecución "
+                 "parcial.",
+    },
     # ========== StrainParamPanel — edge trim (all 8 locales) ==========
     "Trim low-confidence edges": {
         "zh_CN": "裁剪低置信度边缘",

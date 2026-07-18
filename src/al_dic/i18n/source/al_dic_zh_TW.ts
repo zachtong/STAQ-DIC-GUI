@@ -1610,37 +1610,37 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
 <context>
     <name>PipelineController</name>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="383"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="394"/>
         <source>Building pipeline configuration...</source>
         <translation>正在構建流水線配置…</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="541"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="552"/>
         <source>Loading images...</source>
         <translation>正在載入影像…</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="554"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="565"/>
         <source>  Loaded %1 images, shape=%2</source>
         <translation>  已載入 %1 張影像，尺寸=%2</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="567"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="578"/>
         <source>  ROI mask: %1, %2 pixels (%3%)</source>
         <translation>  感興趣區域遮罩：%1，%2 像素（%3%）</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="593"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="604"/>
         <source>Run cancelled: define per-frame Regions of Interest for the missing reference frames or accept the inherited frame-1 mask in the next run.</source>
         <translation>已取消執行：請為缺失的參考影格定義逐影格感興趣區域，或在下次執行時接受繼承自第 1 影格的遮罩。</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="614"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="625"/>
         <source>  %n frame(s) with custom ROI masks</source>
         <translation>  %n 影格使用自訂感興趣區域遮罩</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="744"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="755"/>
         <source>Results received: %n frame(s)</source>
         <translation>已收到結果：%n 影格</translation>
     </message>
@@ -1653,12 +1653,13 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <translation>開始 DIC 分析…</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="246"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="257"/>
         <source>Analysis complete in %1s</source>
         <translation>分析完成，耗時 %1 秒</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="254"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="250"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="265"/>
         <source>Analysis stopped by user.</source>
         <translation>使用者已停止分析。</translation>
     </message>
@@ -1830,8 +1831,8 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
     </message>
     <message>
         <location filename="../../gui/panels/right_sidebar.py" line="76"/>
-        <source>Cancel the current analysis. Already-computed frames are kept; the run is marked as IDLE (not DONE).</source>
-        <translation>取消當前分析。已計算的幀會保留；運行狀態標記為 IDLE（非 DONE）。</translation>
+        <source>Cancel the current analysis. Frames already computed are kept so you can review or export the partial run.</source>
+        <translation>取消當前分析。已計算的影格會被保留，你可以檢視或匯出這部分結果。</translation>
     </message>
     <message>
         <location filename="../../gui/panels/right_sidebar.py" line="84"/>

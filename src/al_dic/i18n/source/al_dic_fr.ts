@@ -1610,37 +1610,37 @@ N&apos;affecte que l&apos;initialisation des points de départ ; les autres nœu
 <context>
     <name>PipelineController</name>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="383"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="394"/>
         <source>Building pipeline configuration...</source>
         <translation>Construction de la configuration du pipeline…</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="541"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="552"/>
         <source>Loading images...</source>
         <translation>Chargement des images…</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="554"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="565"/>
         <source>  Loaded %1 images, shape=%2</source>
         <translation>  %1 images chargées, forme=%2</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="567"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="578"/>
         <source>  ROI mask: %1, %2 pixels (%3%)</source>
         <translation>  Masque ROI : %1, %2 pixels (%3%)</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="593"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="604"/>
         <source>Run cancelled: define per-frame Regions of Interest for the missing reference frames or accept the inherited frame-1 mask in the next run.</source>
         <translation>Exécution annulée : définissez les régions d&apos;intérêt par image pour les images de référence manquantes, ou acceptez le masque hérité de l&apos;image 1 au prochain lancement.</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="614"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="625"/>
         <source>  %n frame(s) with custom ROI masks</source>
         <translation>  %n images avec des masques ROI personnalisés</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="744"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="755"/>
         <source>Results received: %n frame(s)</source>
         <translation>Résultats reçus : %n images</translation>
     </message>
@@ -1653,12 +1653,13 @@ N&apos;affecte que l&apos;initialisation des points de départ ; les autres nœu
         <translation>Démarrage de l&apos;analyse DIC…</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="246"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="257"/>
         <source>Analysis complete in %1s</source>
         <translation>Analyse terminée en %1 s</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="254"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="250"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="265"/>
         <source>Analysis stopped by user.</source>
         <translation>Analyse arrêtée par l&apos;utilisateur.</translation>
     </message>
@@ -1830,8 +1831,8 @@ N&apos;affecte que l&apos;initialisation des points de départ ; les autres nœu
     </message>
     <message>
         <location filename="../../gui/panels/right_sidebar.py" line="76"/>
-        <source>Cancel the current analysis. Already-computed frames are kept; the run is marked as IDLE (not DONE).</source>
-        <translation>Annuler l&apos;analyse en cours. Les images déjà calculées sont conservées ; l&apos;exécution passe à l&apos;état IDLE (et non DONE).</translation>
+        <source>Cancel the current analysis. Frames already computed are kept so you can review or export the partial run.</source>
+        <translation>Annuler l&apos;analyse en cours. Les images déjà calculées sont conservées, ce qui permet de consulter ou d&apos;exporter le résultat partiel.</translation>
     </message>
     <message>
         <location filename="../../gui/panels/right_sidebar.py" line="84"/>

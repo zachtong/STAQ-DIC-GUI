@@ -168,23 +168,64 @@ class TestRunALDICValidation:
         assert result.dic_mesh is not None
         assert len(result.result_disp) >= 1
 
-    def test_stop_fn_aborts(self):
-        """stop_fn returning True should raise RuntimeError."""
+    def test_stop_fn_returns_partial_immediately(self):
+        """stop_fn True from the start stops cleanly and returns a result
+        marked stopped_early — a user cancel is NOT an error, so run_aldic
+        must not raise (the GUI keeps whatever completed instead of losing
+        the whole run)."""
         h, w = 64, 64
         ref, deformed = _make_speckle_pair(h, w)
         para = _make_default_para(h, w)
         mesh = _make_simple_mesh(h, w, step=16)
         U0 = np.zeros(2 * mesh.coordinates_fem.shape[0])
 
-        with pytest.raises(RuntimeError, match="aborted"):
-            run_aldic(
-                para,
-                [ref, deformed],
-                [np.ones((h, w)), np.ones((h, w))],
-                stop_fn=lambda: True,
-                mesh=mesh,
-                U0=U0,
-            )
+        result = run_aldic(
+            para,
+            [ref, deformed],
+            [np.ones((h, w)), np.ones((h, w))],
+            stop_fn=lambda: True,
+            mesh=mesh,
+            U0=U0,
+            compute_strain=False,
+        )
+        assert result.stopped_early is True
+        # Cancelled before the single pair completed -> no frames kept.
+        assert len(result.result_disp) == 0
+
+    def test_stop_fn_keeps_completed_frames(self):
+        """Cancelling mid-run keeps the frames already computed instead of
+        discarding the whole run (regression for the Cancel-discards-all bug;
+        aligns behaviour with the Cancel button's 'frames are kept' promise)."""
+        h, w = 96, 96
+        ref, d1 = _make_speckle_pair(h, w, shift_x=0.4)
+        _, d2 = _make_speckle_pair(h, w, shift_x=0.8)
+        para = _make_default_para(h, w)
+        mesh = _make_simple_mesh(h, w, step=16)
+        U0 = np.zeros(2 * mesh.coordinates_fem.shape[0])
+
+        # Stop AFTER the first pair completes: the stop check runs once at the
+        # top of each frame iteration, so return False on the frame-1 check
+        # and True on the frame-2 check.
+        calls = {"n": 0}
+
+        def stop_after_first() -> bool:
+            calls["n"] += 1
+            return calls["n"] > 1
+
+        result = run_aldic(
+            para,
+            [ref, d1, d2],
+            [np.ones((h, w)), np.ones((h, w)), np.ones((h, w))],
+            stop_fn=stop_after_first,
+            mesh=mesh,
+            U0=U0,
+            compute_strain=False,
+        )
+        assert result.stopped_early is True
+        assert result.stopped_at_frame == 3  # 1-based: stopped entering frame 3
+        # Frame 1 completed and is kept; frame 2 was never computed.
+        assert len(result.result_disp) == 1
+        assert result.result_disp[0] is not None
 
 
 class TestRunALDICZeroDisplacement:

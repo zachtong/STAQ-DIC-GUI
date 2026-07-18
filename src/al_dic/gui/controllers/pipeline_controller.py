@@ -241,14 +241,25 @@ class PipelineWorker(QThread):
                 refinement_policy=self._refinement_policy,
             )
             elapsed = time.perf_counter() - t0
-            self.log.emit(
-                tr_args(
-                    self.tr("Analysis complete in %1s"),
-                    f"{elapsed:.1f}",
-                ),
-                "success",
-            )
-            self.finished_result.emit(result)
+            if getattr(result, "stopped_early", False):
+                # User pressed Cancel: run_aldic returned the frames that
+                # completed (a cancel is not an error). Keep them if any, so
+                # the controller shows the partial run and Export/Strain stay
+                # available; if none completed, deliver None so the run returns
+                # to IDLE with nothing to show.
+                self.log.emit(self.tr("Analysis stopped by user."), "warn")
+                self.finished_result.emit(
+                    result if len(result.result_disp) > 0 else None
+                )
+            else:
+                self.log.emit(
+                    tr_args(
+                        self.tr("Analysis complete in %1s"),
+                        f"{elapsed:.1f}",
+                    ),
+                    "success",
+                )
+                self.finished_result.emit(result)
         except RuntimeError as e:
             if "abort" in str(e).lower() or "stop" in str(e).lower():
                 self.log.emit(self.tr("Analysis stopped by user."), "warn")

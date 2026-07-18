@@ -73,8 +73,8 @@ class RightSidebar(QWidget):
         self._cancel_btn.setFixedHeight(30)
         self._cancel_btn.setEnabled(False)
         self._cancel_btn.setToolTip(self.tr(
-            "Cancel the current analysis. Already-computed frames are "
-            "kept; the run is marked as IDLE (not DONE)."
+            "Cancel the current analysis. Frames already computed are kept "
+            "so you can review or export the partial run."
         ))
         if _HAS_ICONS:
             self._cancel_btn.setIcon(icon_stop())

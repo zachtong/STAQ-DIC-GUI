@@ -1610,37 +1610,37 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
 <context>
     <name>PipelineController</name>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="383"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="394"/>
         <source>Building pipeline configuration...</source>
         <translation>パイプライン設定を構築中…</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="541"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="552"/>
         <source>Loading images...</source>
         <translation>画像を読み込み中…</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="554"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="565"/>
         <source>  Loaded %1 images, shape=%2</source>
         <translation>  %1 枚の画像を読み込みました、shape=%2</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="567"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="578"/>
         <source>  ROI mask: %1, %2 pixels (%3%)</source>
         <translation>  ROI マスク：%1、%2 ピクセル（%3%）</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="593"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="604"/>
         <source>Run cancelled: define per-frame Regions of Interest for the missing reference frames or accept the inherited frame-1 mask in the next run.</source>
         <translation>実行をキャンセルしました：欠けている参照フレームに対してフレーム別の関心領域を定義するか、次回実行時に第 1 フレームのマスクを継承してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="614"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="625"/>
         <source>  %n frame(s) with custom ROI masks</source>
         <translation>  %n 個のフレームでカスタム ROI マスクを使用</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="744"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="755"/>
         <source>Results received: %n frame(s)</source>
         <translation>結果を受信：%n フレーム</translation>
     </message>
@@ -1653,12 +1653,13 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <translation>DIC 解析を開始します…</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="246"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="257"/>
         <source>Analysis complete in %1s</source>
         <translation>解析が完了しました（%1 秒）</translation>
     </message>
     <message>
-        <location filename="../../gui/controllers/pipeline_controller.py" line="254"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="250"/>
+        <location filename="../../gui/controllers/pipeline_controller.py" line="265"/>
         <source>Analysis stopped by user.</source>
         <translation>ユーザーにより解析が停止されました。</translation>
     </message>
@@ -1830,8 +1831,8 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
     </message>
     <message>
         <location filename="../../gui/panels/right_sidebar.py" line="76"/>
-        <source>Cancel the current analysis. Already-computed frames are kept; the run is marked as IDLE (not DONE).</source>
-        <translation>現在の解析をキャンセルします。計算済みのフレームは保持され、ジョブは IDLE（DONE ではない）となります。</translation>
+        <source>Cancel the current analysis. Frames already computed are kept so you can review or export the partial run.</source>
+        <translation>現在の解析をキャンセルします。計算済みのフレームは保持され、途中までの結果を確認またはエクスポートできます。</translation>
     </message>
     <message>
         <location filename="../../gui/panels/right_sidebar.py" line="84"/>
