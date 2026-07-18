@@ -103,6 +103,17 @@ def crack_mask_from_deformed(
     deformed_coords = ref_coords.copy()
     deformed_coords[:, 0] += u_accum[0::2]
     deformed_coords[:, 1] += u_accum[1::2]
-    keep = trimmed_keep_indices(deformed_coords, elements, deformed_mask)
-    kept_elements = elements[keep]
+    # Elements touching a destroyed node (NaN U_accum: material consumed by
+    # the crack) contain dead material -- remove them before the geometric
+    # trim so their reference footprint is not painted as material and the
+    # trimmer never sees NaN coordinates.
+    corner_ok = np.isfinite(
+        deformed_coords[elements[:, :4]]
+    ).all(axis=(1, 2))
+    live = elements[corner_ok]
+    if live.shape[0] == 0:
+        h, w = int(img_shape[0]), int(img_shape[1])
+        return np.zeros((h, w), dtype=np.float64), live
+    keep = trimmed_keep_indices(deformed_coords, live, deformed_mask)
+    kept_elements = live[keep]
     return rasterize_element_mask(ref_coords, kept_elements, img_shape), kept_elements

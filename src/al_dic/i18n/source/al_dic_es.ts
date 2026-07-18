@@ -191,62 +191,62 @@ Solo relevante para el modo de estimación inicial FFT.</translation>
 <context>
     <name>CanvasArea</name>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1197"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1202"/>
         <source>Fit</source>
         <translation>Ajustar</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1198"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1203"/>
         <source>Fit image to viewport</source>
         <translation>Ajustar la imagen a la vista</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1203"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1208"/>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1204"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1209"/>
         <source>Zoom to 100% (1:1)</source>
         <translation>Zoom al 100% (1:1)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1208"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1213"/>
         <source>Zoom in</source>
         <translation>Acercar</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1214"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1219"/>
         <source>–</source>
         <translation>–</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1215"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1220"/>
         <source>Zoom out</source>
         <translation>Alejar</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1228"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1233"/>
         <source>Show Grid</source>
         <translation>Mostrar cuadrícula</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1229"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1234"/>
         <source>Show/hide computational mesh grid</source>
         <translation>Mostrar/ocultar la cuadrícula de la malla</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1232"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1237"/>
         <source>Show Subset</source>
         <translation>Mostrar subconjunto</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1233"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1238"/>
         <source>Show subset window on hover (requires Grid)</source>
         <translation>Mostrar ventana del subconjunto al pasar el cursor (requiere cuadrícula)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1487"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1492"/>
         <source>Placing Starting Points</source>
         <translation>Colocando puntos de inicio</translation>
     </message>
@@ -1001,12 +1001,12 @@ Las etiquetas se actualizan por fotograma cuando el rango auto está activo.</tr
 <context>
     <name>ImageCanvas</name>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1043"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1048"/>
         <source>Load images first before drawing a Region of Interest.</source>
         <translation>Cargue primero las imágenes antes de dibujar una región de interés.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1062"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1067"/>
         <source>The three points are nearly collinear — pick points spread around the circle&apos;s edge.</source>
         <translation>Los tres puntos son casi colineales — elija puntos repartidos por el borde del círculo.</translation>
     </message>

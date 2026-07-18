@@ -82,9 +82,14 @@ def visible_values(
     if mask is None or len(values) == 0:
         return values
     h, w = mask.shape
-    ix = np.round(nodes[:, 0]).astype(int)
-    iy = np.round(nodes[:, 1]).astype(int)
-    in_bounds = (ix >= 0) & (ix < w) & (iy >= 0) & (iy < h)
+    # Crack-destroyed nodes have NaN deformed coordinates: not visible
+    # (nan_to_num avoids the NaN->int cast warning; the finite check does
+    # the actual exclusion).
+    finite = np.isfinite(nodes).all(axis=1)
+    safe = np.nan_to_num(nodes, nan=-1.0)
+    ix = np.round(safe[:, 0]).astype(int)
+    iy = np.round(safe[:, 1]).astype(int)
+    in_bounds = (ix >= 0) & (ix < w) & (iy >= 0) & (iy < h) & finite
     vis = np.zeros(len(values), dtype=bool)
     vis[in_bounds] = mask[iy[in_bounds], ix[in_bounds]]
     if not np.any(vis):
@@ -1830,13 +1835,16 @@ class CanvasArea(QWidget):
     ) -> NDArray[np.bool_]:
         """Return per-node boolean: True if node is inside the ROI."""
         n = coords.shape[0]
-        valid = np.ones(n, dtype=bool)
+        # Crack-destroyed nodes have NaN deformed coordinates: never valid
+        # (and NaN->int casts would emit runtime warnings).
+        finite = np.isfinite(coords).all(axis=1)
         if roi_mask is None:
-            return valid
+            return finite
         h, w = roi_mask.shape
-        ix = np.clip(np.round(coords[:, 0]).astype(int), 0, w - 1)
-        iy = np.clip(np.round(coords[:, 1]).astype(int), 0, h - 1)
-        valid = roi_mask[iy, ix]
+        safe = np.nan_to_num(coords, nan=0.0)
+        ix = np.clip(np.round(safe[:, 0]).astype(int), 0, w - 1)
+        iy = np.clip(np.round(safe[:, 1]).astype(int), 0, h - 1)
+        valid = roi_mask[iy, ix] & finite
         return valid
 
     def _show_results_mesh(self) -> None:

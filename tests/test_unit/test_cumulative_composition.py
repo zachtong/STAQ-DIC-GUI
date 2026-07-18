@@ -378,3 +378,150 @@ class TestAccumulativeEquivalence:
             np.testing.assert_allclose(
                 result[i].U_accum[0::2], d, atol=1e-12,
             )
+
+
+# ---------------------------------------------------------------------------
+# Tests: crack-aware composition (masks + crack_radius)
+# ---------------------------------------------------------------------------
+
+
+def _make_cut_mesh(h=120, w=200, step=16.0):
+    """Regular mesh with REAL Q4 elements, plus a variant with a horizontal
+    band of elements removed (an open crack cut)."""
+    xs = np.arange(16.0, w - 15.0, step)
+    ys = np.arange(16.0, h - 15.0, step)
+    XX, YY = np.meshgrid(xs, ys, indexing="ij")
+    coords = np.column_stack([XX.ravel(), YY.ravel()])
+    nx, ny = len(xs), len(ys)
+    ii, jj = np.meshgrid(np.arange(nx - 1), np.arange(ny - 1), indexing="ij")
+    ii, jj = ii.ravel(), jj.ravel()
+    elems = np.full((len(ii), 8), -1, np.int64)
+    elems[:, 0] = ii * ny + jj
+    elems[:, 1] = (ii + 1) * ny + jj
+    elems[:, 2] = (ii + 1) * ny + (jj + 1)
+    elems[:, 3] = ii * ny + (jj + 1)
+    return coords, elems, xs, ys
+
+
+class TestCrackAwareComposition:
+    """masks + crack_radius: near-gap increments come from the crack-cut
+    elements (never mixing faces); deep-gap nodes die (NaN); masks=None or an
+    all-ones mask keeps the legacy result bit-for-bit."""
+
+    def test_all_ones_mask_is_byte_identical_to_legacy(self):
+        coords, elems, _, _ = _make_cut_mesh()
+        n = len(coords)
+        rng = np.random.default_rng(11)
+        u = rng.uniform(-2, 2, n)
+        v = rng.uniform(-2, 2, n)
+        mesh = DICMesh(coordinates_fem=coords, elements_fem=elems)
+
+        def run(**kw):
+            disp = [
+                _make_frame_result(u, v, ref_frame=0),
+                _make_frame_result(u * 0.5, v * 0.5, ref_frame=1),
+            ]
+            meshes = [
+                DICMesh(coordinates_fem=coords.copy(),
+                        elements_fem=elems.copy()),
+                DICMesh(coordinates_fem=coords.copy(),
+                        elements_fem=elems.copy()),
+            ]
+            schedule = FrameSchedule.from_mode("incremental", 3)
+            return _compute_cumulative_displacements_tree(
+                disp, meshes, 3, schedule, **kw,
+            )
+
+        legacy = run()
+        ones = [np.ones((120, 200))] * 3
+        aware = run(masks=ones, crack_radius=32.0)
+        for i in range(2):
+            np.testing.assert_array_equal(
+                legacy[i].U_accum, aware[i].U_accum,
+            )
+
+    def _crack_setup(self):
+        """2 deformed frames, incremental.  Pair 1->2 opens a crack: its
+        reference mask (frame 1) has an open band and its mesh is cut there.
+        The pair-1->2 increment is a step across the crack."""
+        coords, elems, xs, ys = _make_cut_mesh()
+        n = len(coords)
+        h, w = 120, 200
+        cy = 64.0  # crack line: between node rows 48 and 80 (node row 64 dies)
+
+        # Frame-0 and frame-1 masks: all material (crack not yet open).
+        m_full = np.ones((h, w))
+        # Frame-1 mask (reference of pair 1->2): open gap rows 56..72.
+        m_open = np.ones((h, w))
+        m_open[56:73, :] = 0.0
+
+        # Pair 0->1: zero increment, full mesh.
+        u01 = np.zeros(n)
+        v01 = np.zeros(n)
+
+        # Pair 1->2: rigid faces step across the crack; mesh cut at the gap.
+        v12 = np.where(coords[:, 1] < cy, -6.0, 6.0)
+        u12 = np.zeros(n)
+        cent = coords[elems[:, :4]].mean(axis=1)
+        cut = (np.abs(cent[:, 1] - cy) < 16.0)
+        elems_cut = elems[~cut]
+
+        disp = [
+            _make_frame_result(u01, v01, ref_frame=0),
+            _make_frame_result(u12, v12, ref_frame=1),
+        ]
+        meshes = [
+            DICMesh(coordinates_fem=coords.copy(), elements_fem=elems.copy()),
+            DICMesh(coordinates_fem=coords.copy(),
+                    elements_fem=elems_cut.copy()),
+        ]
+        schedule = FrameSchedule.from_mode("incremental", 3)
+        masks = [m_full, m_open, m_open]
+        return coords, disp, meshes, schedule, masks, cy
+
+    def test_face_nodes_get_face_pure_values(self):
+        coords, disp, meshes, schedule, masks, cy = self._crack_setup()
+        result = _compute_cumulative_displacements_tree(
+            disp, meshes, 3, schedule, masks=masks, crack_radius=32.0,
+        )
+        v_acc = result[1].U_accum[1::2]
+        # Node rows adjacent to the gap (y=48 upper, y=80 lower) must carry
+        # the pure face value -- NOT a cross-gap blend.
+        upper = np.isclose(coords[:, 1], 48.0)
+        lower = np.isclose(coords[:, 1], 80.0)
+        np.testing.assert_allclose(v_acc[upper], -6.0, atol=1e-9)
+        np.testing.assert_allclose(v_acc[lower], 6.0, atol=1e-9)
+
+    def test_mid_gap_node_dies_and_stays_dead(self):
+        coords, disp, meshes, schedule, masks, cy = self._crack_setup()
+        result = _compute_cumulative_displacements_tree(
+            disp, meshes, 3, schedule, masks=masks, crack_radius=32.0,
+        )
+        mid = np.isclose(coords[:, 1], 64.0)  # node row inside the open gap
+        v2 = result[1].U_accum[1::2]
+        assert np.isnan(v2[mid]).all()
+        # The frame-1 mask already shows the open band, so the child-side
+        # death check kills the mid-band nodes at frame 1 as well.
+        v1 = result[0].U_accum[1::2]
+        assert np.isnan(v1[mid]).all()
+        # Off-band nodes stay finite on every frame.
+        off = ~mid
+        assert np.isfinite(result[0].U_accum[1::2][off]).all()
+        assert np.isfinite(v2[off]).all()
+
+    def test_born_dead_nodes_masked_at_frame0(self):
+        coords, disp, meshes, schedule, masks, cy = self._crack_setup()
+        # Frame-0 mask now masks the row-64 band from the start.
+        m0 = np.ones((120, 200))
+        m0[62:67, :] = 0.0
+        masks = [m0] + masks[1:]
+        result = _compute_cumulative_displacements_tree(
+            disp, meshes, 3, schedule, masks=masks, crack_radius=32.0,
+        )
+        mid = np.isclose(coords[:, 1], 64.0)
+        for i in range(2):
+            assert np.isnan(result[i].U_accum[0::2][mid]).all()
+            assert np.isnan(result[i].U_accum[1::2][mid]).all()
+        # Off-band nodes unaffected.
+        off = np.isclose(coords[:, 1], 16.0)
+        assert np.isfinite(result[1].U_accum[1::2][off]).all()

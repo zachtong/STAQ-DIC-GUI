@@ -44,8 +44,10 @@ def scattered_interpolant(
     Returns:
         (M,) array of interpolated values.
     """
-    # Remove NaN entries
-    valid = ~np.isnan(values)
+    # Remove NaN entries (values, and points with non-finite coordinates --
+    # e.g. crack-destroyed nodes whose deformed position is undefined; a NaN
+    # point would make scipy's Delaunay raise).
+    valid = ~np.isnan(values) & np.isfinite(points).all(axis=1)
     if not np.any(valid):
         return np.full(len(query_points), np.nan)
 
@@ -106,8 +108,9 @@ def scattered_interpolant_uv(
     Returns:
         (disp_u, disp_v), each (M,), identical to the per-field calls.
     """
-    valid_u = ~np.isnan(u)
-    valid_v = ~np.isnan(v)
+    finite_pts = np.isfinite(points).all(axis=1)
+    valid_u = ~np.isnan(u) & finite_pts
+    valid_v = ~np.isnan(v) & finite_pts
 
     # Shared triangulation is only valid when u and v drop the same nodes.
     if not np.array_equal(valid_u, valid_v):
@@ -234,7 +237,16 @@ class FieldInterpolator:
             )
         self._method = method
         self._nodes = np.asarray(nodes, dtype=np.float64)
-        self._tri = Delaunay(self._nodes)
+        # Nodes with non-finite coordinates (crack-destroyed nodes in a
+        # deformed configuration) cannot participate: Delaunay raises on NaN.
+        self._finite = np.isfinite(self._nodes).all(axis=1)
+        self._nodes_f = self._nodes[self._finite]
+        if self._nodes_f.shape[0] < 3:
+            raise ValueError(
+                "FieldInterpolator needs at least 3 nodes with finite "
+                f"coordinates (got {self._nodes_f.shape[0]})."
+            )
+        self._tri = Delaunay(self._nodes_f)
 
     @property
     def method(self) -> str:
@@ -264,13 +276,16 @@ class FieldInterpolator:
             Interpolated field. NaN where undefined (if fill_outside="nan").
         """
         vals = np.asarray(values, dtype=np.float64)
-        valid = ~np.isnan(vals)
+        valid = ~np.isnan(vals) & self._finite
 
         if not np.any(valid):
             return np.full(x_grid.shape, np.nan, dtype=np.float64)
 
-        if np.all(valid):
-            pts, v, tri = self._nodes, vals, self._tri
+        if np.array_equal(valid, self._finite):
+            # All finite-position nodes carry values: reuse the prebuilt
+            # triangulation (identical to the historical all-valid fast path
+            # when every node is finite).
+            pts, v, tri = self._nodes_f, vals[self._finite], self._tri
         else:
             pts = self._nodes[valid]
             v = vals[valid]
@@ -372,11 +387,13 @@ def scatter_to_grid(
         out_step = max(1, mesh_step // oversample)
 
     # --- Build output grid covering node bounding box ---
+    # nanmin/nanmax: crack-destroyed nodes carry NaN deformed coordinates and
+    # must not blow up the extent computation (identical when all finite).
     margin = mesh_step // 2
-    x_min = max(0, int(math.floor(nodes[:, 0].min())) - margin)
-    x_max = min(w, int(math.ceil(nodes[:, 0].max())) + margin)
-    y_min = max(0, int(math.floor(nodes[:, 1].min())) - margin)
-    y_max = min(h, int(math.ceil(nodes[:, 1].max())) + margin)
+    x_min = max(0, int(math.floor(np.nanmin(nodes[:, 0]))) - margin)
+    x_max = min(w, int(math.ceil(np.nanmax(nodes[:, 0]))) + margin)
+    y_min = max(0, int(math.floor(np.nanmin(nodes[:, 1]))) - margin)
+    y_max = min(h, int(math.ceil(np.nanmax(nodes[:, 1]))) + margin)
 
     grid_xs = np.arange(x_min, x_max, out_step, dtype=np.float64)
     grid_ys = np.arange(y_min, y_max, out_step, dtype=np.float64)

@@ -53,6 +53,11 @@ from .data_structures import (
 )
 from ..io.image_ops import ListFrameProvider, compute_image_gradient
 from ..mesh.criteria.brush_region import BrushRegionCriterion
+from ..mesh.element_interp import (
+    ElementInterpolator,
+    GapSuspector,
+    majority_masked,
+)
 from ..mesh.mark_bridging import trimmed_keep_indices
 from ..mesh.mesh_setup import mesh_setup
 from ..mesh.rasterize import crack_mask_from_deformed
@@ -426,6 +431,8 @@ def _compute_cumulative_displacements_tree(
     schedule: FrameSchedule,
     progress_fn: Callable[[float, str], None] | None = None,
     progress_start: float = 0.90,
+    masks: list[NDArray[np.float64]] | None = None,
+    crack_radius: float | None = None,
 ) -> list[FrameResult | None]:
     """Transform per-pair displacements to cumulative via tree-based composition.
 
@@ -437,32 +444,95 @@ def _compute_cumulative_displacements_tree(
 
         coords_B = coords_A + u_AB(coords_A)
         coords_C = coords_B + u_BC(coords_B)
-        u_AC     = coords_C - coords_A
+        u_AC     = coords_C - coords_B + ... (see loop)
 
     When a frame's reference is frame 0 directly (accumulative-style),
-    U_accum = U (no composition needed).
+    the single interpolation step queries exactly at the mesh nodes, so no
+    cross-gap mixing can occur.
+
+    Crack awareness (``masks`` + ``crack_radius`` provided): the Delaunay
+    interpolant connects the two faces of an open crack straight across the
+    gap, so composed steps near a crack mix both faces' motions and smear
+    ``U_accum`` along the crack wake.  For query points within
+    ``crack_radius`` of a masked-out pixel of the pair's REFERENCE mask, the
+    increment is re-evaluated bilinearly INSIDE the pair mesh's own
+    (crack-cut) elements -- a kept element never spans the gap, so a face
+    point only sees same-face nodes.  Points that resolve to no element and
+    have no material within a small margin (deep inside the open gap, i.e.
+    destroyed material) become NaN and stay NaN for all descendant frames.
+    Nodes whose frame-0 reference pixel is masked (they never were material,
+    e.g. the initial crack band) are NaN from the start.  Everything farther
+    than ``crack_radius`` from a gap keeps the byte-identical Delaunay path.
 
     Args:
         result_disp: Per-frame displacement results (length n_frames-1).
         result_fe_mesh: Per-frame mesh snapshots (length n_frames-1).
         n_frames: Total number of frames.
         schedule: FrameSchedule defining the reference tree.
+        masks: Optional per-frame ROI masks (length n_frames); enables the
+            crack-aware near-gap override.  ``None`` preserves the legacy
+            behaviour exactly.
+        crack_radius: Suspicion radius in px around masked pixels (typically
+            ~2 mesh steps).  ``None`` disables the override.
 
     Returns:
-        Updated result_disp with U_accum set for each frame.
+        Updated result_disp with U_accum set for each frame.  With crack
+        awareness enabled, U_accum is NaN at destroyed (in-crack) nodes.
     """
     if result_fe_mesh[0] is None or result_disp[0] is None:
         return result_disp
 
     ref_coords = result_fe_mesh[0].coordinates_fem
 
+    crack_aware = (
+        masks is not None
+        and crack_radius is not None
+        and crack_radius > 0
+        and len(masks) >= n_frames
+    )
+    # Per-frame gap suspectors, built lazily.  Bounded: along an incremental
+    # chain each frame index is needed for at most two consecutive steps
+    # (child-side check of step k, parent-side of step k+1), while in
+    # accumulative mode frame 0 recurs for every step -- a tiny LRU covers
+    # both without accumulating one block map per frame across hundreds of
+    # frames.  ElementInterpolators are deliberately NOT cached: each pair
+    # mesh is interpolated in exactly one composition step (cum_coords_cache
+    # walks one new step per frame), so a cache would never hit but would
+    # pin every frame's mesh data in memory.
+    gap_cache: OrderedDict[int, GapSuspector] = OrderedDict()
+    _GAP_CACHE_SIZE = 4
+
+    def _gap_suspector(frame_idx: int) -> GapSuspector:
+        gs = gap_cache.get(frame_idx)
+        if gs is None:
+            gs = GapSuspector(masks[frame_idx], crack_radius)
+            gap_cache[frame_idx] = gs
+            if len(gap_cache) > _GAP_CACHE_SIZE:
+                gap_cache.popitem(last=False)
+        else:
+            gap_cache.move_to_end(frame_idx)
+        return gs
+
+    coord0 = ref_coords.copy()
+    if crack_aware:
+        # Nodes whose frame-0 pixel is masked never were material (initial
+        # crack band / outside-ROI skirt near a gap): dead from the start.
+        h0, w0 = masks[0].shape
+        px0 = np.clip(np.round(ref_coords[:, 0]).astype(int), 0, w0 - 1)
+        py0 = np.clip(np.round(ref_coords[:, 1]).astype(int), 0, h0 - 1)
+        born_dead = (
+            (masks[0][py0, px0] <= 0.5) & _gap_suspector(0).flag(ref_coords)
+        )
+        coord0[born_dead] = np.nan
+
     # Cache: cum_coords[frame_idx] = absolute coordinates after tracking
     # from frame 0 to frame_idx.  frame 0 = ref_coords.
-    cum_coords_cache: dict[int, NDArray[np.float64]] = {0: ref_coords.copy()}
+    cum_coords_cache: dict[int, NDArray[np.float64]] = {0: coord0}
     # Reuse the mesh triangulation across frames: every frame interpolates on
     # the same mesh, and the Delaunay build (~98% of the transform) would
     # otherwise be repeated per frame. Keyed by (points, valid mask) -- one
-    # build per uniform-mesh run instead of one per frame, byte-identical.
+    # build per uniform-mesh run instead of one per frame, byte-identical
+    # away from any crack-aware override region.
     tri_cache: dict = {}
 
     for i in range(n_frames - 1):
@@ -513,11 +583,85 @@ def _compute_cumulative_displacements_tree(
             # u and v are interpolated through ONE shared triangulation
             # (built once instead of twice) -- byte-identical to two
             # scattered_interpolant calls when u/v share the same NaN nodes.
-            disp_x, disp_y = scattered_interpolant_uv(
-                child_mesh.coordinates_fem, u_inc, v_inc, coord_curr,
-                tri_cache=tri_cache,
-            )
+            # Rows already dead (NaN from a crack) stay dead: query only the
+            # finite rows so NaN coordinates never reach the interpolators.
+            finite_q = np.isfinite(coord_curr).all(axis=1)
+            if finite_q.all():
+                disp_x, disp_y = scattered_interpolant_uv(
+                    child_mesh.coordinates_fem, u_inc, v_inc, coord_curr,
+                    tri_cache=tri_cache,
+                )
+            else:
+                disp_x = np.full(len(coord_curr), np.nan)
+                disp_y = np.full(len(coord_curr), np.nan)
+                if finite_q.any():
+                    dx_f, dy_f = scattered_interpolant_uv(
+                        child_mesh.coordinates_fem, u_inc, v_inc,
+                        coord_curr[finite_q], tri_cache=tri_cache,
+                    )
+                    disp_x[finite_q] = dx_f
+                    disp_y[finite_q] = dy_f
+
+            if crack_aware:
+                # Near-gap override: within crack_radius of a masked pixel of
+                # the pair's reference mask, re-evaluate the increment inside
+                # the pair's own crack-cut elements so it never mixes the two
+                # crack faces.  parent = path[step + 1] is the pair reference.
+                parent_frame = path[step + 1]
+                suspects = (
+                    _gap_suspector(parent_frame).flag(coord_curr) & finite_q
+                )
+                if suspects.any():
+                    qi = np.where(suspects)[0]
+                    # Death first: a point whose 3x3 neighbourhood is
+                    # majority-masked sits in (or is smeared onto) the open
+                    # gap -- destroyed material, dead from this frame on.
+                    # This must precede the element lookup: an element can
+                    # survive the >50% hole-trim rule while a sub-half band
+                    # of its bbox is gap, so "geometrically inside a kept
+                    # element" does NOT prove the point is material.  A live
+                    # node on a straight boundary sees a material majority,
+                    # so it cannot be killed here.
+                    dead = majority_masked(
+                        coord_curr[qi], masks[parent_frame],
+                    )
+                    kill = qi[dead]
+                    disp_x[kill] = np.nan
+                    disp_y[kill] = np.nan
+                    # Survivors near the gap: re-evaluate inside the pair's
+                    # crack-cut elements so the increment never blends the
+                    # two crack faces.  Unresolved survivors (boundary
+                    # jitter, non-rect elements) keep the Delaunay value.
+                    alive = qi[~dead]
+                    if alive.size:
+                        # Built per step, not cached: each pair mesh is
+                        # composed through exactly once (see gap_cache note).
+                        ei = ElementInterpolator(
+                            child_mesh.coordinates_fem,
+                            child_mesh.elements_fem,
+                        )
+                        u_b, v_b, resolved = ei.interpolate_uv(
+                            u_inc, v_inc, coord_curr[alive],
+                        )
+                        sel = alive[resolved]
+                        disp_x[sel] = u_b[resolved]
+                        disp_y[sel] = v_b[resolved]
+
             coord_curr = coord_curr + np.column_stack([disp_x, disp_y])
+
+            if crack_aware and child_frame < len(masks):
+                # Child-side death check: material consumed BETWEEN parent and
+                # child (the freshly-grown crack segment) is invisible in the
+                # parent mask -- test the landed position against the CHILD
+                # frame's mask so such nodes die immediately instead of
+                # surviving one transition frame with a garbage increment.
+                sus_c = _gap_suspector(child_frame).flag(coord_curr)
+                if sus_c.any():
+                    ci = np.where(sus_c)[0]
+                    dead_c = majority_masked(
+                        coord_curr[ci], masks[child_frame],
+                    )
+                    coord_curr[ci[dead_c]] = np.nan
 
             # Cache intermediate result for reuse by descendant frames
             if child_frame not in cum_coords_cache:
@@ -1575,6 +1719,12 @@ def run_aldic(
     result_disp = _compute_cumulative_displacements_tree(
         result_disp, result_fe_mesh, n_frames, schedule,
         progress_fn=progress, progress_start=_loop_end,
+        # Crack-aware near-gap override: keeps composed U_accum from mixing
+        # the two faces of an open crack (smeared wake strain otherwise).
+        masks=masks,
+        crack_radius=(
+            2.0 * para.winstepsize if para.winstepsize > 0 else None
+        ),
     )
 
     # Validate cumulative result

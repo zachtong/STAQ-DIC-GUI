@@ -195,3 +195,35 @@ class TestRenderFieldTrim:
         # essentially no transparent interior pixels.
         # With blanking, the trimmed node's cell becomes transparent.
         assert transparent_count(True) > transparent_count(False)
+
+
+class TestNaNPositionNodes:
+    """Crack-destroyed nodes carry NaN deformed positions; render paths must
+    not crash and must treat them as invisible."""
+
+    def test_invalid_node_grid_with_nan_position(self):
+        nodes = np.array([[0, 0], [10, 0], [0, 10], [10, 10],
+                          [np.nan, np.nan]], float)
+        values = np.array([1.0, 1.0, 1.0, 1.0, 2.0])  # finite value, NaN pos
+        xg, yg = np.meshgrid(np.linspace(0, 10, 5), np.linspace(0, 10, 5))
+        mask = _invalid_node_grid(nodes, values, xg, yg)
+        # The NaN-position node claims nothing; the 4 finite nodes are all
+        # valid -> nothing blanked.
+        assert mask is None or not mask.any()
+
+    def test_render_field_with_nan_position_node(self, qapp):
+        """End-to-end render with one destroyed node: no crash."""
+        nodes = np.column_stack([
+            np.tile(np.arange(8, 64, 8, dtype=float), 7),
+            np.repeat(np.arange(8, 64, 8, dtype=float), 7),
+        ])
+        values = np.ones(len(nodes))
+        nodes = nodes.copy()
+        nodes[10] = np.nan  # destroyed node
+        values[10] = np.nan
+        ctrl = VizController()
+        pm, _, _, _ = ctrl.render_field(
+            0, "strain_exx", nodes, values, (64, 64), 8,
+            vmin=0.0, vmax=2.0, blank_invalid_nodes=True,
+        )
+        assert pm is not None

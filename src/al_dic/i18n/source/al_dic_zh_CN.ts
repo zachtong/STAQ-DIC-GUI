@@ -191,62 +191,62 @@ Only relevant for the FFT init-guess mode.</source>
 <context>
     <name>CanvasArea</name>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1197"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1202"/>
         <source>Fit</source>
         <translation>适配</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1198"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1203"/>
         <source>Fit image to viewport</source>
         <translation>将图像适配到视口</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1203"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1208"/>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1204"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1209"/>
         <source>Zoom to 100% (1:1)</source>
         <translation>缩放到 100%（1:1）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1208"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1213"/>
         <source>Zoom in</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1214"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1219"/>
         <source>–</source>
         <translation>–</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1215"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1220"/>
         <source>Zoom out</source>
         <translation>缩小</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1228"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1233"/>
         <source>Show Grid</source>
         <translation>显示网格</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1229"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1234"/>
         <source>Show/hide computational mesh grid</source>
         <translation>显示/隐藏计算网格</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1232"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1237"/>
         <source>Show Subset</source>
         <translation>显示子集</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1233"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1238"/>
         <source>Show subset window on hover (requires Grid)</source>
         <translation>悬停时显示子集窗口（需要先开启网格）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1487"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1492"/>
         <source>Placing Starting Points</source>
         <translation>正在放置种子点</translation>
     </message>
@@ -1001,12 +1001,12 @@ Tick labels update per frame when Auto range is enabled.</source>
 <context>
     <name>ImageCanvas</name>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1043"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1048"/>
         <source>Load images first before drawing a Region of Interest.</source>
         <translation>请先加载图像，再绘制感兴趣区域。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="1062"/>
+        <location filename="../../gui/panels/canvas_area.py" line="1067"/>
         <source>The three points are nearly collinear — pick points spread around the circle&apos;s edge.</source>
         <translation>三个点几乎共线 — 请在圆周上分散地选取三个点。</translation>
     </message>

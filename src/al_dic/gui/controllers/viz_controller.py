@@ -71,12 +71,18 @@ def _invalid_node_grid(
 
     Returns ``None`` when every node is finite (nothing to blank).
     """
-    finite = np.isfinite(values)
+    # A node with a non-finite POSITION (crack-destroyed node in deformed
+    # coordinates) has no place on screen: exclude it from claiming cells --
+    # and from the NN build, which would raise on NaN coordinates.
+    node_ok = np.isfinite(nodes).all(axis=1)
+    finite = np.isfinite(values) & node_ok
     if bool(finite.all()):
         return None
-    if not bool(finite.any()):
+    if not bool(finite[node_ok].any()) or not bool(node_ok.any()):
         return np.ones(x_grid.shape, dtype=bool)
-    nn = NearestNDInterpolator(nodes, finite.astype(np.float64))
+    nn = NearestNDInterpolator(
+        nodes[node_ok], finite[node_ok].astype(np.float64),
+    )
     query = np.column_stack([x_grid.ravel(), y_grid.ravel()])
     keep = nn(query).reshape(x_grid.shape) >= 0.5
     return ~keep
