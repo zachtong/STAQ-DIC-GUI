@@ -40,12 +40,12 @@ Only relevant for the FFT init-guess mode.</source>
 <context>
     <name>App</name>
     <message>
-        <location filename="../../gui/app.py" line="901"/>
+        <location filename="../../gui/app.py" line="926"/>
         <source>Imported Region of Interest for %n frame(s)</source>
         <translation>为 %n 帧导入了感兴趣区域</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="915"/>
+        <location filename="../../gui/app.py" line="940"/>
         <source>Run DIC first -- no displacement results to post-process.</source>
         <translation>请先运行 DIC —— 当前没有可后处理的位移结果。</translation>
     </message>
@@ -1378,43 +1378,64 @@ Default (unchecked): lexicographic — best for zero-padded names</source>
     </message>
     <message>
         <location filename="../../gui/app.py" line="345"/>
-        <location filename="../../gui/app.py" line="355"/>
+        <location filename="../../gui/app.py" line="380"/>
         <source>Open Session Failed</source>
         <translation>打开会话失败</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="409"/>
+        <location filename="../../gui/app.py" line="354"/>
+        <source>Locate Session Images</source>
+        <translation>定位会话图片</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="357"/>
+        <source>The image folder saved with this session was not found:
+%1
+
+Results were restored. To show the background images, select the folder that now contains them.</source>
+        <translation>未找到此会话保存的图片文件夹:
+%1
+
+结果已恢复。要显示背景图片,请选择现在包含这些图片的文件夹。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="365"/>
+        <source>Select Image Folder</source>
+        <translation>选择图像文件夹</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="434"/>
         <source>File Association Failed</source>
         <translation>文件关联失败</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="410"/>
+        <location filename="../../gui/app.py" line="435"/>
         <source>Could not register .aldic files: </source>
         <translation>无法注册 .aldic 文件：</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="413"/>
+        <location filename="../../gui/app.py" line="438"/>
         <source>File Association</source>
         <translation>文件关联</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="414"/>
+        <location filename="../../gui/app.py" line="439"/>
         <source>Done. Double-clicking a .aldic file will now open pyALDIC and restore that session.</source>
         <translation>完成。现在双击 .aldic 文件即可打开 pyALDIC 并恢复该会话。</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="761"/>
-        <location filename="../../gui/app.py" line="814"/>
+        <location filename="../../gui/app.py" line="786"/>
+        <location filename="../../gui/app.py" line="839"/>
         <source>Load images first.</source>
         <translation>请先加载图像。</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="863"/>
+        <location filename="../../gui/app.py" line="888"/>
         <source>  Imported mask for frame %1</source>
         <translation>  已导入帧 %1 的掩模</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="869"/>
+        <location filename="../../gui/app.py" line="894"/>
         <source>Batch import: %n mask(s) loaded</source>
         <translation>批量导入：已加载 %n 个掩模</translation>
     </message>

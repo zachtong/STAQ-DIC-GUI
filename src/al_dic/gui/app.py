@@ -345,12 +345,37 @@ class MainWindow(QMainWindow):
             fail_title=self.tr("Open Session Failed"),
         )
 
+    def _prompt_locate_images(self, missing_folder) -> str | None:
+        """Ask the user to locate a session's images when the saved folder is
+        gone (e.g. the project was moved).  Returns the chosen folder or None."""
+        from al_dic.i18n import tr_args
+        QMessageBox.information(
+            self,
+            self.tr("Locate Session Images"),
+            tr_args(
+                self.tr(
+                    "The image folder saved with this session was not found:\n"
+                    "%1\n\nResults were restored. To show the background "
+                    "images, select the folder that now contains them."
+                ),
+                str(missing_folder),
+            ),
+        )
+        folder = QFileDialog.getExistingDirectory(
+            self, self.tr("Select Image Folder"), "",
+        )
+        return folder or None
+
     def _apply_loaded_session(self, session, path: str) -> None:
         """Apply a parsed session on the main thread (GUI-touching)."""
         from al_dic.gui.session import SessionError, apply_session
 
         try:
-            apply_session(session, self._state, self._image_ctrl)
+            apply_session(
+                session, self._state, self._image_ctrl,
+                session_path=path,
+                locate_folder_cb=self._prompt_locate_images,
+            )
         except SessionError as e:
             QMessageBox.critical(self, self.tr("Open Session Failed"), str(e))
             return

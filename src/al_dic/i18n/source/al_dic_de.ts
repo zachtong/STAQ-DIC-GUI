@@ -40,12 +40,12 @@ Nur relevant für den FFT-Startschätzungsmodus.</translation>
 <context>
     <name>App</name>
     <message>
-        <location filename="../../gui/app.py" line="901"/>
+        <location filename="../../gui/app.py" line="926"/>
         <source>Imported Region of Interest for %n frame(s)</source>
         <translation>Region of Interest für %n Bilder importiert</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="915"/>
+        <location filename="../../gui/app.py" line="940"/>
         <source>Run DIC first -- no displacement results to post-process.</source>
         <translation>DIC zuerst ausführen — keine Verschiebungs-Ergebnisse zur Nachbearbeitung.</translation>
     </message>
@@ -1378,43 +1378,64 @@ Standard (nicht aktiviert): lexikographisch — ideal für nullgefüllte Namen</
     </message>
     <message>
         <location filename="../../gui/app.py" line="345"/>
-        <location filename="../../gui/app.py" line="355"/>
+        <location filename="../../gui/app.py" line="380"/>
         <source>Open Session Failed</source>
         <translation>Öffnen der Sitzung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="409"/>
+        <location filename="../../gui/app.py" line="354"/>
+        <source>Locate Session Images</source>
+        <translation>Sitzungsbilder suchen</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="357"/>
+        <source>The image folder saved with this session was not found:
+%1
+
+Results were restored. To show the background images, select the folder that now contains them.</source>
+        <translation>Der mit dieser Sitzung gespeicherte Bildordner wurde nicht gefunden:
+%1
+
+Die Ergebnisse wurden wiederhergestellt. Wählen Sie den Ordner, der die Bilder jetzt enthält, um den Hintergrund anzuzeigen.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="365"/>
+        <source>Select Image Folder</source>
+        <translation>Bildordner auswählen</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="434"/>
         <source>File Association Failed</source>
         <translation>Dateiverknüpfung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="410"/>
+        <location filename="../../gui/app.py" line="435"/>
         <source>Could not register .aldic files: </source>
         <translation>.aldic-Dateien konnten nicht registriert werden: </translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="413"/>
+        <location filename="../../gui/app.py" line="438"/>
         <source>File Association</source>
         <translation>Dateiverknüpfung</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="414"/>
+        <location filename="../../gui/app.py" line="439"/>
         <source>Done. Double-clicking a .aldic file will now open pyALDIC and restore that session.</source>
         <translation>Fertig. Ein Doppelklick auf eine .aldic-Datei öffnet nun pyALDIC und stellt diese Sitzung wieder her.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="761"/>
-        <location filename="../../gui/app.py" line="814"/>
+        <location filename="../../gui/app.py" line="786"/>
+        <location filename="../../gui/app.py" line="839"/>
         <source>Load images first.</source>
         <translation>Bitte zuerst Bilder laden.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="863"/>
+        <location filename="../../gui/app.py" line="888"/>
         <source>  Imported mask for frame %1</source>
         <translation>  Maske für Bild %1 importiert</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="869"/>
+        <location filename="../../gui/app.py" line="894"/>
         <source>Batch import: %n mask(s) loaded</source>
         <translation>Stapelimport: %n Maske(n) geladen</translation>
     </message>

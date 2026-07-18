@@ -40,12 +40,12 @@ Solo relevante para el modo de estimación inicial FFT.</translation>
 <context>
     <name>App</name>
     <message>
-        <location filename="../../gui/app.py" line="901"/>
+        <location filename="../../gui/app.py" line="926"/>
         <source>Imported Region of Interest for %n frame(s)</source>
         <translation>Región de interés importada para %n fotogramas</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="915"/>
+        <location filename="../../gui/app.py" line="940"/>
         <source>Run DIC first -- no displacement results to post-process.</source>
         <translation>Ejecute primero el DIC — no hay resultados de desplazamiento para posprocesar.</translation>
     </message>
@@ -1378,43 +1378,64 @@ Predeterminado (desmarcado): lexicográfico — ideal para nombres con ceros a l
     </message>
     <message>
         <location filename="../../gui/app.py" line="345"/>
-        <location filename="../../gui/app.py" line="355"/>
+        <location filename="../../gui/app.py" line="380"/>
         <source>Open Session Failed</source>
         <translation>Error al abrir la sesión</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="409"/>
+        <location filename="../../gui/app.py" line="354"/>
+        <source>Locate Session Images</source>
+        <translation>Localizar imágenes de la sesión</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="357"/>
+        <source>The image folder saved with this session was not found:
+%1
+
+Results were restored. To show the background images, select the folder that now contains them.</source>
+        <translation>No se encontró la carpeta de imágenes guardada con esta sesión:
+%1
+
+Los resultados se restauraron. Para mostrar las imágenes de fondo, seleccione la carpeta que ahora las contiene.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="365"/>
+        <source>Select Image Folder</source>
+        <translation>Seleccionar carpeta de imágenes</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="434"/>
         <source>File Association Failed</source>
         <translation>Error al asociar archivos</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="410"/>
+        <location filename="../../gui/app.py" line="435"/>
         <source>Could not register .aldic files: </source>
         <translation>No se pudieron registrar los archivos .aldic: </translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="413"/>
+        <location filename="../../gui/app.py" line="438"/>
         <source>File Association</source>
         <translation>Asociación de archivos</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="414"/>
+        <location filename="../../gui/app.py" line="439"/>
         <source>Done. Double-clicking a .aldic file will now open pyALDIC and restore that session.</source>
         <translation>Listo. Ahora, hacer doble clic en un archivo .aldic abrirá pyALDIC y restaurará esa sesión.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="761"/>
-        <location filename="../../gui/app.py" line="814"/>
+        <location filename="../../gui/app.py" line="786"/>
+        <location filename="../../gui/app.py" line="839"/>
         <source>Load images first.</source>
         <translation>Cargue primero las imágenes.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="863"/>
+        <location filename="../../gui/app.py" line="888"/>
         <source>  Imported mask for frame %1</source>
         <translation>  Máscara importada para el fotograma %1</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="869"/>
+        <location filename="../../gui/app.py" line="894"/>
         <source>Batch import: %n mask(s) loaded</source>
         <translation>Importación por lotes: %n máscara(s) cargada(s)</translation>
     </message>

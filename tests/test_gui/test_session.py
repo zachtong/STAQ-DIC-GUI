@@ -181,6 +181,117 @@ def test_apply_missing_image_folder_warns_not_raises(tmp_path):
 
 
 # ---------------------------------------------------------------------
+# Image relink after the project moved
+# ---------------------------------------------------------------------
+
+def _moved_session(saved_folder="D:/old/place/images", name="a.tif"):
+    return SessionData(
+        schema_version=SCHEMA_VERSION,
+        image_folder=saved_folder,
+        image_files=[saved_folder + "/" + name],
+        per_frame_rois={},
+        params={},
+        physical_units={},
+    )
+
+
+def test_resolve_prefers_existing_saved_folder(tmp_path):
+    from al_dic.gui.session import _resolve_image_folder
+
+    imgs = tmp_path / "images"
+    imgs.mkdir()
+    (imgs / "a.tif").write_bytes(b"x")
+    session = _moved_session(saved_folder=str(imgs))
+    assert _resolve_image_folder(session, tmp_path / "run.aldic") == str(imgs)
+
+
+def test_resolve_relocates_same_named_subfolder(tmp_path):
+    """Whole project moved: saved absolute path gone, images sit in a same-named
+    subfolder beside the .aldic."""
+    from al_dic.gui.session import _resolve_image_folder
+
+    (tmp_path / "images").mkdir()
+    (tmp_path / "images" / "a.tif").write_bytes(b"x")
+    got = _resolve_image_folder(_moved_session(), tmp_path / "run.aldic")
+    assert got == str(tmp_path / "images")
+
+
+def test_resolve_relocates_flat_beside_aldic(tmp_path):
+    """Images sit directly beside the .aldic file."""
+    from al_dic.gui.session import _resolve_image_folder
+
+    (tmp_path / "a.tif").write_bytes(b"x")
+    got = _resolve_image_folder(_moved_session(), tmp_path / "run.aldic")
+    assert got == str(tmp_path)
+
+
+def test_resolve_rejects_dir_without_the_image(tmp_path):
+    """A candidate that does NOT hold the session's first image is not adopted."""
+    from al_dic.gui.session import _resolve_image_folder
+
+    (tmp_path / "other.tif").write_bytes(b"x")  # wrong file
+    assert _resolve_image_folder(_moved_session(), tmp_path / "run.aldic") is None
+
+
+def test_resolve_none_without_session_path(tmp_path):
+    from al_dic.gui.session import _resolve_image_folder
+
+    assert _resolve_image_folder(_moved_session(), None) is None
+
+
+def test_apply_relocates_images_without_prompt(tmp_path):
+    """apply_session loads the relocated folder via session_path, no prompt."""
+    (tmp_path / "images").mkdir()
+    (tmp_path / "images" / "a.tif").write_bytes(b"x")
+    ctrl = _StubImageCtrl()
+    apply_session(
+        _moved_session(), AppState.instance(), ctrl,
+        session_path=str(tmp_path / "run.aldic"),
+    )
+    assert ctrl.loaded_folders == [str(tmp_path / "images")]
+
+
+def test_apply_prompts_when_unresolvable(tmp_path):
+    """Unresolvable folder -> the GUI locate callback is invoked and its choice
+    is loaded."""
+    picked = tmp_path / "elsewhere"
+    picked.mkdir()
+    (picked / "a.tif").write_bytes(b"x")
+    ctrl = _StubImageCtrl()
+    calls: list[str] = []
+
+    def cb(missing):
+        calls.append(missing)
+        return str(picked)
+
+    apply_session(
+        _moved_session(), AppState.instance(), ctrl,
+        session_path=str(tmp_path / "nowhere" / "run.aldic"),
+        locate_folder_cb=cb,
+    )
+    assert calls == ["D:/old/place/images"]
+    assert ctrl.loaded_folders == [str(picked)]
+
+
+def test_apply_cancelled_prompt_leaves_images_unloaded(tmp_path):
+    """If the user cancels the locate dialog (cb returns None), no folder is
+    loaded and a warning is logged -- results (restored later) are untouched."""
+    ctrl = _StubImageCtrl()
+    state = AppState.instance()
+    warnings: list[str] = []
+    state.log_message.connect(
+        lambda m, lvl: warnings.append(m) if lvl == "warn" else None
+    )
+    apply_session(
+        _moved_session(), state, ctrl,
+        session_path=str(tmp_path / "nowhere" / "run.aldic"),
+        locate_folder_cb=lambda _missing: None,
+    )
+    assert ctrl.loaded_folders == []
+    assert any("re-selected manually" in m for m in warnings)
+
+
+# ---------------------------------------------------------------------
 # Mask encoding
 # ---------------------------------------------------------------------
 

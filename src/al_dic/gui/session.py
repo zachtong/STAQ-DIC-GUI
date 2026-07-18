@@ -404,21 +404,74 @@ def _parse_config(doc: Any) -> SessionData:
 # Apply
 # ---------------------------------------------------------------------
 
-def apply_session(session: SessionData, state: AppState, image_ctrl) -> None:
+def _resolve_image_folder(
+    session: SessionData, session_path: str | Path | None,
+) -> str | None:
+    """Best-effort location of the session's image folder.
+
+    Order: the absolute folder saved in the session; then -- for the common
+    "moved the whole project" case -- folders relative to the .aldic file: a
+    subfolder with the saved folder's name, then the .aldic's own directory.
+    A relative candidate is accepted only if it actually holds the session's
+    first image (matched by basename), so an unrelated directory is never
+    silently adopted.  Returns the folder path, or ``None`` if unresolved.
+    """
+    saved = session.image_folder
+    if saved and Path(saved).is_dir():
+        return str(saved)
+    if not session_path or not session.image_files:
+        return None
+    base = Path(session_path).parent
+    first = Path(session.image_files[0]).name
+    candidates: list[Path] = []
+    if saved:
+        candidates.append(base / Path(saved).name)
+    candidates.append(base)
+    for cand in candidates:
+        try:
+            if cand.is_dir() and (cand / first).exists():
+                return str(cand)
+        except OSError:
+            continue
+    return None
+
+
+def apply_session(
+    session: SessionData,
+    state: AppState,
+    image_ctrl,
+    session_path: str | Path | None = None,
+    locate_folder_cb=None,
+) -> None:
     """Apply a parsed :class:`SessionData` to the running ``AppState``.
 
-    Re-loads images from ``session.image_folder`` (best effort), restores
-    parameters / Regions of Interest / physical units / view state, and --
-    for schema-2 sessions -- restores the computed results so the fields
+    Re-loads images (best effort, relocating them if the project moved),
+    restores parameters / Regions of Interest / physical units / view state,
+    and -- for schema-2 sessions -- restores the computed results so the fields
     display immediately without recomputation.
+
+    Args:
+        session_path: Path of the .aldic file, used to relocate images that
+            moved together with the project.
+        locate_folder_cb: Optional ``(missing_folder) -> str | None`` callback
+            the GUI supplies to prompt the user for the image folder when it
+            cannot be located automatically.  Called BEFORE results are
+            restored, because loading images clears results -- doing it after
+            would discard the just-restored fields.
     """
     state.set_run_state(RunState.IDLE)
     state.results = None
 
-    # Image folder re-load (best effort)
+    # Image folder re-load.  Locate the images (they may have moved with the
+    # project) and load them BEFORE results are restored below: image loading
+    # clears results via set_image_files(), so the order is load-then-restore.
     if session.image_folder:
-        folder = Path(session.image_folder)
-        if folder.exists():
+        folder = _resolve_image_folder(session, session_path)
+        if folder is None and locate_folder_cb is not None:
+            picked = locate_folder_cb(session.image_folder)
+            if picked and Path(picked).is_dir():
+                folder = str(picked)
+        if folder is not None:
             try:
                 image_ctrl.load_folder(folder)
             except Exception as e:  # surface to log, do not fail whole load
@@ -429,9 +482,10 @@ def apply_session(session: SessionData, state: AppState, image_ctrl) -> None:
                 )
         else:
             state.log_message.emit(
-                f"Image folder '{folder}' no longer exists; session "
-                "parameters, Regions of Interest and results were restored but "
-                "background images must be re-selected manually.",
+                f"Image folder '{session.image_folder}' no longer exists and "
+                "could not be relocated; session parameters, Regions of "
+                "Interest and results were restored, but background images "
+                "must be re-selected manually.",
                 "warn",
             )
 

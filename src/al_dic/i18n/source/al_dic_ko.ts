@@ -40,12 +40,12 @@ FFT 초기 추정 모드에만 관련됩니다.</translation>
 <context>
     <name>App</name>
     <message>
-        <location filename="../../gui/app.py" line="901"/>
+        <location filename="../../gui/app.py" line="926"/>
         <source>Imported Region of Interest for %n frame(s)</source>
         <translation>%n 프레임에 관심 영역 가져옴</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="915"/>
+        <location filename="../../gui/app.py" line="940"/>
         <source>Run DIC first -- no displacement results to post-process.</source>
         <translation>DIC를 먼저 실행하세요 —— 후처리할 변위 결과가 없습니다.</translation>
     </message>
@@ -1378,43 +1378,64 @@ Default (unchecked): lexicographic — best for zero-padded names</source>
     </message>
     <message>
         <location filename="../../gui/app.py" line="345"/>
-        <location filename="../../gui/app.py" line="355"/>
+        <location filename="../../gui/app.py" line="380"/>
         <source>Open Session Failed</source>
         <translation>세션 열기 실패</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="409"/>
+        <location filename="../../gui/app.py" line="354"/>
+        <source>Locate Session Images</source>
+        <translation>세션 이미지 위치 지정</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="357"/>
+        <source>The image folder saved with this session was not found:
+%1
+
+Results were restored. To show the background images, select the folder that now contains them.</source>
+        <translation>이 세션에 저장된 이미지 폴더를 찾을 수 없습니다:
+%1
+
+결과는 복원되었습니다. 배경 이미지를 표시하려면 현재 이미지가 들어 있는 폴더를 선택하세요.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="365"/>
+        <source>Select Image Folder</source>
+        <translation>이미지 폴더 선택</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="434"/>
         <source>File Association Failed</source>
         <translation>파일 연결 실패</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="410"/>
+        <location filename="../../gui/app.py" line="435"/>
         <source>Could not register .aldic files: </source>
         <translation>.aldic 파일을 등록할 수 없습니다: </translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="413"/>
+        <location filename="../../gui/app.py" line="438"/>
         <source>File Association</source>
         <translation>파일 연결</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="414"/>
+        <location filename="../../gui/app.py" line="439"/>
         <source>Done. Double-clicking a .aldic file will now open pyALDIC and restore that session.</source>
         <translation>완료되었습니다. 이제 .aldic 파일을 두 번 클릭하면 pyALDIC가 열리고 해당 세션이 복원됩니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="761"/>
-        <location filename="../../gui/app.py" line="814"/>
+        <location filename="../../gui/app.py" line="786"/>
+        <location filename="../../gui/app.py" line="839"/>
         <source>Load images first.</source>
         <translation>먼저 이미지를 불러오세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="863"/>
+        <location filename="../../gui/app.py" line="888"/>
         <source>  Imported mask for frame %1</source>
         <translation>  프레임 %1의 마스크를 가져왔습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="869"/>
+        <location filename="../../gui/app.py" line="894"/>
         <source>Batch import: %n mask(s) loaded</source>
         <translation>일괄 가져오기: 마스크 %n개를 불러왔습니다</translation>
     </message>

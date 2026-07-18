@@ -40,12 +40,12 @@ Uniquement pertinent pour le mode d&apos;estimation initiale FFT.</translation>
 <context>
     <name>App</name>
     <message>
-        <location filename="../../gui/app.py" line="901"/>
+        <location filename="../../gui/app.py" line="926"/>
         <source>Imported Region of Interest for %n frame(s)</source>
         <translation>Région d&apos;intérêt importée pour %n images</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="915"/>
+        <location filename="../../gui/app.py" line="940"/>
         <source>Run DIC first -- no displacement results to post-process.</source>
         <translation>Exécutez d&apos;abord le DIC — aucun résultat de déplacement à post-traiter.</translation>
     </message>
@@ -1378,43 +1378,64 @@ Par défaut (non coché) : lexicographique — idéal pour les noms avec zéros 
     </message>
     <message>
         <location filename="../../gui/app.py" line="345"/>
-        <location filename="../../gui/app.py" line="355"/>
+        <location filename="../../gui/app.py" line="380"/>
         <source>Open Session Failed</source>
         <translation>Échec de l&apos;ouverture de la session</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="409"/>
+        <location filename="../../gui/app.py" line="354"/>
+        <source>Locate Session Images</source>
+        <translation>Localiser les images de la session</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="357"/>
+        <source>The image folder saved with this session was not found:
+%1
+
+Results were restored. To show the background images, select the folder that now contains them.</source>
+        <translation>Le dossier d&apos;images enregistré avec cette session est introuvable :
+%1
+
+Les résultats ont été restaurés. Pour afficher les images d&apos;arrière-plan, sélectionnez le dossier qui les contient désormais.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="365"/>
+        <source>Select Image Folder</source>
+        <translation>Sélectionner le dossier d&apos;images</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="434"/>
         <source>File Association Failed</source>
         <translation>Échec de l&apos;association de fichiers</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="410"/>
+        <location filename="../../gui/app.py" line="435"/>
         <source>Could not register .aldic files: </source>
         <translation>Impossible d&apos;enregistrer les fichiers .aldic : </translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="413"/>
+        <location filename="../../gui/app.py" line="438"/>
         <source>File Association</source>
         <translation>Association de fichiers</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="414"/>
+        <location filename="../../gui/app.py" line="439"/>
         <source>Done. Double-clicking a .aldic file will now open pyALDIC and restore that session.</source>
         <translation>Terminé. Un double-clic sur un fichier .aldic ouvrira désormais pyALDIC et restaurera cette session.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="761"/>
-        <location filename="../../gui/app.py" line="814"/>
+        <location filename="../../gui/app.py" line="786"/>
+        <location filename="../../gui/app.py" line="839"/>
         <source>Load images first.</source>
         <translation>Veuillez d&apos;abord charger des images.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="863"/>
+        <location filename="../../gui/app.py" line="888"/>
         <source>  Imported mask for frame %1</source>
         <translation>  Masque importé pour l&apos;image %1</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="869"/>
+        <location filename="../../gui/app.py" line="894"/>
         <source>Batch import: %n mask(s) loaded</source>
         <translation>Import par lot : %n masque(s) chargé(s)</translation>
     </message>

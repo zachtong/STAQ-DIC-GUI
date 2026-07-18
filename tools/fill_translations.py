@@ -58,6 +58,34 @@ LANGUAGES = ("zh_CN", "zh_TW", "ja", "ko", "de", "fr", "es")
 #
 # Short words / common UI labels
 TRANSLATIONS: dict[str, dict[str, str]] = {
+    # ========== MainWindow — relink moved session images (all 8 locales) ======
+    "Locate Session Images": {
+        "zh_CN": "定位会话图片",
+        "zh_TW": "定位工作階段圖片",
+        "ja":    "セッション画像の場所を指定",
+        "ko":    "세션 이미지 위치 지정",
+        "de":    "Sitzungsbilder suchen",
+        "fr":    "Localiser les images de la session",
+        "es":    "Localizar imágenes de la sesión",
+    },
+    "Select Image Folder": {
+        "zh_CN": "选择图像文件夹",
+        "zh_TW": "選擇影像資料夾",
+        "ja":    "画像フォルダを選択",
+        "ko":    "이미지 폴더 선택",
+        "de":    "Bildordner auswählen",
+        "fr":    "Sélectionner le dossier d'images",
+        "es":    "Seleccionar carpeta de imágenes",
+    },
+    "The image folder saved with this session was not found:\n%1\n\nResults were restored. To show the background images, select the folder that now contains them.": {
+        "zh_CN": "未找到此会话保存的图片文件夹:\n%1\n\n结果已恢复。要显示背景图片,请选择现在包含这些图片的文件夹。",
+        "zh_TW": "找不到此工作階段儲存的圖片資料夾:\n%1\n\n結果已還原。若要顯示背景圖片,請選擇現在包含這些圖片的資料夾。",
+        "ja":    "このセッションに保存された画像フォルダが見つかりませんでした:\n%1\n\n結果は復元されました。背景画像を表示するには、現在それらが入っているフォルダを選択してください。",
+        "ko":    "이 세션에 저장된 이미지 폴더를 찾을 수 없습니다:\n%1\n\n결과는 복원되었습니다. 배경 이미지를 표시하려면 현재 이미지가 들어 있는 폴더를 선택하세요.",
+        "de":    "Der mit dieser Sitzung gespeicherte Bildordner wurde nicht gefunden:\n%1\n\nDie Ergebnisse wurden wiederhergestellt. Wählen Sie den Ordner, der die Bilder jetzt enthält, um den Hintergrund anzuzeigen.",
+        "fr":    "Le dossier d'images enregistré avec cette session est introuvable :\n%1\n\nLes résultats ont été restaurés. Pour afficher les images d'arrière-plan, sélectionnez le dossier qui les contient désormais.",
+        "es":    "No se encontró la carpeta de imágenes guardada con esta sesión:\n%1\n\nLos resultados se restauraron. Para mostrar las imágenes de fondo, seleccione la carpeta que ahora las contiene.",
+    },
     # ========== StrainWindow — cancel strain computation (all 8 locales) ======
     "Cancel": {
         "zh_CN": "取消",
