@@ -15,7 +15,7 @@ app = QApplication.instance() or QApplication([])
 from al_dic.core.data_structures import (
     DICMesh, DICPara, FrameResult, FrameSchedule, PipelineResult, StrainResult,
 )
-from al_dic.gui.app_state import AppState
+from al_dic.gui.app_state import AppState, RunState
 from al_dic.gui.session import (
     SCHEMA_VERSION, apply_session, load_session, save_session,
 )
@@ -132,11 +132,17 @@ def test_apply_restores_results_and_emits(tmp_path):
     AppState._instance = None
     fresh = AppState.instance()
     emitted = []
+    states = []
     fresh.results_changed.connect(lambda: emitted.append(True))
+    fresh.run_state_changed.connect(lambda s: states.append(s))
     apply_session(session, fresh, _StubImageCtrl())
     assert fresh.results is not None
     assert emitted  # results_changed fired
     _assert_result_equal(state.results, fresh.results)
+    # A session that carries results lands in DONE, so results-gated UI (the
+    # Export button) is enabled without recomputing.
+    assert fresh.run_state == RunState.DONE
+    assert states[-1] == RunState.DONE
 
 
 # --- view state -----------------------------------------------------------
@@ -178,6 +184,8 @@ def test_full_restore_results_and_view(tmp_path):
     # results restored (no recompute needed)
     assert fresh.results is not None
     _assert_result_equal(state.results, fresh.results)
+    # run state is DONE -> the Export button enables straight away
+    assert fresh.run_state == RunState.DONE
     # landed back on the same page
     assert fresh.display_field == "strain_eyy"
     assert fresh.current_frame == 2
@@ -185,6 +193,23 @@ def test_full_restore_results_and_view(tmp_path):
     fs = fresh.get_field_state("strain_eyy")
     assert fs.colormap == "seismic"
     assert abs(fs.vmin - (-0.01)) < 1e-9
+
+
+def test_session_without_results_stays_idle(tmp_path):
+    """A displacement-only / schema-1 session (no results) must NOT jump to
+    DONE -- the Export button stays disabled until something is computed."""
+    state = _state_with_results(tmp_path)
+    out = tmp_path / "cfg.aldic"
+    save_session(out, state, include_results=False)  # config only
+    session = load_session(out)
+    assert session.results is None
+
+    AppState._instance = None
+    fresh = AppState.instance()
+    fresh.set_run_state(RunState.IDLE)
+    apply_session(session, fresh, _StubImageCtrl())
+    assert fresh.results is None
+    assert fresh.run_state == RunState.IDLE
 
 
 def test_legacy_v1_json_still_loads(tmp_path):

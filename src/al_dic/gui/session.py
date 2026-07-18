@@ -469,3 +469,12 @@ def apply_session(session: SessionData, state: AppState, image_ctrl) -> None:
     state.roi_changed.emit()
     state.physical_units_changed.emit()
     state.results_changed.emit()
+
+    # A schema-2 session carries computed results, so the pipeline is
+    # effectively DONE.  Transition the run state last (mirrors
+    # pipeline_controller._on_finished) so results-gated UI -- the Export
+    # button (enabled only in DONE) and the auto-opened strain window --
+    # reflects the restored results without forcing a recompute.  Sessions
+    # without results (schema-1 / displacement-only saves) stay IDLE.
+    if state.results is not None:
+        state.set_run_state(RunState.DONE)
