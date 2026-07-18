@@ -2249,43 +2249,43 @@ Solo se aplica cuando Método = Ajuste de plano.</translation>
         <translation>REGISTRO</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="448"/>
+        <location filename="../../gui/strain_window.py" line="463"/>
         <source>Strain compute failed: %1: %2</source>
         <translation>Fallo en el cálculo de deformación: %1: %2</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="456"/>
-        <location filename="../../gui/strain_window.py" line="515"/>
+        <location filename="../../gui/strain_window.py" line="471"/>
+        <location filename="../../gui/strain_window.py" line="530"/>
         <source>Strain computation complete.</source>
         <translation>Cálculo de deformación completado.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="467"/>
+        <location filename="../../gui/strain_window.py" line="482"/>
         <source>Strain window: no displacement results to post-process.</source>
         <translation>Ventana de deformación: no hay resultados de desplazamiento para posprocesar.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="498"/>
+        <location filename="../../gui/strain_window.py" line="513"/>
         <source>Cancelling…</source>
         <translation>Cancelando…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="532"/>
+        <location filename="../../gui/strain_window.py" line="547"/>
         <source>Strain computation cancelled.</source>
         <translation>Cálculo de deformación cancelado.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="541"/>
+        <location filename="../../gui/strain_window.py" line="556"/>
         <source>Strain compute failed: %1</source>
         <translation>Fallo en el cálculo de deformación: %1</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="548"/>
+        <location filename="../../gui/strain_window.py" line="563"/>
         <source>Strain Computation Failed</source>
         <translation>Fallo en el cálculo de deformación</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="584"/>
+        <location filename="../../gui/strain_window.py" line="599"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ Parámetros modificados — haga clic en «Calcular deformación»</translation>
     </message>
@@ -2305,12 +2305,12 @@ Solo se aplica cuando Método = Ajuste de plano.</translation>
         <translation>Exportar resultados</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="478"/>
+        <location filename="../../gui/strain_window.py" line="493"/>
         <source>Starting…</source>
         <translation>Iniciando…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="511"/>
+        <location filename="../../gui/strain_window.py" line="526"/>
         <source>Complete</source>
         <translation>Completado</translation>
     </message>

@@ -2249,43 +2249,43 @@ Method = 평면 피팅 일 때만 적용됩니다.</translation>
         <translation>로그</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="448"/>
+        <location filename="../../gui/strain_window.py" line="463"/>
         <source>Strain compute failed: %1: %2</source>
         <translation>변형률 계산 실패: %1: %2</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="456"/>
-        <location filename="../../gui/strain_window.py" line="515"/>
+        <location filename="../../gui/strain_window.py" line="471"/>
+        <location filename="../../gui/strain_window.py" line="530"/>
         <source>Strain computation complete.</source>
         <translation>변형률 계산 완료.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="467"/>
+        <location filename="../../gui/strain_window.py" line="482"/>
         <source>Strain window: no displacement results to post-process.</source>
         <translation>변형률 창: 후처리할 변위 결과가 없습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="498"/>
+        <location filename="../../gui/strain_window.py" line="513"/>
         <source>Cancelling…</source>
         <translation>취소 중…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="532"/>
+        <location filename="../../gui/strain_window.py" line="547"/>
         <source>Strain computation cancelled.</source>
         <translation>변형률 계산 취소됨.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="541"/>
+        <location filename="../../gui/strain_window.py" line="556"/>
         <source>Strain compute failed: %1</source>
         <translation>변형률 계산 실패: %1</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="548"/>
+        <location filename="../../gui/strain_window.py" line="563"/>
         <source>Strain Computation Failed</source>
         <translation>변형률 계산 실패</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="584"/>
+        <location filename="../../gui/strain_window.py" line="599"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ 매개변수가 변경됨 — 「변형률 계산」을 클릭하세요</translation>
     </message>
@@ -2305,12 +2305,12 @@ Method = 평면 피팅 일 때만 적용됩니다.</translation>
         <translation>결과 내보내기</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="478"/>
+        <location filename="../../gui/strain_window.py" line="493"/>
         <source>Starting…</source>
         <translation>시작 중…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="511"/>
+        <location filename="../../gui/strain_window.py" line="526"/>
         <source>Complete</source>
         <translation>완료</translation>
     </message>

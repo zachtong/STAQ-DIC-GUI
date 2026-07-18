@@ -2249,43 +2249,43 @@ Only applies when Method = Plane fitting.</source>
         <translation>日志</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="448"/>
+        <location filename="../../gui/strain_window.py" line="463"/>
         <source>Strain compute failed: %1: %2</source>
         <translation>应变计算失败：%1：%2</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="456"/>
-        <location filename="../../gui/strain_window.py" line="515"/>
+        <location filename="../../gui/strain_window.py" line="471"/>
+        <location filename="../../gui/strain_window.py" line="530"/>
         <source>Strain computation complete.</source>
         <translation>应变计算完成。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="467"/>
+        <location filename="../../gui/strain_window.py" line="482"/>
         <source>Strain window: no displacement results to post-process.</source>
         <translation>应变窗口：没有可后处理的位移结果。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="498"/>
+        <location filename="../../gui/strain_window.py" line="513"/>
         <source>Cancelling…</source>
         <translation>正在取消…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="532"/>
+        <location filename="../../gui/strain_window.py" line="547"/>
         <source>Strain computation cancelled.</source>
         <translation>应变计算已取消。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="541"/>
+        <location filename="../../gui/strain_window.py" line="556"/>
         <source>Strain compute failed: %1</source>
         <translation>应变计算失败：%1</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="548"/>
+        <location filename="../../gui/strain_window.py" line="563"/>
         <source>Strain Computation Failed</source>
         <translation>应变计算失败</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="584"/>
+        <location filename="../../gui/strain_window.py" line="599"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ 参数已变更 — 请点击“计算应变”</translation>
     </message>
@@ -2305,12 +2305,12 @@ Only applies when Method = Plane fitting.</source>
         <translation>导出结果</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="478"/>
+        <location filename="../../gui/strain_window.py" line="493"/>
         <source>Starting…</source>
         <translation>启动中…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="511"/>
+        <location filename="../../gui/strain_window.py" line="526"/>
         <source>Complete</source>
         <translation>完成</translation>
     </message>

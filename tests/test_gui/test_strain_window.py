@@ -87,6 +87,25 @@ def test_cancelled_resets_ui_without_storing(window, state_with_results):
 
 
 # ----------------------------------------------------------------------
+# Export button enablement
+# ----------------------------------------------------------------------
+
+def test_export_enabled_when_opened_with_results(window):
+    """Opening the window with results already present (session reload / run
+    auto-open) enables Export immediately -- results_changed fired before the
+    window existed, so __init__ must set the state itself."""
+    assert window._export_strain_btn.isEnabled() is True
+
+
+def test_export_disabled_without_results():
+    """No results -> Export stays disabled."""
+    from al_dic.gui.strain_window import StrainWindow
+
+    win = StrainWindow(AppState())
+    assert win._export_strain_btn.isEnabled() is False
+
+
+# ----------------------------------------------------------------------
 # Field selector wiring
 # ----------------------------------------------------------------------
 

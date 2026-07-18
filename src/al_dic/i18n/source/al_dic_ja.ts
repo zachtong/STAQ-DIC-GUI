@@ -2249,43 +2249,43 @@ Only applies when Method = Plane fitting.</source>
         <translation>ログ</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="448"/>
+        <location filename="../../gui/strain_window.py" line="463"/>
         <source>Strain compute failed: %1: %2</source>
         <translation>ひずみ計算に失敗しました：%1：%2</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="456"/>
-        <location filename="../../gui/strain_window.py" line="515"/>
+        <location filename="../../gui/strain_window.py" line="471"/>
+        <location filename="../../gui/strain_window.py" line="530"/>
         <source>Strain computation complete.</source>
         <translation>ひずみ計算が完了しました。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="467"/>
+        <location filename="../../gui/strain_window.py" line="482"/>
         <source>Strain window: no displacement results to post-process.</source>
         <translation>ひずみウィンドウ：後処理する変位結果がありません。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="498"/>
+        <location filename="../../gui/strain_window.py" line="513"/>
         <source>Cancelling…</source>
         <translation>キャンセル中…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="532"/>
+        <location filename="../../gui/strain_window.py" line="547"/>
         <source>Strain computation cancelled.</source>
         <translation>ひずみ計算をキャンセルしました。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="541"/>
+        <location filename="../../gui/strain_window.py" line="556"/>
         <source>Strain compute failed: %1</source>
         <translation>ひずみ計算に失敗しました：%1</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="548"/>
+        <location filename="../../gui/strain_window.py" line="563"/>
         <source>Strain Computation Failed</source>
         <translation>ひずみ計算に失敗しました</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="584"/>
+        <location filename="../../gui/strain_window.py" line="599"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ パラメータが変更されました — 「ひずみを計算」をクリックしてください</translation>
     </message>
@@ -2305,12 +2305,12 @@ Only applies when Method = Plane fitting.</source>
         <translation>結果をエクスポート</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="478"/>
+        <location filename="../../gui/strain_window.py" line="493"/>
         <source>Starting…</source>
         <translation>開始中…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="511"/>
+        <location filename="../../gui/strain_window.py" line="526"/>
         <source>Complete</source>
         <translation>完了</translation>
     </message>

@@ -401,8 +401,23 @@ class StrainWindow(QMainWindow):
 
         self._sync_slider_range()
         self._render_current()
+        # The window can be opened with results already present (session
+        # reload, or auto-open when a run finishes) -- results_changed fired
+        # before this window existed, so set the Export enabled state now.
+        self._refresh_export_enabled()
 
     # ------------------------------------------------------------------
+
+    def _refresh_export_enabled(self) -> None:
+        """Export is available whenever results exist.
+
+        Mirrors the main window (whose Export enables on any completed run):
+        :meth:`_on_export_strain` opens the shared export dialog and only needs
+        ``results`` -- displacement is exportable even before strain is
+        computed -- so gating on strain specifically would leave the button
+        wrongly disabled after a displacement-only run or a session reload.
+        """
+        self._export_strain_btn.setEnabled(self._state.results is not None)
     # Public accessors (used by tests + future integration)
     # ------------------------------------------------------------------
 
@@ -661,12 +676,9 @@ class StrainWindow(QMainWindow):
         self._frame_nav.stop_playback()
         self._sync_slider_range()
         self._render_current()
-        # Disable export if strain was cleared (e.g. user re-ran DIC)
-        has_strain = (
-            self._state.results is not None
-            and bool(self._state.results.result_strain)
-        )
-        self._export_strain_btn.setEnabled(has_strain)
+        # Export follows the presence of results (displacement and/or strain),
+        # matching the main window and _on_export_strain's requirement.
+        self._refresh_export_enabled()
 
     def _on_frame_nav_changed(self, value: int) -> None:
         self._strain_current_frame = int(value)
