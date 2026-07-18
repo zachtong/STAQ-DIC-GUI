@@ -2173,123 +2173,143 @@ Method = 평면 피팅 일 때만 적용됩니다.</translation>
 <context>
     <name>StrainWindow</name>
     <message>
-        <location filename="../../gui/strain_window.py" line="140"/>
+        <location filename="../../gui/strain_window.py" line="153"/>
         <source>Strain Post-Processing</source>
         <translation>변형률 후처리</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="188"/>
+        <location filename="../../gui/strain_window.py" line="201"/>
         <source>Fit</source>
         <translation>맞춤</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="189"/>
+        <location filename="../../gui/strain_window.py" line="202"/>
         <source>Fit image to viewport</source>
         <translation>이미지를 뷰포트에 맞춤</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="195"/>
+        <location filename="../../gui/strain_window.py" line="208"/>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="196"/>
+        <location filename="../../gui/strain_window.py" line="209"/>
         <source>Zoom to 100% (1:1)</source>
         <translation>100%(1:1) 확대</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="199"/>
+        <location filename="../../gui/strain_window.py" line="212"/>
         <source>Zoom in</source>
         <translation>확대</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="204"/>
+        <location filename="../../gui/strain_window.py" line="217"/>
         <source>–</source>
         <translation>–</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="257"/>
+        <location filename="../../gui/strain_window.py" line="270"/>
         <source>STRAIN PARAMETERS</source>
         <translation>변형률 매개변수</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="276"/>
+        <location filename="../../gui/strain_window.py" line="289"/>
+        <source>Cancel</source>
+        <translation>취소</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="293"/>
+        <source>Cancel the running strain computation. The previous strain result is kept.</source>
+        <translation>실행 중인 변형률 계산을 취소합니다. 이전 변형률 결과는 유지됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="305"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV / PNG</source>
         <translation>변위 및 변형률 결과를 NPZ / MAT / CSV / PNG로 내보내기</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="309"/>
+        <location filename="../../gui/strain_window.py" line="338"/>
         <source>FIELD</source>
         <translation>표시 필드</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="318"/>
+        <location filename="../../gui/strain_window.py" line="347"/>
         <source>VISUALIZATION</source>
         <translation>시각화</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="328"/>
+        <location filename="../../gui/strain_window.py" line="357"/>
         <source>PHYSICAL UNITS</source>
         <translation>물리 단위</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="337"/>
+        <location filename="../../gui/strain_window.py" line="366"/>
         <source>LOG</source>
         <translation>로그</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="419"/>
+        <location filename="../../gui/strain_window.py" line="448"/>
         <source>Strain compute failed: %1: %2</source>
         <translation>변형률 계산 실패: %1: %2</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="427"/>
-        <location filename="../../gui/strain_window.py" line="475"/>
+        <location filename="../../gui/strain_window.py" line="456"/>
+        <location filename="../../gui/strain_window.py" line="515"/>
         <source>Strain computation complete.</source>
         <translation>변형률 계산 완료.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="438"/>
+        <location filename="../../gui/strain_window.py" line="467"/>
         <source>Strain window: no displacement results to post-process.</source>
         <translation>변형률 창: 후처리할 변위 결과가 없습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="491"/>
+        <location filename="../../gui/strain_window.py" line="498"/>
+        <source>Cancelling…</source>
+        <translation>취소 중…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="532"/>
+        <source>Strain computation cancelled.</source>
+        <translation>변형률 계산 취소됨.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="541"/>
         <source>Strain compute failed: %1</source>
         <translation>변형률 계산 실패: %1</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="498"/>
+        <location filename="../../gui/strain_window.py" line="548"/>
         <source>Strain Computation Failed</source>
         <translation>변형률 계산 실패</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="534"/>
+        <location filename="../../gui/strain_window.py" line="584"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ 매개변수가 변경됨 — 「변형률 계산」을 클릭하세요</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="205"/>
+        <location filename="../../gui/strain_window.py" line="218"/>
         <source>Zoom out</source>
         <translation>축소</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="267"/>
+        <location filename="../../gui/strain_window.py" line="280"/>
         <source>Compute Strain</source>
         <translation>변형률 계산</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="273"/>
+        <location filename="../../gui/strain_window.py" line="302"/>
         <source>Export Results</source>
         <translation>결과 내보내기</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="449"/>
+        <location filename="../../gui/strain_window.py" line="478"/>
         <source>Starting…</source>
         <translation>시작 중…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="471"/>
+        <location filename="../../gui/strain_window.py" line="511"/>
         <source>Complete</source>
         <translation>완료</translation>
     </message>

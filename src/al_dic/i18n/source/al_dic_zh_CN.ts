@@ -2173,123 +2173,143 @@ Only applies when Method = Plane fitting.</source>
 <context>
     <name>StrainWindow</name>
     <message>
-        <location filename="../../gui/strain_window.py" line="140"/>
+        <location filename="../../gui/strain_window.py" line="153"/>
         <source>Strain Post-Processing</source>
         <translation>应变后处理</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="188"/>
+        <location filename="../../gui/strain_window.py" line="201"/>
         <source>Fit</source>
         <translation>适配</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="189"/>
+        <location filename="../../gui/strain_window.py" line="202"/>
         <source>Fit image to viewport</source>
         <translation>将图像适配到视口</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="195"/>
+        <location filename="../../gui/strain_window.py" line="208"/>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="196"/>
+        <location filename="../../gui/strain_window.py" line="209"/>
         <source>Zoom to 100% (1:1)</source>
         <translation>缩放到 100%（1:1）</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="199"/>
+        <location filename="../../gui/strain_window.py" line="212"/>
         <source>Zoom in</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="204"/>
+        <location filename="../../gui/strain_window.py" line="217"/>
         <source>–</source>
         <translation>–</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="257"/>
+        <location filename="../../gui/strain_window.py" line="270"/>
         <source>STRAIN PARAMETERS</source>
         <translation>应变参数</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="276"/>
+        <location filename="../../gui/strain_window.py" line="289"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="293"/>
+        <source>Cancel the running strain computation. The previous strain result is kept.</source>
+        <translation>取消正在进行的应变计算。保留之前的应变结果。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="305"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV / PNG</source>
         <translation>将位移和应变结果导出为 NPZ / MAT / CSV / PNG</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="309"/>
+        <location filename="../../gui/strain_window.py" line="338"/>
         <source>FIELD</source>
         <translation>场变量</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="318"/>
+        <location filename="../../gui/strain_window.py" line="347"/>
         <source>VISUALIZATION</source>
         <translation>可视化</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="328"/>
+        <location filename="../../gui/strain_window.py" line="357"/>
         <source>PHYSICAL UNITS</source>
         <translation>物理单位</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="337"/>
+        <location filename="../../gui/strain_window.py" line="366"/>
         <source>LOG</source>
         <translation>日志</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="419"/>
+        <location filename="../../gui/strain_window.py" line="448"/>
         <source>Strain compute failed: %1: %2</source>
         <translation>应变计算失败：%1：%2</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="427"/>
-        <location filename="../../gui/strain_window.py" line="475"/>
+        <location filename="../../gui/strain_window.py" line="456"/>
+        <location filename="../../gui/strain_window.py" line="515"/>
         <source>Strain computation complete.</source>
         <translation>应变计算完成。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="438"/>
+        <location filename="../../gui/strain_window.py" line="467"/>
         <source>Strain window: no displacement results to post-process.</source>
         <translation>应变窗口：没有可后处理的位移结果。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="491"/>
+        <location filename="../../gui/strain_window.py" line="498"/>
+        <source>Cancelling…</source>
+        <translation>正在取消…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="532"/>
+        <source>Strain computation cancelled.</source>
+        <translation>应变计算已取消。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="541"/>
         <source>Strain compute failed: %1</source>
         <translation>应变计算失败：%1</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="498"/>
+        <location filename="../../gui/strain_window.py" line="548"/>
         <source>Strain Computation Failed</source>
         <translation>应变计算失败</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="534"/>
+        <location filename="../../gui/strain_window.py" line="584"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ 参数已变更 — 请点击“计算应变”</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="205"/>
+        <location filename="../../gui/strain_window.py" line="218"/>
         <source>Zoom out</source>
         <translation>缩小</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="267"/>
+        <location filename="../../gui/strain_window.py" line="280"/>
         <source>Compute Strain</source>
         <translation>计算应变</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="273"/>
+        <location filename="../../gui/strain_window.py" line="302"/>
         <source>Export Results</source>
         <translation>导出结果</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="449"/>
+        <location filename="../../gui/strain_window.py" line="478"/>
         <source>Starting…</source>
         <translation>启动中…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="471"/>
+        <location filename="../../gui/strain_window.py" line="511"/>
         <source>Complete</source>
         <translation>完成</translation>
     </message>

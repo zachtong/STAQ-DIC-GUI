@@ -45,6 +45,13 @@ from al_dic.utils.region_analysis import (
 ProgressCallback = Callable[[float, str], None]
 
 
+class StrainComputationCancelled(Exception):
+    """Raised by :meth:`StrainController.compute_all_frames` when the caller's
+    ``should_stop`` predicate returns True, so a long multi-frame strain run can
+    be interrupted at a frame boundary.  The GUI catches it and leaves the
+    previous ``result_strain`` untouched."""
+
+
 # Whitelist of parameters that can be overridden when computing strain.
 # Anything outside this set would re-tune the displacement pipeline and is
 # rejected to keep the strain post-processing path strictly read-only with
@@ -72,6 +79,7 @@ class StrainController:
         self,
         override: dict[str, object],
         progress_cb: ProgressCallback | None = None,
+        should_stop: Callable[[], bool] | None = None,
     ) -> list[StrainResult]:
         """Compute strain for every frame in ``state.results.result_disp``.
 
@@ -81,6 +89,9 @@ class StrainController:
                 raised.
             progress_cb: Optional ``(fraction, message)`` callback invoked
                 once per processed frame. ``fraction`` is in ``[0, 1]``.
+            should_stop: Optional predicate checked at each frame boundary;
+                when it returns True, computation is aborted by raising
+                :class:`StrainComputationCancelled`.
 
         Returns:
             List of ``StrainResult`` aligned with ``result_disp``.
@@ -88,6 +99,7 @@ class StrainController:
         Raises:
             RuntimeError: If ``state.results`` is ``None``.
             ValueError: If any override key is outside ``ALLOWED_OVERRIDES``.
+            StrainComputationCancelled: If ``should_stop`` returns True.
         """
         result = self._require_results()
         self._validate_override(override)
@@ -97,6 +109,8 @@ class StrainController:
         n_frames = len(result.result_disp)
         out: list[StrainResult] = []
         for i, frame in enumerate(result.result_disp):
+            if should_stop is not None and should_stop():
+                raise StrainComputationCancelled()
             U = frame.U_accum if frame.U_accum is not None else frame.U
             # The per-frame ROI is drawn on the DEFORMED image i+1 (result_disp
             # index i == image i+1); the crack is warped back to frame-0 coords.

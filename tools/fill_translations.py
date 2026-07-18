@@ -58,6 +58,43 @@ LANGUAGES = ("zh_CN", "zh_TW", "ja", "ko", "de", "fr", "es")
 #
 # Short words / common UI labels
 TRANSLATIONS: dict[str, dict[str, str]] = {
+    # ========== StrainWindow — cancel strain computation (all 8 locales) ======
+    "Cancel": {
+        "zh_CN": "取消",
+        "zh_TW": "取消",
+        "ja":    "キャンセル",
+        "ko":    "취소",
+        "de":    "Abbrechen",
+        "fr":    "Annuler",
+        "es":    "Cancelar",
+    },
+    "Cancelling…": {
+        "zh_CN": "正在取消…",
+        "zh_TW": "正在取消…",
+        "ja":    "キャンセル中…",
+        "ko":    "취소 중…",
+        "de":    "Wird abgebrochen…",
+        "fr":    "Annulation…",
+        "es":    "Cancelando…",
+    },
+    "Cancel the running strain computation. The previous strain result is kept.": {
+        "zh_CN": "取消正在进行的应变计算。保留之前的应变结果。",
+        "zh_TW": "取消正在進行的應變計算。保留先前的應變結果。",
+        "ja":    "実行中のひずみ計算をキャンセルします。以前のひずみ結果は保持されます。",
+        "ko":    "실행 중인 변형률 계산을 취소합니다. 이전 변형률 결과는 유지됩니다.",
+        "de":    "Laufende Dehnungsberechnung abbrechen. Das vorherige Dehnungsergebnis bleibt erhalten.",
+        "fr":    "Annuler le calcul de déformation en cours. Le résultat de déformation précédent est conservé.",
+        "es":    "Cancelar el cálculo de deformación en curso. Se conserva el resultado de deformación anterior.",
+    },
+    "Strain computation cancelled.": {
+        "zh_CN": "应变计算已取消。",
+        "zh_TW": "應變計算已取消。",
+        "ja":    "ひずみ計算をキャンセルしました。",
+        "ko":    "변형률 계산 취소됨.",
+        "de":    "Dehnungsberechnung abgebrochen.",
+        "fr":    "Calcul de déformation annulé.",
+        "es":    "Cálculo de deformación cancelado.",
+    },
     # ========== StrainParamPanel — edge trim (all 8 locales) ==========
     "Trim low-confidence edges": {
         "zh_CN": "裁剪低置信度边缘",

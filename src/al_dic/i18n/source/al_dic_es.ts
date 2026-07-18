@@ -2173,123 +2173,143 @@ Solo se aplica cuando Método = Ajuste de plano.</translation>
 <context>
     <name>StrainWindow</name>
     <message>
-        <location filename="../../gui/strain_window.py" line="140"/>
+        <location filename="../../gui/strain_window.py" line="153"/>
         <source>Strain Post-Processing</source>
         <translation>Post-procesado de deformación</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="188"/>
+        <location filename="../../gui/strain_window.py" line="201"/>
         <source>Fit</source>
         <translation>Ajustar</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="189"/>
+        <location filename="../../gui/strain_window.py" line="202"/>
         <source>Fit image to viewport</source>
         <translation>Ajustar la imagen a la vista</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="195"/>
+        <location filename="../../gui/strain_window.py" line="208"/>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="196"/>
+        <location filename="../../gui/strain_window.py" line="209"/>
         <source>Zoom to 100% (1:1)</source>
         <translation>Zoom al 100% (1:1)</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="199"/>
+        <location filename="../../gui/strain_window.py" line="212"/>
         <source>Zoom in</source>
         <translation>Acercar</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="204"/>
+        <location filename="../../gui/strain_window.py" line="217"/>
         <source>–</source>
         <translation>–</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="257"/>
+        <location filename="../../gui/strain_window.py" line="270"/>
         <source>STRAIN PARAMETERS</source>
         <translation>PARÁMETROS DE DEFORMACIÓN</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="276"/>
+        <location filename="../../gui/strain_window.py" line="289"/>
+        <source>Cancel</source>
+        <translation>Cancelar</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="293"/>
+        <source>Cancel the running strain computation. The previous strain result is kept.</source>
+        <translation>Cancelar el cálculo de deformación en curso. Se conserva el resultado de deformación anterior.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="305"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV / PNG</source>
         <translation>Exportar resultados de desplazamiento y deformación a NPZ / MAT / CSV / PNG</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="309"/>
+        <location filename="../../gui/strain_window.py" line="338"/>
         <source>FIELD</source>
         <translation>CAMPO</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="318"/>
+        <location filename="../../gui/strain_window.py" line="347"/>
         <source>VISUALIZATION</source>
         <translation>VISUALIZACIÓN</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="328"/>
+        <location filename="../../gui/strain_window.py" line="357"/>
         <source>PHYSICAL UNITS</source>
         <translation>UNIDADES FÍSICAS</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="337"/>
+        <location filename="../../gui/strain_window.py" line="366"/>
         <source>LOG</source>
         <translation>REGISTRO</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="419"/>
+        <location filename="../../gui/strain_window.py" line="448"/>
         <source>Strain compute failed: %1: %2</source>
         <translation>Fallo en el cálculo de deformación: %1: %2</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="427"/>
-        <location filename="../../gui/strain_window.py" line="475"/>
+        <location filename="../../gui/strain_window.py" line="456"/>
+        <location filename="../../gui/strain_window.py" line="515"/>
         <source>Strain computation complete.</source>
         <translation>Cálculo de deformación completado.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="438"/>
+        <location filename="../../gui/strain_window.py" line="467"/>
         <source>Strain window: no displacement results to post-process.</source>
         <translation>Ventana de deformación: no hay resultados de desplazamiento para posprocesar.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="491"/>
+        <location filename="../../gui/strain_window.py" line="498"/>
+        <source>Cancelling…</source>
+        <translation>Cancelando…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="532"/>
+        <source>Strain computation cancelled.</source>
+        <translation>Cálculo de deformación cancelado.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="541"/>
         <source>Strain compute failed: %1</source>
         <translation>Fallo en el cálculo de deformación: %1</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="498"/>
+        <location filename="../../gui/strain_window.py" line="548"/>
         <source>Strain Computation Failed</source>
         <translation>Fallo en el cálculo de deformación</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="534"/>
+        <location filename="../../gui/strain_window.py" line="584"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ Parámetros modificados — haga clic en «Calcular deformación»</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="205"/>
+        <location filename="../../gui/strain_window.py" line="218"/>
         <source>Zoom out</source>
         <translation>Alejar</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="267"/>
+        <location filename="../../gui/strain_window.py" line="280"/>
         <source>Compute Strain</source>
         <translation>Calcular deformación</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="273"/>
+        <location filename="../../gui/strain_window.py" line="302"/>
         <source>Export Results</source>
         <translation>Exportar resultados</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="449"/>
+        <location filename="../../gui/strain_window.py" line="478"/>
         <source>Starting…</source>
         <translation>Iniciando…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="471"/>
+        <location filename="../../gui/strain_window.py" line="511"/>
         <source>Complete</source>
         <translation>Completado</translation>
     </message>

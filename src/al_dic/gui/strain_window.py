@@ -50,7 +50,10 @@ from PySide6.QtWidgets import (
 from al_dic.core.data_structures import PipelineResult, StrainResult
 from al_dic.gui.app_state import AppState
 from al_dic.gui.controllers.image_controller import ImageController
-from al_dic.gui.controllers.strain_controller import StrainController
+from al_dic.gui.controllers.strain_controller import (
+    StrainComputationCancelled,
+    StrainController,
+)
 from al_dic.gui.controllers.viz_controller import VizController
 from al_dic.gui.panels.canvas_area import visible_values
 from al_dic.gui.panels.strain_canvas import StrainCanvas
@@ -98,15 +101,17 @@ def initial_window_size(avail_width: int, avail_height: int) -> tuple[int, int]:
 class _StrainWorker(QThread):
     """Background thread for strain computation.
 
-    Emits ``progress(fraction, message)`` once per frame and
-    ``finished(result_list)`` on success, ``error(message)`` on failure.
-    Computation happens in the thread; state updates happen in the caller's
-    slot (main thread) to avoid cross-thread Qt issues.
+    Emits ``progress(fraction, message)`` once per frame,
+    ``finished(result_list)`` on success, ``cancelled()`` when the user aborts,
+    and ``error(message)`` on failure.  Computation happens in the thread;
+    state updates happen in the caller's slot (main thread) to avoid
+    cross-thread Qt issues.
     """
 
     progress: Signal = Signal(float, str)
     finished: Signal = Signal(list)
     error: Signal = Signal(str)
+    cancelled: Signal = Signal()
 
     def __init__(
         self,
@@ -116,14 +121,22 @@ class _StrainWorker(QThread):
         super().__init__()
         self._ctrl = strain_ctrl
         self._override = override
+        self._cancel = False
+
+    def cancel(self) -> None:
+        """Request cancellation; takes effect at the next frame boundary."""
+        self._cancel = True
 
     def run(self) -> None:
         try:
             results = self._ctrl.compute_all_frames(
                 self._override,
                 progress_cb=lambda f, m: self.progress.emit(f, m),
+                should_stop=lambda: self._cancel,
             )
             self.finished.emit(results)
+        except StrainComputationCancelled:
+            self.cancelled.emit()
         except Exception as exc:
             self.error.emit(f"{type(exc).__name__}: {exc}")
 
@@ -269,6 +282,22 @@ class StrainWindow(QMainWindow):
         self._compute_btn.setFixedHeight(40)
         self._compute_btn.clicked.connect(self._on_compute_clicked)
         right.addWidget(self._compute_btn)
+
+        # Cancel button: hidden until a compute is running (mirrors the main
+        # window's DIC cancel).  Aborts at the next frame boundary and keeps the
+        # previous strain result.
+        self._cancel_btn = QPushButton(self.tr("Cancel"))
+        self._cancel_btn.setProperty("class", "btn-danger")
+        self._cancel_btn.setFixedHeight(30)
+        self._cancel_btn.setToolTip(
+            self.tr("Cancel the running strain computation. "
+                    "The previous strain result is kept.")
+        )
+        from al_dic.gui.icons import icon_stop
+        self._cancel_btn.setIcon(icon_stop())
+        self._cancel_btn.setVisible(False)
+        self._cancel_btn.clicked.connect(self._on_cancel_clicked)
+        right.addWidget(self._cancel_btn)
 
         self._export_strain_btn = QPushButton(self.tr("Export Results"))
         self._export_strain_btn.setFixedHeight(30)
@@ -448,6 +477,8 @@ class StrainWindow(QMainWindow):
         self._strain_progress.setVisible(True)
         self._strain_progress_label.setText(self.tr("Starting…"))
         self._strain_progress_label.setVisible(True)
+        self._cancel_btn.setEnabled(True)
+        self._cancel_btn.setVisible(True)
 
         self._strain_worker = _StrainWorker(
             self._strain_ctrl,
@@ -456,7 +487,15 @@ class StrainWindow(QMainWindow):
         self._strain_worker.progress.connect(self._on_strain_progress)
         self._strain_worker.finished.connect(self._on_strain_finished)
         self._strain_worker.error.connect(self._on_strain_error)
+        self._strain_worker.cancelled.connect(self._on_strain_cancelled)
         self._strain_worker.start()
+
+    def _on_cancel_clicked(self) -> None:
+        worker = self._strain_worker
+        if worker is not None and worker.isRunning():
+            worker.cancel()
+            self._cancel_btn.setEnabled(False)
+            self._strain_progress_label.setText(self.tr("Cancelling…"))
 
     def _on_strain_progress(self, fraction: float, message: str) -> None:
         self._strain_progress.setValue(int(fraction * 1000))
@@ -467,6 +506,7 @@ class StrainWindow(QMainWindow):
         self._state.results = _dc_replace(current, result_strain=new_strain)
         self._state.results_changed.emit()
 
+        self._cancel_btn.setVisible(False)
         self._strain_progress.setValue(1000)
         self._strain_progress_label.setText(self.tr("Complete"))
         self._compute_btn.setEnabled(True)
@@ -482,8 +522,18 @@ class StrainWindow(QMainWindow):
             ),
         )
 
+    def _on_strain_cancelled(self) -> None:
+        # User aborted mid-run: discard the partial recompute and keep the
+        # previous strain result untouched.
+        self._cancel_btn.setVisible(False)
+        self._strain_progress.setVisible(False)
+        self._strain_progress_label.setVisible(False)
+        self._compute_btn.setEnabled(True)
+        self._log(self.tr("Strain computation cancelled."), "warn")
+
     def _on_strain_error(self, message: str) -> None:
         from al_dic.i18n import tr_args
+        self._cancel_btn.setVisible(False)
         self._strain_progress.setVisible(False)
         self._strain_progress_label.setVisible(False)
         self._compute_btn.setEnabled(True)

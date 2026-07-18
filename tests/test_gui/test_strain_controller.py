@@ -12,6 +12,7 @@ from al_dic.core.data_structures import StrainResult
 from al_dic.gui.app_state import AppState
 from al_dic.gui.controllers.strain_controller import (
     ALLOWED_OVERRIDES,
+    StrainComputationCancelled,
     StrainController,
 )
 
@@ -86,6 +87,18 @@ class TestComputeAllFrames:
         ctrl = StrainController(empty_state)
         with pytest.raises(RuntimeError):
             ctrl.compute_all_frames(override={})
+
+    def test_should_stop_raises_cancelled(self, state_with_results):
+        """A ``should_stop`` predicate that returns True aborts the run."""
+        ctrl = StrainController(state_with_results)
+        with pytest.raises(StrainComputationCancelled):
+            ctrl.compute_all_frames(override={}, should_stop=lambda: True)
+
+    def test_should_stop_false_completes(self, state_with_results):
+        """``should_stop`` returning False never interrupts."""
+        ctrl = StrainController(state_with_results)
+        out = ctrl.compute_all_frames(override={}, should_stop=lambda: False)
+        assert len(out) == len(state_with_results.results.result_disp)
 
     def test_progress_callback_invoked_per_frame(self, state_with_results):
         ctrl = StrainController(state_with_results)

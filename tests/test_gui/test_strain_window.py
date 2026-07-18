@@ -62,6 +62,31 @@ def test_default_strain_frame_is_zero(window):
 
 
 # ----------------------------------------------------------------------
+# Cancel button
+# ----------------------------------------------------------------------
+
+def test_cancel_button_hidden_until_running(window):
+    """The Cancel button exists and is hidden when no compute is running."""
+    assert window._cancel_btn.isVisibleTo(window) is False
+
+
+def test_cancel_clicked_without_worker_is_noop(window):
+    """Clicking Cancel with no active worker must not raise."""
+    window._strain_worker = None
+    window._on_cancel_clicked()  # no crash
+
+
+def test_cancelled_resets_ui_without_storing(window, state_with_results):
+    """A cancelled run resets the UI and leaves result_strain untouched."""
+    before = state_with_results.results.result_strain
+    window._on_strain_cancelled()
+    assert window._cancel_btn.isVisibleTo(window) is False
+    assert window._compute_btn.isEnabled() is True
+    # Previous strain result is kept (not overwritten).
+    assert state_with_results.results.result_strain is before
+
+
+# ----------------------------------------------------------------------
 # Field selector wiring
 # ----------------------------------------------------------------------
 
