@@ -186,7 +186,15 @@ class VizController:
             (pixmap, x_grid, y_grid, output_step) -- pixmap for display,
             grids for positioning, output_step for scaling.
         """
-        interp_key = (frame_idx, field_name, deformed)
+        # "Fill trimmed edges" (blank_invalid_nodes False) on a field that
+        # actually has trimmed nodes: extrapolate beyond the shrunken
+        # interpolation hull so the fill reaches the full ROI, not just the
+        # kept-node hull.  Displacement fields (no NaN) are unaffected.
+        extrapolate = (
+            not blank_invalid_nodes
+            and bool(np.isnan(np.asarray(values, dtype=np.float64)).any())
+        )
+        interp_key = (frame_idx, field_name, deformed, extrapolate)
         has_mask = roi_mask is not None
         has_def_mask = deformed_mask is not None
         pixmap_key = (frame_idx, field_name, cmap, round(vmin, 6), round(vmax, 6), has_mask, deformed, has_def_mask, blank_invalid_nodes)
@@ -218,6 +226,9 @@ class VizController:
                 output_mode="auto",
                 oversample=4,
                 interpolator=interpolator,
+                # Extrapolate the trimmed band from reliable nodes when filling
+                # so the overlay covers the full ROI (matches image/anim export).
+                fill_outside=("nearest" if extrapolate else "nan"),
             )
             xg = info["x_grid"]
             yg = info["y_grid"]

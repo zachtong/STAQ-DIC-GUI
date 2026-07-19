@@ -216,7 +216,9 @@ class TestRenderFieldCrack:
         crack = solid.copy()
         crack[27:30, 0:40] = False  # thin slit, left portion
 
-        key = (0, "disp_v", False)
+        # interp_key = (frame, field, deformed, extrapolate); disp_v has no NaN
+        # so extrapolate is False.
+        key = (0, "disp_v", False, False)
 
         ctrl_solid = VizController()
         ctrl_solid.render_field(0, "disp_v", nodes, values, (H, W), step,
@@ -235,6 +237,62 @@ class TestRenderFieldCrack:
         # invalidate_masks() drops the crack cache (mask content may change).
         ctrl_crack.invalidate_masks()
         assert not ctrl_crack._crack_cache
+
+
+class TestRenderFieldFill:
+    """'Fill trimmed edges' extrapolates the trimmed band to the full ROI."""
+
+    def _mesh(self, H=64, W=64, step=8):
+        xs = np.arange(step, W - step + 1, step, float)
+        ys = np.arange(step, H - step + 1, step, float)
+        XX, YY = np.meshgrid(xs, ys)
+        return np.column_stack([XX.ravel(), YY.ravel()])
+
+    def test_fill_extrapolates_covers_more_than_blank(self, qapp):
+        H = W = 64
+        step = 8
+        nodes = self._mesh(H, W, step)
+        values = np.ones(len(nodes))
+        # Trim the outer ring -> shrinks the interpolation hull.
+        outer = ((nodes[:, 0] == step) | (nodes[:, 0] == W - step)
+                 | (nodes[:, 1] == step) | (nodes[:, 1] == H - step))
+        values[outer] = np.nan
+        roi = np.ones((H, W), dtype=bool)
+
+        def opaque(blank):
+            ctrl = VizController()
+            pm, _, _, _ = ctrl.render_field(
+                0, "strain_exx", nodes, values, (H, W), step,
+                vmin=0.0, vmax=2.0, roi_mask=roi, blank_invalid_nodes=blank,
+            )
+            return int((_pixmap_alpha(pm) > 0).sum())
+
+        # Fill on (blank=False) extrapolates the trimmed band -> more coverage
+        # than blanking it (blank=True).
+        assert opaque(False) > opaque(True)
+
+    def test_extrapolate_flag_in_interp_key(self, qapp):
+        """A trimmed strain field with fill on caches under an extrapolate key;
+        displacement (no NaN) never extrapolates."""
+        H = W = 64
+        step = 8
+        nodes = self._mesh(H, W, step)
+        strain = np.ones(len(nodes))
+        strain[0] = np.nan  # a trimmed node
+        roi = np.ones((H, W), dtype=bool)
+
+        ctrl = VizController()
+        ctrl.render_field(0, "strain_exx", nodes, strain, (H, W), step,
+                          vmin=0.0, vmax=2.0, roi_mask=roi,
+                          blank_invalid_nodes=False)
+        assert (0, "strain_exx", False, True) in ctrl._interp_cache
+
+        # Displacement field (no NaN) -> extrapolate stays False.
+        disp = np.ones(len(nodes))
+        ctrl.render_field(0, "disp_u", nodes, disp, (H, W), step,
+                          vmin=0.0, vmax=2.0, roi_mask=roi,
+                          blank_invalid_nodes=False)
+        assert (0, "disp_u", False, False) in ctrl._interp_cache
 
 
 class TestNaNPositionNodes:

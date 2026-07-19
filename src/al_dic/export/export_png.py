@@ -314,12 +314,27 @@ def render_field_frame(
         # Skipped when *blank_invalid_nodes* is False ("fill trimmed edges"):
         # the back-fill above then becomes the desired re-interpolation.
         node_ok = np.isfinite(render_coords).all(axis=1)
-        if blank_invalid_nodes and node_ok.any() and not bool(valid[node_ok].all()):
+        has_trim = node_ok.any() and not bool(valid[node_ok].all())
+        if blank_invalid_nodes and has_trim:
             nn = NearestNDInterpolator(
                 render_coords[node_ok], valid[node_ok].astype(np.float64)
             )
             keep = nn(grid_x, grid_y) >= 0.5
             grid_vals = np.where(keep, grid_vals, np.nan)
+        elif not blank_invalid_nodes and has_trim:
+            # "Fill trimmed edges" extends to the FULL ROI, not just the kept-
+            # node hull: trimming the outer ring shrinks the interpolation hull,
+            # so its exterior (the trimmed band up to the ROI edge) is left NaN
+            # by the linear interpolator.  Extrapolate those cells from the
+            # reliable (non-trimmed) nodes by nearest neighbour.  Values come
+            # from reliable interior nodes -- the low-confidence edge nodes are
+            # never shown.  ROI masking below clips this to the ROI, and the
+            # crack pass (after) still blanks bridged cells so a crack stays a
+            # sharp line.  Runs before the crack pass so cracks are not filled.
+            nan_out = np.isnan(grid_vals)
+            if nan_out.any():
+                nn = NearestNDInterpolator(pts, values[valid])
+                grid_vals[nan_out] = nn(grid_x[nan_out], grid_y[nan_out])
 
         # Crack-aware rendering: the fresh Delaunay above reconnects nodes on
         # opposite sides of a crack that the mesh split, smearing the

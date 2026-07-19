@@ -147,6 +147,42 @@ def test_export_fill_trimmed_edges_reinterpolates(minimal_result):
     assert tuple(int(c) for c in img[ty, tx]) != (0, 0, 255)
 
 
+def test_export_fill_extrapolates_to_full_roi():
+    """Trimming the outer ring of nodes shrinks the interpolation hull, so a
+    plain fill leaves the outer band NaN.  With fill on, that band is
+    extrapolated from the reliable interior nodes, reaching the full ROI --
+    while fill off (blank) leaves it transparent."""
+    xs = np.arange(0, 81, 10, dtype=float)
+    ys = np.arange(0, 81, 10, dtype=float)
+    X, Y = np.meshgrid(xs, ys)
+    coords = np.column_stack([X.ravel(), Y.ravel()])
+    vals = np.ones(coords.shape[0], dtype=np.float64)
+    # Trim the outer ring (NaN) -> kept-node hull shrinks to [10,70]^2.
+    outer = ((coords[:, 0] == 0) | (coords[:, 0] == 80)
+             | (coords[:, 1] == 0) | (coords[:, 1] == 80))
+    vals[outer] = np.nan
+
+    roi = np.ones((81, 81), dtype=bool)
+    bg = np.zeros((81, 81, 3), dtype=np.uint8)
+    bg[:, :] = (0, 0, 255)  # red background
+    cfg = FieldImageConfig("strain_exx", True, "jet", False, 0.0, 2.0, bg_alpha=1.0)
+
+    img_off = render_field_frame(coords, vals, (81, 81), bg, cfg,
+                                 roi_mask=roi, blank_invalid_nodes=True)
+    img_on = render_field_frame(coords, vals, (81, 81), bg, cfg,
+                                roi_mask=roi, blank_invalid_nodes=False)
+
+    # A cell in the outer band (x=4 is outside the kept-node hull, inside ROI).
+    y, x = 40, 4
+    assert tuple(int(c) for c in img_off[y, x]) == (0, 0, 255), "blank leaves it transparent"
+    assert tuple(int(c) for c in img_on[y, x]) != (0, 0, 255), "fill extrapolates it"
+
+    # Overall, fill covers strictly more of the ROI than blank.
+    painted_off = int(np.any(img_off != np.array([0, 0, 255]), axis=2).sum())
+    painted_on = int(np.any(img_on != np.array([0, 0, 255]), axis=2).sum())
+    assert painted_on > painted_off
+
+
 def test_export_no_trim_is_unchanged_for_full_field(minimal_result):
     """A fully-finite field (no trim, e.g. displacement) renders identically --
     the blanking pass is a no-op."""
