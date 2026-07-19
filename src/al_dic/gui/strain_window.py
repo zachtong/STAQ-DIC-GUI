@@ -694,12 +694,17 @@ class StrainWindow(QMainWindow):
         field_name: str,
         frame: int,
         result: PipelineResult,
+        show_deformed: bool = False,
     ) -> NDArray[np.float64] | None:
         """Extract displayable values for the given field and frame.
 
         Displacement-family fields (disp_u / disp_v / disp_magnitude /
         velocity) are served from result_disp so they work before Compute
         Strain. All strain fields require result_strain.
+
+        *show_deformed* selects the edge-trim frame: the deformed view uses the
+        stored per-frame trim (current-frame crack), the reference view uses
+        frame-0 geometry so it matches the main window's displacement overlay.
         """
         if field_name in DISP_FIELD_NAMES:
             return self._get_disp_field(field_name, frame, result)
@@ -722,15 +727,56 @@ class StrainWindow(QMainWindow):
         # displayed field. ``strain_valid`` is set for plane-fit strain only
         # (None otherwise); the values stored in StrainResult are untouched —
         # we NaN a display copy so the interpolator drops those nodes,
-        # producing a transparent boundary band.
-        if (
-            vals is not None
-            and sr.strain_valid is not None
-            and len(sr.strain_valid) == len(vals)
-        ):
+        # producing a transparent boundary band.  The trim frame follows the
+        # display frame (see _display_strain_valid).
+        valid = self._display_strain_valid(sr, result, show_deformed)
+        if vals is not None and valid is not None and len(valid) == len(vals):
             vals = np.asarray(vals, dtype=np.float64).copy()
-            vals[~sr.strain_valid] = np.nan
+            vals[~valid] = np.nan
         return vals
+
+    def _display_strain_valid(
+        self,
+        sr: StrainResult,
+        result: PipelineResult,
+        show_deformed: bool,
+    ) -> NDArray[np.bool_] | None:
+        """Edge-trim validity mask to *display*, chosen by the view frame.
+
+        * **Deformed view** — the stored ``sr.strain_valid`` (edge-trim of the
+          current frame's crack, warped to the reference position).
+        * **Reference view** — recompute the trim from the frame-0 ROI mask so
+          the reference strain uses the same frame-0 geometry the main window's
+          displacement overlay does; the current frame's (possibly grown) crack
+          is not carved into the reference view.  Cached per result.
+
+        Returns ``None`` for FEM nodal strain (no edge-trim) so the caller
+        leaves the field dense.
+        """
+        if sr.strain_valid is None:
+            return None
+        if show_deformed:
+            return sr.strain_valid
+        mask0 = self._state.per_frame_rois.get(0)
+        if mask0 is None:
+            return sr.strain_valid
+        rad = float(result.dic_para.strain_plane_fit_rad)
+        alpha = float(getattr(result.dic_para, "strain_edge_trim_alpha", 0.0))
+        key = (id(result), rad, alpha)
+        cached = getattr(self, "_ref_trim_cache", None)
+        if cached is not None and cached[0] == key:
+            return cached[1]
+        try:
+            from al_dic.strain.comp_def_grad import edge_valid_mask
+            valid0 = edge_valid_mask(
+                result.dic_mesh.coordinates_fem,
+                np.asarray(mask0, dtype=np.float64),
+                rad, alpha,
+            )
+        except Exception:
+            return sr.strain_valid
+        self._ref_trim_cache = (key, valid0)
+        return valid0
 
     def _get_disp_field(
         self,
@@ -811,18 +857,22 @@ class StrainWindow(QMainWindow):
 
     def _update_trim_readout(
         self, field_name: str, frame: int, result: PipelineResult,
+        show_deformed: bool = False,
     ) -> None:
         """Refresh the panel's 'Trimmed: N nodes (M%)' readout for this frame.
 
-        Uses the current strain frame's ``strain_valid`` (plane-fit only).
-        Clears the readout for displacement fields, the reference frame, or
-        when no validity mask is available.
+        Uses the *displayed* trim mask (frame-0 geometry in the reference view,
+        current-frame in the deformed view -- see _display_strain_valid), so
+        the readout matches what is actually drawn. Clears for displacement
+        fields, the reference frame, or when no validity mask is available.
         """
         sv = None
         if field_name not in DISP_FIELD_NAMES and frame >= 1 and result.result_strain:
             idx = frame - 1
             if idx < len(result.result_strain):
-                sv = result.result_strain[idx].strain_valid
+                sv = self._display_strain_valid(
+                    result.result_strain[idx], result, show_deformed,
+                )
         if sv is None:
             self._param_panel.set_trim_readout(0, 0)
         else:
@@ -841,11 +891,17 @@ class StrainWindow(QMainWindow):
 
             frame = self._strain_current_frame
             field_name = self._field_selector.current_field()
-            values = self._get_field_values(field_name, frame, result)
-            self._update_trim_readout(field_name, frame, result)
 
             viz = self._viz_panel.get_state()
             show_deformed = bool(viz.get("show_deformed", False))
+
+            # Trim frame follows the display frame: reference view -> frame-0
+            # geometry (matches the main window's displacement), deformed view
+            # -> current-frame crack.
+            values = self._get_field_values(
+                field_name, frame, result, show_deformed,
+            )
+            self._update_trim_readout(field_name, frame, result, show_deformed)
 
             # Background image: frame is now the image-file index (0=ref, 1..N=deformed).
             # show_deformed → load the current image; otherwise always show reference.

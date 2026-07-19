@@ -232,6 +232,52 @@ def test_strain_rotation_requires_compute(window, state_with_results):
     assert vals is not None
 
 
+def test_display_trim_frame_follows_view(window, state_with_results):
+    """Reference view recomputes edge-trim from the frame-0 mask (aligning with
+    the main-window displacement); deformed view keeps the stored per-frame
+    trim (current-frame crack). A current-frame interior crack must NOT be
+    carved into the reference view."""
+    import numpy as np
+    from types import SimpleNamespace
+
+    result = state_with_results.results
+    coords = result.dic_mesh.coordinates_fem
+    n = coords.shape[0]
+
+    # frame-0 ROI: a centered rectangle (leaves a border) so frame-0 geometry
+    # trims a boundary band but keeps the interior.
+    mask0 = np.zeros((128, 128), dtype=bool)
+    mask0[24:104, 24:104] = True
+    state_with_results.per_frame_rois[0] = mask0
+
+    # Simulate the current frame trimming one INTERIOR node (a grown crack).
+    strain_valid = np.ones(n, dtype=bool)
+    cidx = int(np.argmin(np.hypot(coords[:, 0] - 64, coords[:, 1] - 64)))
+    strain_valid[cidx] = False
+    sr = SimpleNamespace(strain_valid=strain_valid)
+
+    # Deformed view: stored per-frame trim -> the interior node stays trimmed.
+    v_def = window._display_strain_valid(sr, result, show_deformed=True)
+    assert v_def is strain_valid
+    assert not v_def[cidx]
+
+    # Reference view: recomputed from frame-0 geometry -> interior node NOT
+    # trimmed (only the boundary band is), matching the main window.
+    v_ref = window._display_strain_valid(sr, result, show_deformed=False)
+    assert v_ref is not strain_valid
+    assert bool(v_ref[cidx]), "current-frame crack must not carve the reference view"
+    assert not bool(v_ref.all()), "frame-0 boundary band is still trimmed"
+
+
+def test_display_trim_none_for_fem(window, state_with_results):
+    """FEM nodal strain has no edge-trim -> None regardless of the view frame."""
+    from types import SimpleNamespace
+    result = state_with_results.results
+    sr = SimpleNamespace(strain_valid=None)
+    assert window._display_strain_valid(sr, result, show_deformed=False) is None
+    assert window._display_strain_valid(sr, result, show_deformed=True) is None
+
+
 def test_auto_range_disabled_populates_spinboxes(window, state_with_results):
     """Disabling auto range triggers set_range() with field's data range.
     For a uniform shear field all nodes share one value so vmin == vmax."""
