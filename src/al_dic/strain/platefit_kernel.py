@@ -62,6 +62,31 @@ def _seg_hits_mask(x0, y0, x1, y1, mask, h, w):
     return False
 
 
+@njit(cache=True)
+def _solve_normal_eq(s00, s0x, s0y, sxx, sxy, syy,
+                     bu0, bu1, bu2, bv0, bv1, bv2):
+    """Solve the symmetric 3x3 weighted normal equations for u and v.
+
+    M = [[s00,s0x,s0y],[s0x,sxx,sxy],[s0y,sxy,syy]]; returns the d/dx and d/dy
+    components of u and v (rows 1,2 of M^{-1} b), plus an ``ok`` flag (False =
+    singular).
+    """
+    a01 = sxy * s0y - s0x * syy      # cof(0,1)
+    a02 = s0x * sxy - sxx * s0y      # cof(0,2)
+    det = s00 * (sxx * syy - sxy * sxy) + s0x * a01 + s0y * a02
+    if abs(det) < 1e-20:
+        return 0.0, 0.0, 0.0, 0.0, False
+    inv = 1.0 / det
+    a11 = s00 * syy - s0y * s0y      # cof(1,1)
+    a12 = s0x * s0y - s00 * sxy      # cof(1,2)
+    a22 = s00 * sxx - s0x * s0x      # cof(2,2)
+    du_dx = (a01 * bu0 + a11 * bu1 + a12 * bu2) * inv
+    du_dy = (a02 * bu0 + a12 * bu1 + a22 * bu2) * inv
+    dv_dx = (a01 * bv0 + a11 * bv1 + a12 * bv2) * inv
+    dv_dy = (a02 * bv0 + a12 * bv1 + a22 * bv2) * inv
+    return du_dx, du_dy, dv_dx, dv_dy, True
+
+
 @njit(parallel=True, cache=True)
 def _platefit_kernel(coords, vc, vu, vv, indptr, indices, rad,
                      mask, near_barrier):
@@ -117,29 +142,78 @@ def _platefit_kernel(coords, vc, vu, vv, indptr, indices, rad,
 
         if cnt < 3:
             continue
-
-        # Symmetric normal matrix M = [[s00,s0x,s0y],[s0x,sxx,sxy],[s0y,sxy,syy]]
-        # cofactors (adjugate entries used for rows 1,2 of M^{-1})
-        a01 = sxy * s0y - s0x * syy   # cof(0,1)
-        a02 = s0x * sxy - sxx * s0y   # cof(0,2)
-        det = s00 * (sxx * syy - sxy * sxy) + s0x * a01 + s0y * a02
-        if abs(det) < 1e-20:
+        du_dx, du_dy, dv_dx, dv_dy, ok = _solve_normal_eq(
+            s00, s0x, s0y, sxx, sxy, syy, bu0, bu1, bu2, bv0, bv1, bv2)
+        if not ok:
             continue
-        inv = 1.0 / det
-        a11 = s00 * syy - s0y * s0y   # cof(1,1)
-        a12 = s0x * s0y - s00 * sxy   # cof(1,2)
-        a22 = s00 * sxx - s0x * s0x   # cof(2,2)
-
-        # x = M^{-1} b ; we only need components 1 (d/dx) and 2 (d/dy).
-        du_dx = (a01 * bu0 + a11 * bu1 + a12 * bu2) * inv
-        du_dy = (a02 * bu0 + a12 * bu1 + a22 * bu2) * inv
-        dv_dx = (a01 * bv0 + a11 * bv1 + a12 * bv2) * inv
-        dv_dy = (a02 * bv0 + a12 * bv1 + a22 * bv2) * inv
-
         F[4 * i + 0] = du_dx  # F11 = du/dx
         F[4 * i + 1] = dv_dx  # F21 = dv/dx
         F[4 * i + 2] = du_dy  # F12 = du/dy
         F[4 * i + 3] = dv_dy  # F22 = dv/dy
+
+    return F
+
+
+@njit(parallel=True, cache=True)
+def _platefit_kernel_cached(coords, u, v, valid, indptr, indices, rad,
+                            mask, near_barrier):
+    """Like :func:`_platefit_kernel` but over a FRAME-INVARIANT all-node
+    neighbour CSR: ``indices`` point into the full node arrays and each
+    neighbour is kept only when ``valid[k]``.
+
+    Lets the KDTree + ``query_ball_point`` be built once per sequence (the
+    coordinates never move -- strain is total-Lagrangian) and reused every
+    frame; only *valid*, *u/v* and the per-frame crack *mask* change.
+    Produces the same neighbour set (valid nodes within the radius) as the
+    per-frame valid-subset tree, so results are identical.
+    """
+    n = coords.shape[0]
+    h, w = mask.shape
+    F = np.full(4 * n, np.nan)
+    rd_sq = rad * rad
+    if rd_sq < 1e-10:
+        rd_sq = 1e-10
+
+    for i in prange(n):
+        xi = coords[i, 0]
+        yi = coords[i, 1]
+        chk = near_barrier[i]
+
+        s00 = 0.0; s0x = 0.0; s0y = 0.0
+        sxx = 0.0; sxy = 0.0; syy = 0.0
+        bu0 = 0.0; bu1 = 0.0; bu2 = 0.0
+        bv0 = 0.0; bv1 = 0.0; bv2 = 0.0
+        cnt = 0
+
+        for kk in range(indptr[i], indptr[i + 1]):
+            k = indices[kk]
+            if not valid[k]:
+                continue
+            xk = coords[k, 0]
+            yk = coords[k, 1]
+            if chk and _seg_hits_mask(xi, yi, xk, yk, mask, h, w):
+                continue
+            dx = xk - xi
+            dy = yk - yi
+            ww = np.exp(-(dx * dx + dy * dy) / rd_sq)
+            uu = u[k]
+            vv_ = v[k]
+            s00 += ww; s0x += ww * dx; s0y += ww * dy
+            sxx += ww * dx * dx; sxy += ww * dx * dy; syy += ww * dy * dy
+            bu0 += ww * uu; bu1 += ww * dx * uu; bu2 += ww * dy * uu
+            bv0 += ww * vv_; bv1 += ww * dx * vv_; bv2 += ww * dy * vv_
+            cnt += 1
+
+        if cnt < 3:
+            continue
+        du_dx, du_dy, dv_dx, dv_dy, ok = _solve_normal_eq(
+            s00, s0x, s0y, sxx, sxy, syy, bu0, bu1, bu2, bv0, bv1, bv2)
+        if not ok:
+            continue
+        F[4 * i + 0] = du_dx
+        F[4 * i + 1] = dv_dx
+        F[4 * i + 2] = du_dy
+        F[4 * i + 3] = dv_dy
 
     return F
 
@@ -225,6 +299,101 @@ def _platefit_python(coords, vc, vu, vv, indptr, indices, rad,
         Aw = A * w[:, None]
         M = A.T @ Aw
         b = Aw.T @ np.column_stack([vu[nb], vv[nb]])
+        try:
+            sol = np.linalg.solve(M, b)
+        except np.linalg.LinAlgError:
+            continue
+        F[4 * i + 0] = sol[1, 0]; F[4 * i + 1] = sol[1, 1]
+        F[4 * i + 2] = sol[2, 0]; F[4 * i + 3] = sol[2, 1]
+    return F
+
+
+# ---------------------------------------------------------------------------
+# Frame-invariant neighbour cache (Phase 2): build once, reuse every frame
+# ---------------------------------------------------------------------------
+
+def build_neighbor_cache(coordinates: NDArray[np.float64], rad: float):
+    """Precompute the frame-invariant all-node geometric neighbour CSR.
+
+    Strain is total-Lagrangian, so the node coordinates never move across
+    frames; the geometric neighbours within *rad* are therefore identical every
+    frame and can be built once (KDTree + ``query_ball_point``) and reused.
+    Returns ``(indptr, indices)`` where ``indices`` index into ALL nodes.
+    """
+    from scipy.spatial import KDTree
+
+    n = coordinates.shape[0]
+    if n == 0:
+        return np.zeros(1, dtype=np.int64), np.zeros(0, dtype=np.int64)
+    tree = KDTree(np.ascontiguousarray(coordinates, dtype=np.float64))
+    nbrs = tree.query_ball_point(coordinates, rad)
+    return _lists_to_csr(nbrs, n)
+
+
+def solve_platefit_cached(
+    coordinates: NDArray[np.float64],
+    u: NDArray[np.float64],
+    v: NDArray[np.float64],
+    valid: NDArray[np.bool_],
+    cache,
+    rad: float,
+    mask: NDArray[np.float64] | None,
+    near_barrier: NDArray[np.bool_] | None,
+) -> NDArray[np.float64]:
+    """Plane-fit deformation gradient using a precomputed all-node neighbour
+    CSR (*cache* from :func:`build_neighbor_cache`).
+
+    Equivalent to :func:`solve_platefit` but skips the per-frame KDTree build
+    and query.  Per-frame inputs: *valid* (finite-U & inside mask), *u/v*,
+    *mask*, *near_barrier*.
+    """
+    indptr, indices = cache
+    coords = np.ascontiguousarray(coordinates, dtype=np.float64)
+    u = np.ascontiguousarray(u, dtype=np.float64)
+    v = np.ascontiguousarray(v, dtype=np.float64)
+    valid = np.ascontiguousarray(valid, dtype=np.bool_)
+    if mask is not None and near_barrier is not None and near_barrier.any():
+        mask_arr = np.ascontiguousarray(mask, dtype=np.float64)
+        nb_flags = np.ascontiguousarray(near_barrier)
+    else:
+        mask_arr = np.ones((1, 1), dtype=np.float64)  # dummy; never sampled
+        nb_flags = np.zeros(coords.shape[0], dtype=np.bool_)
+
+    if HAS_NUMBA:
+        return _platefit_kernel_cached(
+            coords, u, v, valid, indptr, indices,
+            float(rad), mask_arr, nb_flags,
+        )
+    return _platefit_cached_python(
+        coords, u, v, valid, indptr, indices, float(rad), mask_arr, nb_flags,
+    )
+
+
+def _platefit_cached_python(coords, u, v, valid, indptr, indices, rad,
+                            mask, near_barrier):
+    """Pure-Python fallback for the cached (all-node CSR) path."""
+    from .comp_def_grad import _segment_hits_mask
+
+    n = coords.shape[0]
+    F = np.full(4 * n, np.nan)
+    rd_sq = max(rad * rad, 1e-10)
+    for i in range(n):
+        xi, yi = coords[i, 0], coords[i, 1]
+        allnb = indices[indptr[i]:indptr[i + 1]]
+        nb = allnb[valid[allnb]]
+        if near_barrier[i] and nb.size:
+            nb = nb[np.array(
+                [not _segment_hits_mask(xi, yi, coords[k, 0], coords[k, 1], mask)
+                 for k in nb], dtype=bool)]
+        if len(nb) < 3:
+            continue
+        dx = coords[nb, 0] - xi
+        dy = coords[nb, 1] - yi
+        w = np.exp(-(dx * dx + dy * dy) / rd_sq)
+        A = np.column_stack([np.ones(len(nb)), dx, dy])
+        Aw = A * w[:, None]
+        M = A.T @ Aw
+        b = Aw.T @ np.column_stack([u[nb], v[nb]])
         try:
             sol = np.linalg.solve(M, b)
         except np.linalg.LinAlgError:

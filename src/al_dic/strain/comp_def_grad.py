@@ -27,7 +27,7 @@ from numpy.typing import NDArray
 from scipy.ndimage import distance_transform_edt
 from scipy.spatial import KDTree
 
-from .platefit_kernel import solve_platefit
+from .platefit_kernel import solve_platefit, solve_platefit_cached
 
 
 def edge_valid_mask(
@@ -106,6 +106,7 @@ def comp_def_grad(
     elements: NDArray[np.int64],
     rad: float,
     mask: NDArray[np.float64] | None = None,
+    neighbors: tuple | None = None,
 ) -> NDArray[np.float64]:
     """Compute local deformation gradient via weighted plane fitting.
 
@@ -130,6 +131,13 @@ def comp_def_grad(
         mask: Optional binary mask (H, W).  Nodes whose pixel-rounded
             coordinate falls in a zero region are excluded from being
             neighbors in all plane fits.
+        neighbors: Optional precomputed frame-invariant all-node neighbour CSR
+            (``(indptr, indices)`` from
+            :func:`al_dic.strain.platefit_kernel.build_neighbor_cache`).  When
+            given, the per-frame KDTree build + ``query_ball_point`` is skipped
+            and neighbours are filtered by *valid* inside the kernel.  The
+            coordinates must match those the cache was built from; results are
+            identical to the default path.
 
     Returns:
         Deformation gradient vector (4*n_nodes,), interleaved as
@@ -161,19 +169,10 @@ def comp_def_grad(
     if len(valid_idx) < 3:
         return F  # too few valid nodes for any plane fit
 
-    valid_coords = coordinates[valid_idx]
-    valid_u = u[valid_idx]
-    valid_v = v[valid_idx]
-
-    # KDTree built from valid nodes only.
-    # neighbor_lists[i] contains indices INTO valid_* arrays (not original).
-    tree = KDTree(valid_coords)
-    neighbor_lists = tree.query_ball_point(coordinates, rad)
-
     # Nodes within `rad` of a masked barrier (crack/hole/ROI edge) are the only
     # ones whose VSG disk can reach across it, so the (per-pair) line-of-sight
-    # filter below runs only there -- elsewhere the Euclidean neighbours are all
-    # on the same side already.
+    # filter runs only there -- elsewhere the Euclidean neighbours are all on
+    # the same side already.  (Same for both solve paths.)
     near_barrier = None
     if mask is not None:
         dt = distance_transform_edt(mask > 0.5)
@@ -182,13 +181,26 @@ def comp_def_grad(
         row = np.clip(np.round(coordinates[:, 1]).astype(int), 0, h_mask - 1)
         near_barrier = dt[row, col] < rad
 
-    # Solve the weighted plane fit at every node.  Neighbour selection is
-    # preserved exactly: validity is baked into valid_* (so the KDTree only
-    # ever returns valid neighbours), the Euclidean radius comes from
-    # query_ball_point, and the crack/hole line-of-sight filter runs for
-    # near-barrier nodes.  The per-node weighted least squares is solved via
-    # normal equations in a Numba kernel (parallel, no per-node SVD), with an
-    # equivalent pure-Python fallback when Numba is unavailable.
+    # Fast path: reuse a precomputed frame-invariant all-node neighbour CSR
+    # (coordinates never move -- strain is total-Lagrangian), skipping the
+    # per-frame KDTree build + query.  Neighbours are filtered by *valid*
+    # inside the kernel, so the usable neighbour set (valid nodes within the
+    # radius) -- and the result -- is identical to the default path.
+    if neighbors is not None:
+        return solve_platefit_cached(
+            coordinates, u, v, valid, neighbors, rad, mask, near_barrier,
+        )
+
+    # Default path: build the KDTree from valid nodes only so invalid nodes
+    # never enter any fit; neighbor_lists index INTO valid_* arrays.  The
+    # per-node weighted least squares is solved via normal equations in a
+    # Numba kernel (parallel, no per-node SVD), with a pure-Python fallback.
+    valid_coords = coordinates[valid_idx]
+    valid_u = u[valid_idx]
+    valid_v = v[valid_idx]
+    tree = KDTree(valid_coords)
+    neighbor_lists = tree.query_ball_point(coordinates, rad)
+
     F = solve_platefit(
         coordinates, valid_coords, valid_u, valid_v,
         neighbor_lists, rad, mask, near_barrier,

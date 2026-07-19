@@ -63,6 +63,7 @@ def compute_strain(
     para: DICPara,
     U: NDArray[np.float64],
     node_region_map: NodeRegionMap,
+    neighbors: tuple | None = None,
 ) -> StrainResult:
     """Compute strain from displacement via FEM + smoothing + type conversion.
 
@@ -82,6 +83,10 @@ def compute_strain(
         para: DIC parameters.
         U: Displacement vector (2*n_nodes,), interleaved.
         node_region_map: Pre-computed node-to-region mapping.
+        neighbors: Optional precomputed plane-fit neighbour cache (see
+            ``comp_def_grad``); only used for ``method == 2`` (plane fitting).
+            Skips the per-frame KDTree build when the mesh coordinates are
+            frame-invariant (total-Lagrangian strain).
 
     Returns:
         StrainResult with all strain components populated.
@@ -100,6 +105,7 @@ def compute_strain(
             U, mesh.coordinates_fem, mesh.elements_fem,
             rad=para.strain_plane_fit_rad,
             mask=para.img_ref_mask,
+            neighbors=neighbors,
         )
         # Fill any NaN from plane fitting. If **every** node came back
         # NaN (e.g. the VSG radius is smaller than the DIC node spacing

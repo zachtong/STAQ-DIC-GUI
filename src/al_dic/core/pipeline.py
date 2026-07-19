@@ -1759,6 +1759,18 @@ def run_aldic(
         ref_elems_s8 = ref_mesh_s8.elements_fem
         fallback_mask_s8 = masks[0].astype(np.float64)
 
+        # Plane-fit strain (method 2) uses these frame-0 coordinates for EVERY
+        # frame (total-Lagrangian), so the geometric neighbour search is
+        # frame-invariant: build the neighbour cache once and reuse it, skipping
+        # the per-frame KDTree build + query_ball_point.  Only the per-frame
+        # crack mask / displacements change.  (FEM nodal strain does not use it.)
+        platefit_neighbors = None
+        if para.method_to_compute_strain == 2 and ref_coords_s8.shape[0] > 0:
+            from ..strain.platefit_kernel import build_neighbor_cache
+            platefit_neighbors = build_neighbor_cache(
+                ref_coords_s8, para.strain_plane_fit_rad,
+            )
+
         for i in range(n_frames - 1):
             if result_disp[i] is None:
                 continue
@@ -1806,6 +1818,7 @@ def run_aldic(
             # Compute strain via the strain module
             result_strain[i] = _compute_strain_fn(
                 strain_mesh, para_s8, U_local, region_map_i,
+                neighbors=platefit_neighbors,
             )
 
             s8_frac = 0.65 + 0.25 * (i + 1) / (n_frames - 1)

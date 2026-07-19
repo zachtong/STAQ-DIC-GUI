@@ -15,8 +15,11 @@ from al_dic.strain.comp_def_grad import comp_def_grad, _segment_hits_mask
 from al_dic.strain.platefit_kernel import (
     HAS_NUMBA,
     _lists_to_csr,
+    _platefit_cached_python,
     _platefit_python,
+    build_neighbor_cache,
     solve_platefit,
+    solve_platefit_cached,
 )
 
 RAD = 20.0
@@ -125,6 +128,58 @@ def test_too_few_nodes():
 def test_empty_mesh():
     F = comp_def_grad(np.zeros(0), np.zeros((0, 2)), _ELEMS, RAD, None)
     assert F.shape == (0,)
+
+
+def test_cached_matches_default_no_mask():
+    coords, U, _ = _mesh()
+    cache = build_neighbor_cache(coords, RAD)
+    _agree(comp_def_grad(U, coords, _ELEMS, RAD, None, neighbors=cache),
+           comp_def_grad(U, coords, _ELEMS, RAD, None))
+
+
+def test_cached_matches_default_with_crack():
+    coords, U, m = _mesh(crack=True)
+    cache = build_neighbor_cache(coords, RAD)
+    Fc = comp_def_grad(U, coords, _ELEMS, RAD, m, neighbors=cache)
+    Fd = comp_def_grad(U, coords, _ELEMS, RAD, m)
+    # the cache path is bit-for-bit identical (same neighbour set + order)
+    assert np.array_equal(np.isnan(Fc), np.isnan(Fd))
+    both = np.isfinite(Fc) & np.isfinite(Fd)
+    assert np.array_equal(Fc[both], Fd[both])
+
+
+def test_cached_all_nan():
+    coords, U, m = _mesh()
+    cache = build_neighbor_cache(coords, RAD)
+    U[:] = np.nan
+    assert np.all(np.isnan(comp_def_grad(U, coords, _ELEMS, RAD, m, neighbors=cache)))
+
+
+def test_build_neighbor_cache_empty():
+    indptr, indices = build_neighbor_cache(np.zeros((0, 2)), RAD)
+    assert indptr.shape == (1,) and indices.shape == (0,)
+
+
+@pytest.mark.skipif(not HAS_NUMBA, reason="numba not installed")
+def test_cached_python_fallback_matches_numba():
+    from scipy.ndimage import distance_transform_edt
+    coords, U, m = _mesh(crack=True)
+    u, v = U[0::2], U[1::2]
+    valid = np.isfinite(u) & np.isfinite(v)
+    H, W = m.shape
+    c = np.clip(np.round(coords[:, 0]).astype(int), 0, W - 1)
+    r = np.clip(np.round(coords[:, 1]).astype(int), 0, H - 1)
+    valid &= m[r, c] > 0
+    near = distance_transform_edt(m > 0.5)[r, c] < RAD
+    cache = build_neighbor_cache(coords, RAD)
+    indptr, indices = cache
+    F_numba = solve_platefit_cached(coords, u, v, valid, cache, RAD, m, near)
+    F_py = _platefit_cached_python(
+        np.ascontiguousarray(coords, np.float64), u, v,
+        np.ascontiguousarray(valid, bool), indptr, indices, RAD,
+        np.ascontiguousarray(m, np.float64), near,
+    )
+    _agree(F_numba, F_py)
 
 
 @pytest.mark.skipif(not HAS_NUMBA, reason="numba not installed")
