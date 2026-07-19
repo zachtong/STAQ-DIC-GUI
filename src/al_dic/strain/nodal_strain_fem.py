@@ -4,8 +4,9 @@ Port of MATLAB strain/global_nodal_strain_fem.m (Jin Yang, Caltech).
 
 Computes the deformation gradient (displacement gradient tensor) at each
 FEM node by evaluating shape function derivatives at element centers,
-then averaging to nodes weighted by element area.  This is the primary
-strain computation method used in AL-DIC (MethodToComputeStrain = 3).
+then averaging to nodes weighted by element area.  This is the FEM-based
+strain method (MethodToComputeStrain = 3); the AL-DIC default is local
+weighted plane fitting (MethodToComputeStrain = 2, see comp_def_grad).
 
 MATLAB/Python differences:
     - MATLAB uses ``compute_all_elements_gp`` at the element centroid

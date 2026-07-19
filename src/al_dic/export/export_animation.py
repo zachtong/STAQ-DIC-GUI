@@ -54,6 +54,7 @@ def export_animation(
     colorbar_style: ColorbarStyle | None = None,
     margin_ratio: float = 0.0,
     margin_color: str = "white",
+    fill_trimmed_edges: bool = False,
 ) -> list[Path]:
     """Export one animation file per enabled field.
 
@@ -82,6 +83,9 @@ def export_animation(
         use_physical_units: Scale displacement values by *pixel_size*.
         pixel_size:  Physical size of one pixel (e.g. mm/px).
         pixel_unit:  Unit string shown on colorbar labels.
+        fill_trimmed_edges: When True, re-interpolate the edge-trimmed strain
+                     band from reliable interior nodes instead of blanking it
+                     (matches the strain window's toggle).  Default False.
 
     Returns:
         List of Paths to written animation files (one per enabled field).
@@ -221,6 +225,7 @@ def export_animation(
                     tri_cache=frame_tri_cache,
                     render_max_dim=render_max_dim,
                     output_shape=out_shape,
+                    blank_invalid_nodes=not fill_trimmed_edges,
                 )
 
                 # Append the styled colorbar

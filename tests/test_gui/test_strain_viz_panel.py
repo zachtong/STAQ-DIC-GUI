@@ -26,8 +26,25 @@ def test_default_state(panel):
 
 
 def test_state_keys(panel):
-    expected = {"colormap", "vmin", "vmax", "alpha", "use_percentile", "show_deformed"}
+    expected = {"colormap", "vmin", "vmax", "alpha", "use_percentile",
+                "show_deformed", "fill_trimmed_edges"}
     assert set(panel.get_state().keys()) == expected
+
+
+def test_fill_trimmed_edges_default_off(panel):
+    """The 'Fill trimmed edges' toggle is unchecked by default (trim visible)."""
+    assert panel.get_state()["fill_trimmed_edges"] is False
+
+
+def test_fill_trimmed_edges_toggle_updates_state_and_emits(panel):
+    """Checking the fill toggle flips the state and re-renders (viz_changed)."""
+    received: list[bool] = []
+    panel.viz_changed.connect(lambda: received.append(True))
+    panel._fill_edges_check.setChecked(True)
+    assert panel.get_state()["fill_trimmed_edges"] is True
+    assert len(received) >= 1
+    panel._fill_edges_check.setChecked(False)
+    assert panel.get_state()["fill_trimmed_edges"] is False
 
 
 def test_change_colormap_emits_signal(panel):

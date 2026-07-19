@@ -201,6 +201,7 @@ def render_field_frame(
     tri_cache: dict | None = None,
     render_max_dim: int = 0,
     output_shape: tuple[int, int] | None = None,
+    blank_invalid_nodes: bool = True,
 ) -> NDArray:
     """Render a single field frame to a BGR uint8 image.
 
@@ -238,6 +239,12 @@ def render_field_frame(
                          over the full coordinate span but rendered, composited
                          and returned at this size -- cutting file size and
                          encode time without upscaling back to native.
+        blank_invalid_nodes: When True (default), blank grid cells whose
+                         nearest node carries NaN (edge-trimmed strain), so the
+                         trim is visible.  When False, skip the blanking and let
+                         the interpolator re-fill the trimmed band from reliable
+                         interior nodes ("fill trimmed edges").  No-op for
+                         fields without trimmed nodes (e.g. displacement).
 
     Returns:
         (Ho, Wo, 3) BGR uint8 image (Ho, Wo = *output_shape* or *image_shape*).
@@ -302,8 +309,10 @@ def render_field_frame(
         # neighbour (matching VizController._invalid_node_grid) and NaN the
         # trimmed cells so display and export agree.  No-op when nothing is
         # trimmed (e.g. displacement fields), so those exports are unchanged.
+        # Skipped when *blank_invalid_nodes* is False ("fill trimmed edges"):
+        # the back-fill above then becomes the desired re-interpolation.
         node_ok = np.isfinite(render_coords).all(axis=1)
-        if node_ok.any() and not bool(valid[node_ok].all()):
+        if blank_invalid_nodes and node_ok.any() and not bool(valid[node_ok].all()):
             nn = NearestNDInterpolator(
                 render_coords[node_ok], valid[node_ok].astype(np.float64)
             )
@@ -438,6 +447,7 @@ def export_png(
     colorbar_style: ColorbarStyle | None = None,
     margin_ratio: float = 0.0,
     margin_color: str = "white",
+    fill_trimmed_edges: bool = False,
 ) -> list[Path]:
     """Render and save images for each enabled field and frame.
 
@@ -469,6 +479,9 @@ def export_png(
                      show physical units on colorbar labels.
         pixel_size:  Physical size of one pixel (e.g. mm/px).
         pixel_unit:  Unit string shown on colorbar labels (e.g. "mm").
+        fill_trimmed_edges: When True, re-interpolate the edge-trimmed strain
+                     band from reliable interior nodes instead of blanking it
+                     (matches the strain window's toggle).  Default False.
 
     Returns:
         List of Paths to written PNG files.
@@ -610,6 +623,7 @@ def export_png(
                 tri_cache=frame_tri_cache,
                 render_max_dim=render_max_dim,
                 output_shape=out_shape,
+                blank_invalid_nodes=not fill_trimmed_edges,
             )
 
             # Append the styled colorbar (position/font/thickness/background)

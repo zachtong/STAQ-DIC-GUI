@@ -14,6 +14,10 @@ Exposes:
 * **Show on deformed** -- when True, the parent window renders the
   overlay at displaced node positions and loads the deformed frame image
   as the background.
+* **Fill trimmed edges** -- off by default. When on, the edge-trimmed
+  strain band is re-interpolated from reliable interior nodes rather than
+  blanked, for the on-screen view and exported images/animations only.
+  Exported data files (NPZ/MAT/CSV) always keep the trim as NaN.
 """
 
 from __future__ import annotations
@@ -108,6 +112,24 @@ class StrainVizPanel(QWidget):
         self._opacity_slider.setValue(70)
         layout.addRow(self.tr("Opacity"), self._opacity_slider)
 
+        # --- Fill trimmed edges (display only) ---
+        # Off by default: the edge-trimmed strain band is blanked so the trim
+        # is visible.  When on, that band is re-interpolated from the reliable
+        # interior nodes -- for the on-screen view AND exported images /
+        # animations only.  Exported data files (NPZ/MAT/CSV) always keep the
+        # trimmed edge as NaN regardless of this toggle.
+        self._fill_edges_check = QCheckBox(
+            self.tr("Fill trimmed edges (display only)")
+        )
+        self._fill_edges_check.setChecked(False)
+        self._fill_edges_check.setToolTip(self.tr(
+            "Re-interpolate the edge-trimmed strain band from reliable "
+            "interior nodes. Affects the on-screen view and exported "
+            "images/animations; exported data files always keep the "
+            "trimmed edge as NaN."
+        ))
+        layout.addRow(self.tr("Edges"), self._fill_edges_check)
+
         # Wire signals
         self._cmap_combo.currentIndexChanged.connect(self._emit_changed)
         self._auto_check.toggled.connect(self._on_auto_toggled)
@@ -115,6 +137,7 @@ class StrainVizPanel(QWidget):
         self._vmax_spin.valueChanged.connect(self._emit_changed)
         self._opacity_slider.valueChanged.connect(self._emit_changed)
         self._deformed_check.toggled.connect(self._emit_changed)
+        self._fill_edges_check.toggled.connect(self._emit_changed)
 
     # ------------------------------------------------------------------
     # Public API
@@ -129,6 +152,7 @@ class StrainVizPanel(QWidget):
             "vmax": float(self._vmax_spin.value()),
             "alpha": float(self._opacity_slider.value()) / 100.0,
             "show_deformed": self._deformed_check.isChecked(),
+            "fill_trimmed_edges": self._fill_edges_check.isChecked(),
         }
 
     def set_range(self, vmin: float, vmax: float) -> None:

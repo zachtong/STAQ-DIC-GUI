@@ -354,6 +354,9 @@ class DICPara:
     smoothness: float = 0.0
 
     # --- 10. Strain ---
+    # Default = 2 (local weighted plane fitting, comp_def_grad): the primary
+    # AL-DIC strain method.  3 = FEM nodal strain (global_nodal_strain_fem);
+    # edge-trim validity is only produced by plane fitting.
     method_to_compute_strain: int = 2
     strain_plane_fit_rad: float = 20.0
     strain_type: int = 0

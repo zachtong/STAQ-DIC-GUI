@@ -440,6 +440,52 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "fr":    "Opacité du champ (0 = transparent, 1 = opaque)",
         "es":    "Opacidad del campo (0 = transparente, 1 = completamente opaco)",
     },
+    "Edges": {
+        "zh_CN": "边缘", "zh_TW": "邊緣", "ja": "縁",
+        "ko": "가장자리", "de": "Ränder", "fr": "Bords", "es": "Bordes",
+    },
+    "Fill trimmed edges (display only)": {
+        "zh_CN": "填充修剪的边缘（仅显示）",
+        "zh_TW": "填充修剪的邊緣（僅顯示）",
+        "ja":    "トリミングされた縁を補間（表示のみ）",
+        "ko":    "잘라낸 가장자리 채우기 (표시 전용)",
+        "de":    "Beschnittene Ränder füllen (nur Anzeige)",
+        "fr":    "Remplir les bords rognés (affichage uniquement)",
+        "es":    "Rellenar bordes recortados (solo visualización)",
+    },
+    "Re-interpolate the edge-trimmed strain band from reliable "
+    "interior nodes. Affects the on-screen view and exported "
+    "images/animations; exported data files always keep the "
+    "trimmed edge as NaN.": {
+        "zh_CN": "从可靠的内部节点重新插值被边缘修剪的应变带。"
+                 "影响屏幕显示和导出的图片/动画；导出的数据文件"
+                 "始终将修剪的边缘保留为 NaN。",
+        "zh_TW": "從可靠的內部節點重新插值被邊緣修剪的應變帶。"
+                 "影響螢幕顯示與匯出的圖片/動畫；匯出的資料檔案"
+                 "始終將修剪的邊緣保留為 NaN。",
+        "ja":    "縁がトリミングされたひずみ帯を、信頼できる内部ノードから"
+                 "再補間します。画面表示とエクスポートした画像/アニメーション"
+                 "に影響します。エクスポートしたデータファイルでは、"
+                 "トリミングされた縁は常に NaN のままです。",
+        "ko":    "가장자리가 잘린 변형률 띠를 신뢰할 수 있는 내부 노드에서 "
+                 "다시 보간합니다. 화면 표시와 내보낸 이미지/애니메이션에 "
+                 "영향을 줍니다. 내보낸 데이터 파일은 잘라낸 가장자리를 "
+                 "항상 NaN으로 유지합니다.",
+        "de":    "Interpoliert das randbeschnittene Dehnungsband aus "
+                 "zuverlässigen inneren Knoten neu. Betrifft die "
+                 "Bildschirmansicht und exportierte Bilder/Animationen; "
+                 "exportierte Datendateien behalten den beschnittenen Rand "
+                 "immer als NaN.",
+        "fr":    "Réinterpole la bande de déformation rognée aux bords à "
+                 "partir de nœuds intérieurs fiables. Affecte l'affichage à "
+                 "l'écran et les images/animations exportées ; les fichiers "
+                 "de données exportés conservent toujours le bord rogné en NaN.",
+        "es":    "Reinterpola la banda de deformación recortada en los bordes "
+                 "a partir de nodos interiores fiables. Afecta a la vista en "
+                 "pantalla y a las imágenes/animaciones exportadas; los "
+                 "archivos de datos exportados siempre mantienen el borde "
+                 "recortado como NaN.",
+    },
     "Export": {
         "zh_CN": "导出", "zh_TW": "匯出", "ja": "エクスポート",
         "ko": "내보내기", "de": "Exportieren", "fr": "Exporter", "es": "Exportar",

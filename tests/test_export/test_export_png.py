@@ -123,6 +123,30 @@ def test_export_blanks_edge_trimmed_strain(minimal_result):
     assert tuple(int(c) for c in img[ky, kx]) != (0, 0, 255)
 
 
+def test_export_fill_trimmed_edges_reinterpolates(minimal_result):
+    """With blank_invalid_nodes=False ('fill trimmed edges'), an interior
+    trimmed (NaN) node's cell is re-interpolated from reliable neighbours
+    instead of blanked -- so it shows the field colour, not the background.
+    Mirror image of test_export_blanks_edge_trimmed_strain."""
+    coords = minimal_result.dic_mesh.coordinates_fem
+    values = np.ones(coords.shape[0], dtype=np.float64)
+    trimmed = 5
+    values[trimmed] = np.nan
+
+    bg = np.zeros((64, 64, 3), dtype=np.uint8)
+    bg[:, :] = (0, 0, 255)  # solid red (BGR) background
+    cfg = FieldImageConfig("strain_exx", True, "jet", False, 0.0, 2.0, bg_alpha=1.0)
+
+    img = render_field_frame(coords, values, (64, 64), bg, cfg,
+                             blank_invalid_nodes=False)
+
+    # The trimmed node's cell is now FILLED (interpolated from the uniform
+    # value=1.0 neighbours), so it no longer shows the red background.
+    tx = int(round(coords[trimmed, 0]))
+    ty = int(round(coords[trimmed, 1]))
+    assert tuple(int(c) for c in img[ty, tx]) != (0, 0, 255)
+
+
 def test_export_no_trim_is_unchanged_for_full_field(minimal_result):
     """A fully-finite field (no trim, e.g. displacement) renders identically --
     the blanking pass is a no-op."""

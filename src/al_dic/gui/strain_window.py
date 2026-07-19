@@ -577,6 +577,7 @@ class StrainWindow(QMainWindow):
             vmin=float(viz["vmin"]),
             vmax=float(viz["vmax"]),
             show_deformed=bool(viz.get("show_deformed", False)),
+            fill_trimmed_edges=bool(viz.get("fill_trimmed_edges", False)),
             overlay_alpha=self._state.overlay_alpha,
             use_physical_units=self._state.use_physical_units,
             pixel_size=self._state.pixel_size,
@@ -919,7 +920,13 @@ class StrainWindow(QMainWindow):
                 # Strain fields carry NaN at edge-trimmed / plane-fit-failed
                 # nodes; blank those cells so the trim is visible instead of
                 # interpolator-backfilled.  Displacement fields are not trimmed.
-                blank_invalid_nodes=field_name not in DISP_FIELD_NAMES,
+                # "Fill trimmed edges" (viz panel, off by default) skips the
+                # blanking so the interpolator re-fills the band from reliable
+                # interior nodes -- display only; data export stays NaN.
+                blank_invalid_nodes=(
+                    field_name not in DISP_FIELD_NAMES
+                    and not bool(viz.get("fill_trimmed_edges", False))
+                ),
             )
             self._canvas.set_overlay_pixmap(pixmap)
             self._canvas.set_overlay_alpha(float(viz["alpha"]))

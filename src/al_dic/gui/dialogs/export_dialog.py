@@ -106,6 +106,10 @@ class VizExportHint:
     vmin: float = 0.0
     vmax: float = 1.0
     show_deformed: bool = False
+    # Re-interpolate the edge-trimmed strain band from reliable interior
+    # nodes instead of blanking it (image/animation export only; data stays
+    # NaN).  Mirrors the strain window's "Fill trimmed edges" toggle.
+    fill_trimmed_edges: bool = False
     overlay_alpha: float = 0.7
     use_physical_units: bool = False
     pixel_size: float = 1.0
@@ -151,6 +155,9 @@ class ExportConfig:
     bg_mode: str = "ref_frame"      # "ref_frame" | "current_frame"
     frame_start: int = 0
     frame_end: int = -1
+    # Fill (re-interpolate) the edge-trimmed strain band instead of blanking
+    # it, for both image + animation export.  Data export always stays NaN.
+    fill_trimmed_edges: bool = False
 
     # Animation Tab
     export_animation: bool = False
@@ -280,6 +287,7 @@ class ExportImagesWorker(QThread):
                 colorbar_style=self._config.colorbar_style,
                 margin_ratio=self._config.export_margin_ratio,
                 margin_color=self._config.export_margin_color,
+                fill_trimmed_edges=self._config.fill_trimmed_edges,
             )
             self.finished.emit(paths)
         except Exception as exc:  # pragma: no cover
@@ -346,6 +354,7 @@ class ExportAnimationWorker(QThread):
                 colorbar_style=self._config.colorbar_style,
                 margin_ratio=self._config.export_margin_ratio,
                 margin_color=self._config.export_margin_color,
+                fill_trimmed_edges=self._config.fill_trimmed_edges,
             )
             self.finished.emit(paths)
         except Exception as exc:  # pragma: no cover
@@ -1904,6 +1913,10 @@ class ExportDialog(QDialog):
             report_fields=report_fields,
             report_sample_every=self._report_sample_spin.value(),
             # Visual export settings
+            # Inherit the strain window's "Fill trimmed edges" toggle directly
+            # (single switch governs both display and export; no separate
+            # dialog control).  Defaults to False for main-window exports.
+            fill_trimmed_edges=self._hint.fill_trimmed_edges,
             img_include_colorbar=self._img_colorbar_check.isChecked(),
             anim_include_colorbar=self._anim_colorbar_check.isChecked(),
             use_physical_units=self._phys_units_check.isChecked(),
