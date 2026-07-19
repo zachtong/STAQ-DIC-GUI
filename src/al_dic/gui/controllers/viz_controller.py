@@ -23,6 +23,7 @@ from PySide6.QtGui import QImage, QPixmap
 from matplotlib import colormaps
 from scipy.interpolate import NearestNDInterpolator
 
+from al_dic.utils.crack_barrier import crack_aware_nearest_fill
 from al_dic.utils.interpolation import FieldInterpolator, scatter_to_grid
 
 
@@ -226,31 +227,55 @@ class VizController:
                 output_mode="auto",
                 oversample=4,
                 interpolator=interpolator,
-                # Extrapolate the trimmed band from reliable nodes when filling
-                # so the overlay covers the full ROI (matches image/anim export).
-                fill_outside=("nearest" if extrapolate else "nan"),
             )
             xg = info["x_grid"]
             yg = info["y_grid"]
             out_step = int(info.get("output_step", 1))
-            self._interp_cache[interp_key] = (grid_data, xg, yg, out_step)
 
             # Crack-aware rendering: the Delaunay behind scatter_to_grid
-            # reconnects nodes across a crack the mesh split.  Blank cells
-            # inside a barrier-crossing triangle so the overlay respects the
-            # crack.  Barrier is in the render-coordinate space: deformed_mask
-            # in deformed mode, else roi_mask.  Cached per interp_key; None
-            # (bit-exact) when no triangle crosses a barrier.
+            # reconnects nodes across a crack the mesh split.  Flag cells inside
+            # a barrier-crossing triangle so the overlay respects the crack.
+            # Barrier is in the render-coordinate space: deformed_mask in
+            # deformed mode, else roi_mask.  None (bit-exact) when no triangle
+            # crosses a barrier.
             barrier = (
                 deformed_mask if (deformed and deformed_mask is not None)
                 else (roi_mask if not deformed else None)
             )
+            crack_grid = None
             if xg is not None and yg is not None:
-                self._crack_cache[interp_key] = interpolator.cross_crack_grid(
+                crack_grid = interpolator.cross_crack_grid(
                     values, xg, yg, barrier,
                 )
-            else:
-                self._crack_cache[interp_key] = None
+
+            # "Fill trimmed edges" (fill ON, strain with trim): recover both the
+            # ROI outer edge (beyond the shrunken hull) AND the crack inner edge
+            # (just flagged) from reliable nodes, each cell from the nearest node
+            # reachable WITHOUT crossing the crack -- so the two faces fill from
+            # their own side and the crack stays a sharp line.  Bake it into
+            # grid_data; the crack flag is then consumed (not re-blanked).
+            if extrapolate and xg is not None and yg is not None:
+                gd = np.array(grid_data, copy=True)
+                if crack_grid is not None:
+                    gd[crack_grid] = np.nan
+                need = np.isnan(gd)
+                if barrier is not None:
+                    b = np.asarray(barrier)
+                    bx = np.clip(np.round(xg).astype(np.int64), 0, b.shape[1] - 1)
+                    by = np.clip(np.round(yg).astype(np.int64), 0, b.shape[0] - 1)
+                    need &= b[by, bx] > 0.5
+                if need.any():
+                    vals_arr = np.asarray(values, dtype=np.float64)
+                    vmask = ~np.isnan(vals_arr) & np.isfinite(nodes).all(axis=1)
+                    fill = crack_aware_nearest_fill(
+                        xg, yg, need, nodes[vmask], vals_arr[vmask], barrier,
+                    )
+                    gd = np.where(need, fill, gd)
+                grid_data = gd
+                crack_grid = None  # consumed by the fill; do not blank again
+
+            self._interp_cache[interp_key] = (grid_data, xg, yg, out_step)
+            self._crack_cache[interp_key] = crack_grid
 
             # Compute warped mask for deformed mode: map deformed grid points
             # back to reference coordinates and look up the reference mask.

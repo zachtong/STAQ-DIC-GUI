@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import numpy as np
 from numpy.typing import NDArray
+from scipy.spatial import cKDTree
 
 # Cap on samples-per-edge for the barrier scan.  Interior crack-bridging edges
 # are ~one mesh step long, so this is ~1 px sampling for typical step sizes;
@@ -107,6 +108,73 @@ def cross_crack_simplices(
 
     # A triangle crosses if ANY of its three edges crosses.
     return edge_crosses[inv].reshape(3, n_tri).any(axis=0)
+
+
+def crack_aware_nearest_fill(
+    x_grid: NDArray[np.float64],
+    y_grid: NDArray[np.float64],
+    need_fill: NDArray[np.bool_],
+    node_pts: NDArray[np.float64],
+    node_vals: NDArray[np.float64],
+    mask: NDArray | None,
+) -> NDArray[np.float64]:
+    """Fill grid cells from the nearest reliable node reachable *without*
+    crossing the barrier.
+
+    "Fill trimmed edges" recovers the trimmed band from reliable nodes.  Near a
+    crack the band must be filled from the SAME side only -- otherwise the fill
+    reaches across the crack and smears the discontinuity (and the crack-aware
+    render just blanked it for exactly that reason).  For each cell needing a
+    value, this walks its nearest nodes in distance order and takes the first
+    whose straight segment to the cell does not pass through ``mask < 0.5``
+    (crack / hole).  With ``mask=None`` it degrades to plain nearest.
+
+    Args:
+        x_grid, y_grid: (H, W) query grid.
+        need_fill:      (H, W) bool -- cells to fill (elsewhere left as NaN).
+        node_pts:       (N, 2) reliable node coordinates.
+        node_vals:      (N,) reliable node values.
+        mask:           (Hm, Wm) barrier (``< 0.5`` = crack / hole), or None.
+
+    Returns:
+        (H, W) float array: filled at *need_fill* cells, NaN elsewhere.
+    """
+    out = np.full(np.asarray(x_grid).shape, np.nan, dtype=np.float64)
+    need_fill = np.asarray(need_fill, dtype=bool)
+    if not need_fill.any() or len(node_pts) == 0:
+        return out
+
+    qx = np.asarray(x_grid)[need_fill]
+    qy = np.asarray(y_grid)[need_fill]
+    query = np.column_stack([qx, qy])
+    tree = cKDTree(node_pts)
+
+    if mask is None:
+        _, idx = tree.query(query, k=1)
+        out[need_fill] = node_vals[np.asarray(idx)]
+        return out
+
+    kk = int(min(16, len(node_pts)))
+    _, idx = tree.query(query, k=kk)
+    idx = np.atleast_2d(idx)
+    if idx.shape[0] == 1 and query.shape[0] != 1:
+        idx = idx.T  # k==1 edge case: query returns (M,)
+
+    filled = np.empty(query.shape[0], dtype=np.float64)
+    for j in range(query.shape[0]):
+        cx, cy = float(qx[j]), float(qy[j])
+        chosen = int(idx[j, 0])  # fallback: plain nearest
+        for c in range(idx.shape[1]):
+            ni = int(idx[j, c])
+            if not segment_crosses_barrier(
+                cx, cy, float(node_pts[ni, 0]), float(node_pts[ni, 1]), mask
+            ):
+                chosen = ni
+                break
+        filled[j] = node_vals[chosen]
+
+    out[need_fill] = filled
+    return out
 
 
 def cross_crack_cell_mask(

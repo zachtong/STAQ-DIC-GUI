@@ -183,6 +183,40 @@ def test_export_fill_extrapolates_to_full_roi():
     assert painted_on > painted_off
 
 
+def test_render_fill_recovers_crack_inner_edge_same_side():
+    """Fill ON recovers the trimmed band around a crack from the SAME side, so
+    the crack inner edge is filled (not left blank) yet stays a sharp
+    discontinuity (the two faces get different values)."""
+    xs = np.arange(0, 101, 10, dtype=float)
+    ys = np.arange(0, 101, 10, dtype=float)
+    X, Y = np.meshgrid(xs, ys)
+    coords = np.column_stack([X.ravel(), Y.ravel()])
+    # Crack slit between node rows 40 and 50 (left half); value jumps across it.
+    roi = np.ones((101, 101), dtype=bool)
+    roi[45:48, 0:60] = False
+    vals = np.where(coords[:, 1] < 46, 1.0, -1.0).astype(np.float64)
+    # Trim the near-crack nodes (rows 40 and 50) -> a blanked band by default.
+    vals[np.abs(coords[:, 1] - 46) < 8] = np.nan
+
+    bg = np.zeros((101, 101, 3), dtype=np.uint8)
+    bg[:, :] = (0, 0, 255)  # red background
+    cfg = FieldImageConfig("strain_exx", True, "coolwarm", False, -1.5, 1.5, bg_alpha=1.0)
+
+    img_off = render_field_frame(coords, vals, (101, 101), bg, cfg,
+                                 roi_mask=roi, blank_invalid_nodes=True)
+    img_on = render_field_frame(coords, vals, (101, 101), bg, cfg,
+                                roi_mask=roi, blank_invalid_nodes=False)
+
+    # A trimmed-band cell just above the crack, left half (crack present).
+    assert tuple(int(c) for c in img_off[40, 20]) == (0, 0, 255), "fill OFF blanks it"
+    assert tuple(int(c) for c in img_on[40, 20]) != (0, 0, 255), "fill ON recovers it"
+
+    # Crack stays a sharp discontinuity: above vs below the crack differ.
+    above = tuple(int(c) for c in img_on[40, 20])   # +1 side (from top nodes)
+    below = tuple(int(c) for c in img_on[52, 20])   # -1 side (from bottom nodes)
+    assert above != below
+
+
 def test_export_no_trim_is_unchanged_for_full_field(minimal_result):
     """A fully-finite field (no trim, e.g. displacement) renders identically --
     the blanking pass is a no-op."""

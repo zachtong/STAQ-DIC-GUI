@@ -39,7 +39,10 @@ from scipy.spatial import Delaunay
 
 from al_dic.core.data_structures import PipelineResult, split_uv
 from al_dic.export.export_utils import ensure_dir, frame_tag
-from al_dic.utils.crack_barrier import cross_crack_cell_mask
+from al_dic.utils.crack_barrier import (
+    crack_aware_nearest_fill,
+    cross_crack_cell_mask,
+)
 # Colorbar rendering lives in its own module (no cycle); re-export
 # render_colorbar_strip here for backward-compatible imports.
 from al_dic.export.colorbar import (  # noqa: F401
@@ -321,20 +324,6 @@ def render_field_frame(
             )
             keep = nn(grid_x, grid_y) >= 0.5
             grid_vals = np.where(keep, grid_vals, np.nan)
-        elif not blank_invalid_nodes and has_trim:
-            # "Fill trimmed edges" extends to the FULL ROI, not just the kept-
-            # node hull: trimming the outer ring shrinks the interpolation hull,
-            # so its exterior (the trimmed band up to the ROI edge) is left NaN
-            # by the linear interpolator.  Extrapolate those cells from the
-            # reliable (non-trimmed) nodes by nearest neighbour.  Values come
-            # from reliable interior nodes -- the low-confidence edge nodes are
-            # never shown.  ROI masking below clips this to the ROI, and the
-            # crack pass (after) still blanks bridged cells so a crack stays a
-            # sharp line.  Runs before the crack pass so cracks are not filled.
-            nan_out = np.isnan(grid_vals)
-            if nan_out.any():
-                nn = NearestNDInterpolator(pts, values[valid])
-                grid_vals[nan_out] = nn(grid_x[nan_out], grid_y[nan_out])
 
         # Crack-aware rendering: the fresh Delaunay above reconnects nodes on
         # opposite sides of a crack that the mesh split, smearing the
@@ -348,6 +337,26 @@ def render_field_frame(
         crack_blank = cross_crack_cell_mask(tri, pts, grid_x, grid_y, barrier)
         if crack_blank is not None:
             grid_vals = np.where(crack_blank, np.nan, grid_vals)
+
+        # "Fill trimmed edges" (fill ON): recover every trimmed cell from
+        # reliable nodes -- the ROI OUTER edge (beyond the shrunken hull) AND
+        # the crack INNER edge (just blanked above).  Runs AFTER the crack pass
+        # and fills each cell from the nearest node reachable WITHOUT crossing
+        # the crack, so the two crack faces are filled from their own side and
+        # the crack stays a sharp line.  Restricted to inside the barrier ROI;
+        # the crack void itself (barrier < 0.5) is left transparent.
+        if not blank_invalid_nodes and has_trim:
+            need = np.isnan(grid_vals)
+            if barrier is not None:
+                b = np.asarray(barrier)
+                bx = np.clip(np.round(grid_x).astype(np.int64), 0, b.shape[1] - 1)
+                by = np.clip(np.round(grid_y).astype(np.int64), 0, b.shape[0] - 1)
+                need &= b[by, bx] > 0.5
+            if need.any():
+                fill = crack_aware_nearest_fill(
+                    grid_x, grid_y, need, pts, values[valid], barrier,
+                )
+                grid_vals = np.where(need, fill, grid_vals)
     except Exception:
         return bg_bgr.copy()
 

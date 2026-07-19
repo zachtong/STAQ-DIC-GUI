@@ -271,6 +271,34 @@ class TestRenderFieldFill:
         # than blanking it (blank=True).
         assert opaque(False) > opaque(True)
 
+    def test_fill_on_recovers_crack_band_same_side(self, qapp):
+        """With a crack, fill ON bakes the same-side fill into grid_data and
+        consumes the crack flag; fill OFF keeps the crack flag for blanking."""
+        H = W = 80
+        step = 8
+        nodes = self._mesh(H, W, step)  # rows 8..72
+        # v jumps across a crack between rows 32 and 40; trim the near-crack ring
+        values = np.where(nodes[:, 1] < 36, -1.0, 1.0).astype(float)
+        values[np.abs(nodes[:, 1] - 36) < 10] = np.nan
+        roi = np.ones((H, W), dtype=bool)
+        roi[35:38, 0:48] = False  # crack slit, left portion
+
+        # fill OFF -> crack flag present (blanked), extrapolate key = False
+        off = VizController()
+        off.render_field(0, "strain_exx", nodes, values, (H, W), step,
+                         vmin=-1.5, vmax=1.5, roi_mask=roi,
+                         blank_invalid_nodes=True)
+        cg_off = off._crack_cache.get((0, "strain_exx", False, False))
+        assert cg_off is not None and cg_off.any()
+
+        # fill ON -> crack consumed by same-side fill (None), band recovered
+        on = VizController()
+        pm, _, _, _ = on.render_field(0, "strain_exx", nodes, values, (H, W),
+                                      step, vmin=-1.5, vmax=1.5, roi_mask=roi,
+                                      blank_invalid_nodes=False)
+        assert on._crack_cache.get((0, "strain_exx", False, True)) is None
+        assert pm is not None
+
     def test_extrapolate_flag_in_interp_key(self, qapp):
         """A trimmed strain field with fill on caches under an extrapolate key;
         displacement (no NaN) never extrapolates."""

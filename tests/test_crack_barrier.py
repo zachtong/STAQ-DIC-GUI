@@ -7,6 +7,7 @@ import pytest
 from scipy.spatial import Delaunay
 
 from al_dic.utils.crack_barrier import (
+    crack_aware_nearest_fill,
     cross_crack_cell_mask,
     cross_crack_simplices,
     segment_crosses_barrier,
@@ -104,3 +105,47 @@ def test_internal_hole_is_detected(grid_nodes):
 def test_empty_triangulation():
     assert cross_crack_simplices(np.zeros((0, 3), dtype=np.int64),
                                  np.zeros((0, 2)), _solid_mask()).shape == (0,)
+
+
+# --- crack_aware_nearest_fill ------------------------------------------------
+
+def test_fill_skips_the_across_crack_node():
+    """A cell whose NEAREST node sits across the crack must be filled from the
+    reachable same-side node instead, so the crack is not bridged."""
+    node_pts = np.array([[10.0, 45.0],    # top side (far), value +1
+                         [50.0, 55.0]])   # bottom side (near), value -1
+    node_vals = np.array([1.0, -1.0])
+    mask = np.ones((100, 100)); mask[49:52, :] = 0.0  # horizontal crack at y~50
+
+    gx = np.array([[48.0]]); gy = np.array([[48.0]])  # a cell just ABOVE the crack
+    need = np.array([[True]])
+
+    # Plain nearest grabs the (closer) bottom node across the crack.
+    plain = crack_aware_nearest_fill(gx, gy, need, node_pts, node_vals, None)
+    assert plain[0, 0] == pytest.approx(-1.0)
+
+    # Crack-aware skips the across-crack node -> the reachable top node.
+    aware = crack_aware_nearest_fill(gx, gy, need, node_pts, node_vals, mask)
+    assert aware[0, 0] == pytest.approx(1.0)
+
+
+def test_fill_empty_need_is_all_nan():
+    node_pts = np.array([[0.0, 0.0], [10.0, 0.0]])
+    node_vals = np.array([1.0, 2.0])
+    gx, gy = np.meshgrid(np.arange(10), np.arange(10))
+    out = crack_aware_nearest_fill(
+        gx.astype(float), gy.astype(float),
+        np.zeros((10, 10), bool), node_pts, node_vals, None,
+    )
+    assert np.isnan(out).all()
+
+
+def test_fill_only_touches_need_cells():
+    node_pts = np.array([[0.0, 0.0], [9.0, 9.0]])
+    node_vals = np.array([5.0, 5.0])
+    gx, gy = np.meshgrid(np.arange(10), np.arange(10))
+    need = np.zeros((10, 10), bool); need[5, 5] = True
+    out = crack_aware_nearest_fill(gx.astype(float), gy.astype(float),
+                                   need, node_pts, node_vals, None)
+    assert out[5, 5] == pytest.approx(5.0)
+    assert np.isnan(out[~need]).all()
