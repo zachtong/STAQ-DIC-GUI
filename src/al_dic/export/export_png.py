@@ -39,6 +39,7 @@ from scipy.spatial import Delaunay
 
 from al_dic.core.data_structures import PipelineResult, split_uv
 from al_dic.export.export_utils import ensure_dir, frame_tag
+from al_dic.utils.crack_barrier import cross_crack_cell_mask
 # Colorbar rendering lives in its own module (no cycle); re-export
 # render_colorbar_strip here for backward-compatible imports.
 from al_dic.export.colorbar import (  # noqa: F401
@@ -287,18 +288,19 @@ def render_field_frame(
         # Reuse the Delaunay across frames/fields sharing the same valid
         # mask. The caller scopes tri_cache so render_coords is constant
         # within it (non-deformed: shared across frames; deformed: per
-        # frame). Byte-identical to building the interpolator fresh.
-        pts_or_tri = render_coords[valid]
+        # frame). Always build an explicit Delaunay (byte-identical to letting
+        # LinearNDInterpolator build it internally) so the crack-aware pass
+        # below can reuse the same triangulation via find_simplex.
+        pts = render_coords[valid]
+        tri = None
         if tri_cache is not None:
             key = valid.tobytes()
             tri = tri_cache.get(key)
-            if tri is None:
-                tri = Delaunay(render_coords[valid])
+        if tri is None:
+            tri = Delaunay(pts)
+            if tri_cache is not None:
                 tri_cache[key] = tri
-            pts_or_tri = tri
-        interp = LinearNDInterpolator(
-            pts_or_tri, values[valid], fill_value=np.nan
-        )
+        interp = LinearNDInterpolator(tri, values[valid], fill_value=np.nan)
         grid_vals = interp(grid_x, grid_y)  # (rh, rw), NaN outside hull
 
         # Blank cells whose nearest node was edge-trimmed (NaN value).  The
@@ -318,6 +320,19 @@ def render_field_frame(
             )
             keep = nn(grid_x, grid_y) >= 0.5
             grid_vals = np.where(keep, grid_vals, np.nan)
+
+        # Crack-aware rendering: the fresh Delaunay above reconnects nodes on
+        # opposite sides of a crack that the mesh split, smearing the
+        # discontinuity.  Blank grid cells inside a triangle whose edge crosses
+        # the barrier (crack / hole) so the render respects it like the mesh
+        # does.  Barrier is in the same coordinate space as render_coords:
+        # deformed_mask in deformed mode, else roi_mask.  Bit-exact (returns
+        # None) when no triangle crosses a barrier -- crack-free exports are
+        # unchanged.
+        barrier = deformed_mask if deformed_coords is not None else roi_mask
+        crack_blank = cross_crack_cell_mask(tri, pts, grid_x, grid_y, barrier)
+        if crack_blank is not None:
+            grid_vals = np.where(crack_blank, np.nan, grid_vals)
     except Exception:
         return bg_bgr.copy()
 

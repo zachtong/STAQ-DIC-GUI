@@ -197,6 +197,46 @@ class TestRenderFieldTrim:
         assert transparent_count(True) > transparent_count(False)
 
 
+class TestRenderFieldCrack:
+    """Crack-aware rendering: bridging triangles are blanked on the overlay."""
+
+    def _mesh(self, H=64, W=64, step=8):
+        xs = np.arange(step, W - step + 1, step, float)
+        ys = np.arange(step, H - step + 1, step, float)
+        XX, YY = np.meshgrid(xs, ys)
+        return np.column_stack([XX.ravel(), YY.ravel()])
+
+    def test_crack_cache_populated_only_with_a_crack(self, qapp):
+        H = W = 64
+        step = 8
+        nodes = self._mesh(H, W, step)
+        # Displacement jumps across a horizontal crack (between node rows).
+        values = np.where(nodes[:, 1] < 28, -1.0, 1.0).astype(float)
+        solid = np.ones((H, W), dtype=bool)
+        crack = solid.copy()
+        crack[27:30, 0:40] = False  # thin slit, left portion
+
+        key = (0, "disp_v", False)
+
+        ctrl_solid = VizController()
+        ctrl_solid.render_field(0, "disp_v", nodes, values, (H, W), step,
+                                vmin=-1.0, vmax=1.0, roi_mask=solid)
+        # Convex crack-free ROI -> nothing bridged -> None (bit-exact).
+        assert ctrl_solid._crack_cache.get(key) is None
+
+        ctrl_crack = VizController()
+        pm, _, _, _ = ctrl_crack.render_field(0, "disp_v", nodes, values, (H, W),
+                                              step, vmin=-1.0, vmax=1.0,
+                                              roi_mask=crack)
+        cg = ctrl_crack._crack_cache.get(key)
+        assert cg is not None and cg.any(), "bridging triangles must be blanked"
+        assert pm is not None
+
+        # invalidate_masks() drops the crack cache (mask content may change).
+        ctrl_crack.invalidate_masks()
+        assert not ctrl_crack._crack_cache
+
+
 class TestNaNPositionNodes:
     """Crack-destroyed nodes carry NaN deformed positions; render paths must
     not crash and must treat them as invisible."""

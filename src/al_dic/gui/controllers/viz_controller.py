@@ -99,6 +99,10 @@ class VizController:
         self._interpolator: FieldInterpolator | None = None
         # Warped mask cache for deformed mode: {frame_idx -> outside_bool_mask}
         self._warp_cache: dict[int, NDArray[np.bool_]] = {}
+        # Crack-aware blank cache: {interp_key -> bool grid | None}.  Depends on
+        # node positions + the barrier (ROI/crack) mask, so it is cleared
+        # whenever results or mask content change.
+        self._crack_cache: dict[tuple, NDArray[np.bool_] | None] = {}
 
     def clear_all(self) -> None:
         """Clear both cache tiers (results changed)."""
@@ -106,15 +110,17 @@ class VizController:
         self._pixmap_cache.clear()
         self._interpolator = None
         self._warp_cache.clear()
+        self._crack_cache.clear()
 
     def clear_pixmap_cache(self) -> None:
         """Clear Tier 2 only (colormap/range changed)."""
         self._pixmap_cache.clear()
 
     def invalidate_masks(self) -> None:
-        """Clear caches that depend on ROI mask content (pixmap + warp)."""
+        """Clear caches that depend on ROI mask content (pixmap + warp + crack)."""
         self._pixmap_cache.clear()
         self._warp_cache.clear()
+        self._crack_cache.clear()
 
     def store_interp_result(
         self,
@@ -218,6 +224,23 @@ class VizController:
             out_step = int(info.get("output_step", 1))
             self._interp_cache[interp_key] = (grid_data, xg, yg, out_step)
 
+            # Crack-aware rendering: the Delaunay behind scatter_to_grid
+            # reconnects nodes across a crack the mesh split.  Blank cells
+            # inside a barrier-crossing triangle so the overlay respects the
+            # crack.  Barrier is in the render-coordinate space: deformed_mask
+            # in deformed mode, else roi_mask.  Cached per interp_key; None
+            # (bit-exact) when no triangle crosses a barrier.
+            barrier = (
+                deformed_mask if (deformed and deformed_mask is not None)
+                else (roi_mask if not deformed else None)
+            )
+            if xg is not None and yg is not None:
+                self._crack_cache[interp_key] = interpolator.cross_crack_grid(
+                    values, xg, yg, barrier,
+                )
+            else:
+                self._crack_cache[interp_key] = None
+
             # Compute warped mask for deformed mode: map deformed grid points
             # back to reference coordinates and look up the reference mask.
             if deformed and ref_uv is not None and roi_mask is not None:
@@ -270,6 +293,16 @@ class VizController:
                     invalid_grid if mask_to_use is None
                     else (mask_to_use | invalid_grid)
                 )
+
+        # Crack-aware blank (cached per interp_key; independent of the color/
+        # trim toggles, so it always applies -- rendering must respect cracks).
+        crack_grid = self._crack_cache.get(interp_key)
+        if crack_grid is not None:
+            mask_to_use = (
+                crack_grid if mask_to_use is None
+                else (mask_to_use | crack_grid)
+            )
+
         if mask_to_use is not None and np.any(mask_to_use):
             render_data = grid_data.copy()
             render_data[mask_to_use] = np.nan

@@ -24,6 +24,8 @@ from scipy.interpolate import (
 from scipy.ndimage import map_coordinates
 from scipy.spatial import Delaunay
 
+from al_dic.utils.crack_barrier import cross_crack_cell_mask
+
 
 def scattered_interpolant(
     points: NDArray[np.float64],
@@ -305,6 +307,34 @@ class FieldInterpolator:
                 result[nan_mask] = nn(x_grid[nan_mask], y_grid[nan_mask])
 
         return result
+
+    def cross_crack_grid(
+        self,
+        values: NDArray[np.float64],
+        x_grid: NDArray[np.float64],
+        y_grid: NDArray[np.float64],
+        barrier_mask: NDArray | None,
+    ) -> NDArray[np.bool_] | None:
+        """Grid mask (True = blank) for cells whose interpolating triangle
+        crosses a crack / hole barrier.
+
+        Uses the SAME triangulation :meth:`interpolate` builds for *values*
+        (value-reduced when some nodes are NaN), so the crack-aware blanking
+        matches the interpolated field exactly.  Returns ``None`` when there is
+        no barrier or no triangle crosses it (render stays bit-exact).
+        """
+        if barrier_mask is None:
+            return None
+        vals = np.asarray(values, dtype=np.float64)
+        valid = ~np.isnan(vals) & self._finite
+        if int(valid.sum()) < 3:
+            return None
+        if np.array_equal(valid, self._finite):
+            pts, tri = self._nodes_f, self._tri
+        else:
+            pts = self._nodes[valid]
+            tri = Delaunay(pts)
+        return cross_crack_cell_mask(tri, pts, x_grid, y_grid, barrier_mask)
 
 
 # ---------------------------------------------------------------------------

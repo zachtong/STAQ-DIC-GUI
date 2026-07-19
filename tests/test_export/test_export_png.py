@@ -159,6 +159,49 @@ def test_export_no_trim_is_unchanged_for_full_field(minimal_result):
     assert tuple(int(c) for c in img[32, 32]) != (40, 40, 40)
 
 
+def test_render_crack_aware_blanks_bridge_keeps_far_field():
+    """A crack mask blanks the render cells whose Delaunay triangle bridges the
+    crack, while the far field (away from the crack) is bit-identical to the
+    same render with a crack-free mask -- crack-aware, bit-exact away."""
+    xs = np.arange(0, 81, 10, dtype=float)
+    ys = np.arange(0, 81, 10, dtype=float)
+    X, Y = np.meshgrid(xs, ys)
+    coords = np.column_stack([X.ravel(), Y.ravel()])
+    # Displacement jumps across a horizontal crack (Mode-I opening).
+    vals = np.where(coords[:, 1] < 45, -1.0, 1.0).astype(np.float64)
+
+    roi = np.ones((81, 81), dtype=bool)
+    crack = roi.copy()
+    crack[44:47, 0:45] = False  # thin slit, left half only
+
+    bg = np.zeros((81, 81, 3), dtype=np.uint8)
+    bg[:, :] = (0, 0, 255)  # red background so blanked cells are identifiable
+    cfg = FieldImageConfig("disp_v", True, "coolwarm", False, -1.0, 1.0, bg_alpha=1.0)
+
+    img_solid = render_field_frame(coords, vals, (81, 81), bg, cfg, roi_mask=roi)
+    img_crack = render_field_frame(coords, vals, (81, 81), bg, cfg, roi_mask=crack)
+
+    diff = np.any(img_crack != img_solid, axis=2)
+    # The bridging band around the crack differs (crack render blanks it).
+    assert diff[35:55, 0:45].any(), "crack render must blank the bridging band"
+    # The far field (right of the crack) is bit-identical -> bit-exact away.
+    assert not diff[:, 70:].any(), "far field must be unchanged by crack-awareness"
+
+
+def test_render_no_crack_mask_is_bit_exact(minimal_result, field_cfg):
+    """A convex (crack-free) ROI leaves the render byte-identical to no ROI
+    blanking artifacts from the crack pass -- crack-awareness is a no-op."""
+    coords = minimal_result.dic_mesh.coordinates_fem
+    values = np.linspace(0.0, 1.0, coords.shape[0])
+    roi = np.ones((64, 64), dtype=bool)
+    bg = np.full((64, 64, 3), 30, dtype=np.uint8)
+    img_a = render_field_frame(coords, values, (64, 64), bg, field_cfg, roi_mask=roi)
+    img_b = render_field_frame(coords, values, (64, 64), bg, field_cfg, roi_mask=roi)
+    assert np.array_equal(img_a, img_b)
+    # Interior painted (no spurious crack blanks on a solid ROI).
+    assert tuple(int(c) for c in img_a[32, 32]) != (30, 30, 30)
+
+
 def test_render_alpha_semantics(minimal_result):
     """bg_alpha=1.0 should produce a fully-opaque field; bg_alpha=0.0 should
     produce a fully-transparent field (showing only the background)."""
