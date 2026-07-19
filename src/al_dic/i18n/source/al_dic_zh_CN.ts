@@ -2061,7 +2061,12 @@ Not used when Method = FEM nodal (there, mesh spacing itself sets the gauge size
         <translation>VSG 尺寸</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="146"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="131"/>
+        <source>Number of mesh nodes per axis inside the circular VSG window on a uniform mesh: 2 × floor(VSG radius / node spacing) + 1. The plane fit uses every node within the radius; on a refined mesh the count varies locally.</source>
+        <translation>均匀网格下圆形 VSG 窗口内每个轴向的网格节点数：2 × floor(VSG 半径 / 节点间距) + 1。平面拟合使用半径内的所有节点；在加密网格上该数量会局部变化。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="162"/>
         <source>Hides low-confidence strain at ROI / hole edges, where the VSG window crosses the boundary and the local plane fit becomes one-sided and unreliable.
 
 • Coefficient × VSG radius = width of the trimmed boundary band.
@@ -2080,33 +2085,33 @@ Only applies when Method = Plane fitting.</source>
 仅在 方法 = 平面拟合 时生效。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="158"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="174"/>
         <source>Trim low-confidence edges</source>
         <translation>裁剪低置信度边缘</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="185"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="201"/>
         <source>Off</source>
         <comment>Strain smoothing preset</comment>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="186"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="202"/>
         <source>Light (σ = 0.5 × step)</source>
         <translation>轻度（σ = 0.5 × step）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="187"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="203"/>
         <source>Medium (σ = 1 × step)</source>
         <translation>中等（σ = 1 × step）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="188"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="204"/>
         <source>Strong (σ = 2 × step) ⚠</source>
         <translation>强（σ = 2 × step）⚠</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="194"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="210"/>
         <source>Gaussian smoothing of the strain field after computation.
 σ is the Gaussian kernel width; &apos;step&apos; = DIC node spacing.
   Light  (0.5 × step):  subtle, preserves fine features.
@@ -2119,37 +2124,42 @@ Only applies when Method = Plane fitting.</source>
   Strong（2 × step）⚠：强平滑，可能模糊真实梯度。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="200"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="216"/>
         <source>Strain field smoothing</source>
         <translation>应变场平滑</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="205"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="221"/>
         <source>Infinitesimal</source>
         <translation>无穷小应变</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="206"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="222"/>
         <source>Eulerian</source>
         <translation>欧拉应变</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="207"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="223"/>
         <source>Green-Lagrangian</source>
         <translation>格林-拉格朗日应变</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="209"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="225"/>
         <source>Strain type</source>
         <translation>应变类型</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="271"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="287"/>
         <source>Trimmed: %1 nodes (%2%)</source>
         <translation>已裁剪：%1 个节点 (%2%)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="342"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="363"/>
+        <source>Strain window ≈ %1×%2 nodes</source>
+        <translation>应变窗口 ≈ %1×%2 节点</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="370"/>
         <source>⚠ VSG radius (%1 px) &lt; DIC node spacing (%2 px); plane fit will fail. Use VSG ≥ %3 px or switch Method to FEM nodal.</source>
         <translation>⚠ VSG 半径（%1 px）&lt; DIC 节点间距（%2 px）；平面拟合将失败。请将 VSG ≥ %3 px 或将方法切换为 FEM nodal。</translation>
     </message>

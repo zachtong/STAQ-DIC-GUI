@@ -49,6 +49,32 @@ def test_vsg_minimum_tied_to_subset_step():
         state.subset_step = saved
 
 
+def test_vsg_window_readout_reports_node_count():
+    """The N×N readout translates VSG radius to nodes-per-axis on a uniform
+    mesh: 2*floor(rad/step)+1, matching what query_ball_point selects."""
+    from al_dic.gui.app_state import AppState
+
+    state = AppState.instance()
+    saved = state.subset_step
+    try:
+        state.subset_step = 8
+        p = StrainParamPanel()
+        p._vsg_spin.setValue(41)            # rad=20 -> floor(20/8)=2 -> 5x5
+        # isHidden() reflects the explicit setVisible flag (isVisible() needs a
+        # shown top-level, which unit tests don't create).
+        assert not p._vsg_window_readout.isHidden()
+        assert "5×5" in p._vsg_window_readout.text()
+
+        p._vsg_spin.setValue(17)            # rad=8 -> floor(8/8)=1 -> 3x3
+        assert "3×3" in p._vsg_window_readout.text()
+
+        # FEM nodal hides the readout (VSG gauge size is set by mesh spacing).
+        p._method_combo.setCurrentIndex(1)  # index 1 = method 3 (FEM)
+        assert p._vsg_window_readout.isHidden()
+    finally:
+        state.subset_step = saved
+
+
 def test_override_keys_match_whitelist(panel):
     o = panel.get_override()
     assert set(o.keys()) == ALLOWED_OVERRIDES

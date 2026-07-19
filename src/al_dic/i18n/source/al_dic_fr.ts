@@ -2061,7 +2061,12 @@ Non utilisée quand Méthode = FEM nodal (l&apos;espacement du maillage fixe alo
         <translation>Taille VSG</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="146"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="131"/>
+        <source>Number of mesh nodes per axis inside the circular VSG window on a uniform mesh: 2 × floor(VSG radius / node spacing) + 1. The plane fit uses every node within the radius; on a refined mesh the count varies locally.</source>
+        <translation>Nombre de nœuds de maillage par axe à l&apos;intérieur de la fenêtre VSG circulaire sur un maillage uniforme : 2 × floor(rayon VSG / espacement des nœuds) + 1. L&apos;ajustement de plan utilise tous les nœuds dans le rayon ; sur un maillage raffiné, ce nombre varie localement.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="162"/>
         <source>Hides low-confidence strain at ROI / hole edges, where the VSG window crosses the boundary and the local plane fit becomes one-sided and unreliable.
 
 • Coefficient × VSG radius = width of the trimmed boundary band.
@@ -2080,33 +2085,33 @@ Only applies when Method = Plane fitting.</source>
 Ne s&apos;applique que lorsque Méthode = Ajustement de plan.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="158"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="174"/>
         <source>Trim low-confidence edges</source>
         <translation>Rogner les bords peu fiables</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="185"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="201"/>
         <source>Off</source>
         <comment>Strain smoothing preset</comment>
         <translation>Désactivé</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="186"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="202"/>
         <source>Light (σ = 0.5 × step)</source>
         <translation>Léger (σ = 0,5 × step)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="187"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="203"/>
         <source>Medium (σ = 1 × step)</source>
         <translation>Moyen (σ = 1 × step)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="188"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="204"/>
         <source>Strong (σ = 2 × step) ⚠</source>
         <translation>Fort (σ = 2 × step) ⚠</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="194"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="210"/>
         <source>Gaussian smoothing of the strain field after computation.
 σ is the Gaussian kernel width; &apos;step&apos; = DIC node spacing.
   Light  (0.5 × step):  subtle, preserves fine features.
@@ -2119,37 +2124,42 @@ Ne s&apos;applique que lorsque Méthode = Ajustement de plan.</translation>
   Fort    (2 × step) ⚠ : agressif, peut flouter les vrais gradients.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="200"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="216"/>
         <source>Strain field smoothing</source>
         <translation>Lissage du champ de déformation</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="205"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="221"/>
         <source>Infinitesimal</source>
         <translation>Infinitésimal</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="206"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="222"/>
         <source>Eulerian</source>
         <translation>Eulérien</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="207"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="223"/>
         <source>Green-Lagrangian</source>
         <translation>Green-Lagrange</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="209"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="225"/>
         <source>Strain type</source>
         <translation>Type de déformation</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="271"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="287"/>
         <source>Trimmed: %1 nodes (%2%)</source>
         <translation>Rognés : %1 nœuds (%2%)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="342"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="363"/>
+        <source>Strain window ≈ %1×%2 nodes</source>
+        <translation>Fenêtre de déformation ≈ %1×%2 nœuds</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="370"/>
         <source>⚠ VSG radius (%1 px) &lt; DIC node spacing (%2 px); plane fit will fail. Use VSG ≥ %3 px or switch Method to FEM nodal.</source>
         <translation>⚠ Rayon VSG (%1 px) &lt; espacement des nœuds DIC (%2 px) ; l&apos;ajustement de plan échouera. Utilisez VSG ≥ %3 px ou passez la Méthode en FEM nodal.</translation>
     </message>

@@ -2061,7 +2061,12 @@ Method = FEM nodal일 때는 사용되지 않습니다(그 경우 메시 간격 
         <translation>VSG 크기</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="146"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="131"/>
+        <source>Number of mesh nodes per axis inside the circular VSG window on a uniform mesh: 2 × floor(VSG radius / node spacing) + 1. The plane fit uses every node within the radius; on a refined mesh the count varies locally.</source>
+        <translation>균일 메시에서 원형 VSG 윈도우 내 축당 메시 노드 수: 2 × floor(VSG 반경 / 노드 간격) + 1. 평면 피팅은 반경 내 모든 노드를 사용하며, 세분화된 메시에서는 이 수가 국소적으로 달라집니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="162"/>
         <source>Hides low-confidence strain at ROI / hole edges, where the VSG window crosses the boundary and the local plane fit becomes one-sided and unreliable.
 
 • Coefficient × VSG radius = width of the trimmed boundary band.
@@ -2080,33 +2085,33 @@ Only applies when Method = Plane fitting.</source>
 Method = 평면 피팅 일 때만 적용됩니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="158"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="174"/>
         <source>Trim low-confidence edges</source>
         <translation>저신뢰도 가장자리 잘라내기</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="185"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="201"/>
         <source>Off</source>
         <comment>Strain smoothing preset</comment>
         <translation>끔</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="186"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="202"/>
         <source>Light (σ = 0.5 × step)</source>
         <translation>약함 (σ = 0.5 × step)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="187"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="203"/>
         <source>Medium (σ = 1 × step)</source>
         <translation>중간 (σ = 1 × step)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="188"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="204"/>
         <source>Strong (σ = 2 × step) ⚠</source>
         <translation>강함 (σ = 2 × step) ⚠</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="194"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="210"/>
         <source>Gaussian smoothing of the strain field after computation.
 σ is the Gaussian kernel width; &apos;step&apos; = DIC node spacing.
   Light  (0.5 × step):  subtle, preserves fine features.
@@ -2119,37 +2124,42 @@ Method = 평면 피팅 일 때만 적용됩니다.</translation>
   Strong (2 × step) ⚠: 강함, 실제 기울기를 흐릴 수 있음.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="200"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="216"/>
         <source>Strain field smoothing</source>
         <translation>변형률장 평활화</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="205"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="221"/>
         <source>Infinitesimal</source>
         <translation>미소 변형률</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="206"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="222"/>
         <source>Eulerian</source>
         <translation>오일러 변형률</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="207"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="223"/>
         <source>Green-Lagrangian</source>
         <translation>그린-라그랑주 변형률</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="209"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="225"/>
         <source>Strain type</source>
         <translation>변형률 종류</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="271"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="287"/>
         <source>Trimmed: %1 nodes (%2%)</source>
         <translation>잘라냄: 노드 %1개 (%2%)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="342"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="363"/>
+        <source>Strain window ≈ %1×%2 nodes</source>
+        <translation>변형률 윈도우 ≈ %1×%2 노드</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="370"/>
         <source>⚠ VSG radius (%1 px) &lt; DIC node spacing (%2 px); plane fit will fail. Use VSG ≥ %3 px or switch Method to FEM nodal.</source>
         <translation>⚠ VSG 반경(%1 px) &lt; DIC 노드 간격(%2 px); 평면 피팅이 실패합니다. VSG ≥ %3 px로 설정하거나 Method를 FEM nodal로 전환하세요.</translation>
     </message>

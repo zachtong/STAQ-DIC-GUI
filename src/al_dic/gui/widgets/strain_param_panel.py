@@ -120,6 +120,22 @@ class StrainParamPanel(QWidget):
         vsg_label_widget.setLayout(vsg_label_row)
         layout.addRow(vsg_label_widget, self._vsg_spin)
 
+        # Live readout: the VSG radius translated to an N x N node window on a
+        # uniform mesh (2*floor(rad/step)+1 nodes per axis). Tells the user how
+        # many data points the plane fit actually spans. Informational.
+        self._vsg_window_readout = QLabel("")
+        self._vsg_window_readout.setStyleSheet(
+            "color: #6b7280; font-size: 10px; padding-left: 4px;"
+        )
+        self._vsg_window_readout.setToolTip(self.tr(
+            "Number of mesh nodes per axis inside the circular VSG window on a "
+            "uniform mesh: 2 × floor(VSG radius / node spacing) + 1. The plane "
+            "fit uses every node within the radius; on a refined mesh the count "
+            "varies locally."
+        ))
+        self._vsg_window_readout.setVisible(False)
+        layout.addRow("", self._vsg_window_readout)
+
         # Inline warning: plane fit needs VSG radius >= subset_step for
         # every node to find >= 3 neighbours; otherwise the strain
         # field collapses to zero. Updated live as VSG or subset step
@@ -325,6 +341,7 @@ class StrainParamPanel(QWidget):
         """
         if self._method_combo.currentIndex() != 0:  # Plane fitting only
             self._vsg_warning.setVisible(False)
+            self._vsg_window_readout.setVisible(False)
             return
         subset_step = int(getattr(
             AppState.instance(), "subset_step", 8,
@@ -336,6 +353,17 @@ class StrainParamPanel(QWidget):
         # belt-and-suspenders that only fires if a caller sets a smaller value.
         self._set_vsg_minimum(recommended_vsg)
         rad = (self._vsg_spin.value() - 1) / 2.0
+
+        # Translate the VSG radius to the N x N node window on a uniform mesh:
+        # a node's k-th axial neighbour sits k*step away, so k <= floor(rad/step)
+        # nodes fit on each side -> 2*floor(rad/step)+1 per axis. This is exactly
+        # what query_ball_point(rad) selects on a regular grid.
+        n_axis = 2 * (int(rad) // subset_step) + 1 if subset_step > 0 else 1
+        self._vsg_window_readout.setText(
+            tr_args(self.tr("Strain window ≈ %1×%2 nodes"), n_axis, n_axis)
+        )
+        self._vsg_window_readout.setVisible(True)
+
         if rad < subset_step:
             msg = tr_args(
                 self.tr(

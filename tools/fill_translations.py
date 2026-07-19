@@ -235,6 +235,49 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "fr":    "Rognés : %1 nœuds (%2%)",
         "es":    "Recortados: %1 nodos (%2%)",
     },
+    "Strain window ≈ %1×%2 nodes": {
+        "zh_CN": "应变窗口 ≈ %1×%2 节点",
+        "zh_TW": "應變視窗 ≈ %1×%2 節點",
+        "ja":    "ひずみウィンドウ ≈ %1×%2 ノード",
+        "ko":    "변형률 윈도우 ≈ %1×%2 노드",
+        "de":    "Dehnungsfenster ≈ %1×%2 Knoten",
+        "fr":    "Fenêtre de déformation ≈ %1×%2 nœuds",
+        "es":    "Ventana de deformación ≈ %1×%2 nodos",
+    },
+    "Number of mesh nodes per axis inside the circular VSG window on a "
+    "uniform mesh: 2 × floor(VSG radius / node spacing) + 1. The plane "
+    "fit uses every node within the radius; on a refined mesh the count "
+    "varies locally.": {
+        "zh_CN": "均匀网格下圆形 VSG 窗口内每个轴向的网格节点数："
+                 "2 × floor(VSG 半径 / 节点间距) + 1。平面拟合使用半径内的"
+                 "所有节点；在加密网格上该数量会局部变化。",
+        "zh_TW": "均勻網格下圓形 VSG 視窗內每個軸向的網格節點數："
+                 "2 × floor(VSG 半徑 / 節點間距) + 1。平面擬合使用半徑內的"
+                 "所有節點；在加密網格上該數量會局部變化。",
+        "ja":    "均一メッシュにおける円形 VSG ウィンドウ内の軸ごとの"
+                 "メッシュノード数：2 × floor(VSG 半径 / ノード間隔) + 1。"
+                 "平面フィットは半径内のすべてのノードを使用します。"
+                 "細分化メッシュではこの数は局所的に変化します。",
+        "ko":    "균일 메시에서 원형 VSG 윈도우 내 축당 메시 노드 수: "
+                 "2 × floor(VSG 반경 / 노드 간격) + 1. 평면 피팅은 반경 내 "
+                 "모든 노드를 사용하며, 세분화된 메시에서는 이 수가 "
+                 "국소적으로 달라집니다.",
+        "de":    "Anzahl der Netzknoten pro Achse innerhalb des kreisförmigen "
+                 "VSG-Fensters bei gleichmäßigem Netz: 2 × floor(VSG-Radius / "
+                 "Knotenabstand) + 1. Die Ebenenanpassung verwendet jeden "
+                 "Knoten innerhalb des Radius; bei verfeinertem Netz variiert "
+                 "die Anzahl lokal.",
+        "fr":    "Nombre de nœuds de maillage par axe à l'intérieur de la "
+                 "fenêtre VSG circulaire sur un maillage uniforme : 2 × "
+                 "floor(rayon VSG / espacement des nœuds) + 1. L'ajustement de "
+                 "plan utilise tous les nœuds dans le rayon ; sur un maillage "
+                 "raffiné, ce nombre varie localement.",
+        "es":    "Número de nodos de malla por eje dentro de la ventana VSG "
+                 "circular en una malla uniforme: 2 × floor(radio VSG / "
+                 "espaciado de nodos) + 1. El ajuste de plano usa todos los "
+                 "nodos dentro del radio; en una malla refinada, ese número "
+                 "varía localmente.",
+    },
 
     # ========== ROI drawing — 3-point circle (all 8 locales) ==========
     "Circle (3-point)": {
