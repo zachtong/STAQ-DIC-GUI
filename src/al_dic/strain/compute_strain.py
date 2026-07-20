@@ -23,7 +23,11 @@ from numpy.typing import NDArray
 from ..core.data_structures import DICMesh, DICPara, StrainResult
 from ..utils.region_analysis import NodeRegionMap
 from .apply_strain_type import apply_strain_type
-from .comp_def_grad import comp_def_grad, edge_valid_mask
+from .comp_def_grad import (
+    comp_def_grad,
+    edge_valid_mask,
+    node_boundary_distance,
+)
 from .nodal_strain_fem import global_nodal_strain_fem
 from .smooth_field import smooth_field_sparse
 
@@ -95,17 +99,27 @@ def compute_strain(
     method = para.method_to_compute_strain
 
     # --- Step 1: Compute raw deformation gradient ---
+    # Node-to-interior-barrier distance (plane fitting): computed ONCE and
+    # shared by the near-barrier gate and the edge-trim below, replacing the two
+    # per-frame full-image distance transforms.
+    _node_dist = None
     if method == 0 or method == 1:
         # Method 0: use F directly (caller should provide); fallback to FEM
         # Method 1: legacy central difference; use FEM instead
         F_raw = global_nodal_strain_fem(mesh, para, U)
     elif method == 2:
         # Plane fitting with search radius
+        _mask = para.img_ref_mask
+        if _mask is not None:
+            _node_dist = node_boundary_distance(mesh.coordinates_fem, _mask)
+        _near = (None if _node_dist is None
+                 else _node_dist < para.strain_plane_fit_rad)
         F_raw = comp_def_grad(
             U, mesh.coordinates_fem, mesh.elements_fem,
             rad=para.strain_plane_fit_rad,
-            mask=para.img_ref_mask,
+            mask=_mask,
             neighbors=neighbors,
+            near_barrier=_near,
         )
         # Fill any NaN from plane fitting. If **every** node came back
         # NaN (e.g. the VSG radius is smaller than the DIC node spacing
@@ -221,6 +235,7 @@ def compute_strain(
             para.img_ref_mask,
             para.strain_plane_fit_rad,
             getattr(para, "strain_edge_trim_alpha", 0.0),
+            node_dist=_node_dist,
         )
         # Guard: if edge trimming flags EVERY node unreliable, the exported
         # and displayed strain would be entirely NaN (trimmed_field NaNs out

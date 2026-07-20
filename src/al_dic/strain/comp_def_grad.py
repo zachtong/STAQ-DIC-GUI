@@ -24,10 +24,43 @@ from __future__ import annotations
 
 import numpy as np
 from numpy.typing import NDArray
-from scipy.ndimage import distance_transform_edt
-from scipy.spatial import KDTree
+from scipy.ndimage import binary_dilation
+from scipy.spatial import KDTree, cKDTree
 
 from .platefit_kernel import solve_platefit, solve_platefit_cached
+
+
+def node_boundary_distance(
+    coordinates: NDArray[np.float64],
+    mask: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    """Euclidean distance from each node's pixel to the nearest INTERIOR
+    barrier pixel (``mask <= 0.5``), evaluated at the nodes only.
+
+    Equal to ``distance_transform_edt(mask > 0.5)`` sampled at the nodes'
+    clipped-rounded pixels -- the image border is NOT counted (that is added
+    separately by :func:`edge_valid_mask`) -- but computed in
+    O(n_nodes + n_boundary) via an 8-connected boundary-pixel KDTree instead of
+    O(H*W).  The nearest background pixel to any foreground node is provably an
+    8-connected boundary pixel, so this is exact; a node whose own pixel is
+    background sits on the barrier and gets 0.  Returns ``+inf`` where the mask
+    has no background at all (no barrier).
+    """
+    H, W = mask.shape
+    fg = mask > 0.5
+    cc = np.clip(np.round(coordinates[:, 0]).astype(np.int64), 0, W - 1)
+    rc = np.clip(np.round(coordinates[:, 1]).astype(np.int64), 0, H - 1)
+
+    boundary = (~fg) & binary_dilation(fg, structure=np.ones((3, 3), bool))
+    ys, xs = np.where(boundary)
+    if len(ys) == 0:
+        d = np.full(coordinates.shape[0], np.inf, dtype=np.float64)
+    else:
+        tree = cKDTree(np.column_stack([xs, ys]).astype(np.float64))
+        d, _ = tree.query(np.column_stack([cc, rc]).astype(np.float64))
+    # A node whose own pixel is background is ON the barrier -> distance 0,
+    # matching distance_transform_edt (which is 0 at every background pixel).
+    return np.where(fg[rc, cc], d, 0.0)
 
 
 def edge_valid_mask(
@@ -35,6 +68,7 @@ def edge_valid_mask(
     mask: NDArray[np.float64] | None,
     rad: float,
     alpha: float = 0.7,
+    node_dist: NDArray[np.float64] | None = None,
 ) -> NDArray[np.bool_]:
     """Flag plane-fit nodes whose VSG window crosses the ROI/hole boundary.
 
@@ -59,6 +93,11 @@ def edge_valid_mask(
             whose disk touches the boundary; ``alpha = 0.0`` disables trimming
             (all nodes valid).
 
+        node_dist: Optional precomputed node-to-interior-barrier distance
+            (:func:`node_boundary_distance`); pass it to share the boundary
+            KDTree with ``comp_def_grad``'s near-barrier computation instead of
+            recomputing.  Must correspond to the same *mask*.
+
     Returns:
         Boolean array (n_nodes,): True = reliable, False = edge-trimmed.
     """
@@ -66,16 +105,21 @@ def edge_valid_mask(
     if mask is None or alpha <= 0.0:
         return np.ones(n_nodes, dtype=bool)
 
-    # Pad with a zero border so the image edge also counts as a boundary,
-    # then distance-transform: dt[p] = distance from p to the nearest 0 pixel
-    # (ROI outer edge, hole edge, or image border).
-    m = np.pad(mask > 0, 1, mode="constant", constant_values=False)
-    dt = distance_transform_edt(m)
+    # Distance to the nearest INTERIOR barrier (ROI/hole/crack edge), at the
+    # nodes.  Equivalent to sampling distance_transform_edt(mask>0.5), but
+    # O(nodes + boundary).  Shared with comp_def_grad when passed in.
+    d_internal = (node_dist if node_dist is not None
+                  else node_boundary_distance(coordinates, mask))
 
+    # Add the image border as a boundary too (the old code np.pad()ed a zero
+    # ring): the nearest border pixel to node pixel (rc, cc) is its
+    # perpendicular foot, so the exact Euclidean distance is the analytic min.
     H, W = mask.shape
-    col = np.clip(np.round(coordinates[:, 0]).astype(int), 0, W - 1) + 1
-    row = np.clip(np.round(coordinates[:, 1]).astype(int), 0, H - 1) + 1
-    return dt[row, col] >= alpha * rad
+    cc = np.clip(np.round(coordinates[:, 0]).astype(np.int64), 0, W - 1)
+    rc = np.clip(np.round(coordinates[:, 1]).astype(np.int64), 0, H - 1)
+    d_border = np.minimum.reduce([rc + 1, H - rc, cc + 1, W - cc]).astype(np.float64)
+
+    return np.minimum(d_internal, d_border) >= alpha * rad
 
 
 def _segment_hits_mask(
@@ -107,6 +151,7 @@ def comp_def_grad(
     rad: float,
     mask: NDArray[np.float64] | None = None,
     neighbors: tuple | None = None,
+    near_barrier: NDArray[np.bool_] | None = None,
 ) -> NDArray[np.float64]:
     """Compute local deformation gradient via weighted plane fitting.
 
@@ -172,14 +217,12 @@ def comp_def_grad(
     # Nodes within `rad` of a masked barrier (crack/hole/ROI edge) are the only
     # ones whose VSG disk can reach across it, so the (per-pair) line-of-sight
     # filter runs only there -- elsewhere the Euclidean neighbours are all on
-    # the same side already.  (Same for both solve paths.)
-    near_barrier = None
-    if mask is not None:
-        dt = distance_transform_edt(mask > 0.5)
-        h_mask, w_mask = mask.shape
-        col = np.clip(np.round(coordinates[:, 0]).astype(int), 0, w_mask - 1)
-        row = np.clip(np.round(coordinates[:, 1]).astype(int), 0, h_mask - 1)
-        near_barrier = dt[row, col] < rad
+    # the same side already.  Distance is computed at the nodes only
+    # (node_boundary_distance == unpadded distance_transform_edt sampled at the
+    # nodes), or reused from the caller (compute_strain shares it with the
+    # edge-trim to avoid a second boundary scan per frame).
+    if near_barrier is None and mask is not None:
+        near_barrier = node_boundary_distance(coordinates, mask) < rad
 
     # Fast path: reuse a precomputed frame-invariant all-node neighbour CSR
     # (coordinates never move -- strain is total-Lagrangian), skipping the
