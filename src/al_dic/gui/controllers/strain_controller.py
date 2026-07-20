@@ -106,6 +106,24 @@ class StrainController:
 
         ref_mesh, img_shape, fallback_mask = self._strain_common(result)
 
+        # Plane-fit strain fits on the frame-0 coordinates for EVERY frame
+        # (total-Lagrangian), so the geometric neighbour search is
+        # frame-invariant: build the neighbour cache once and reuse it, skipping
+        # the per-frame KDTree build + query.  (FEM nodal strain ignores it.)
+        platefit_neighbors = None
+        _method = override.get(
+            "method_to_compute_strain",
+            result.dic_para.method_to_compute_strain,
+        )
+        if _method == 2 and ref_mesh.coordinates_fem.shape[0] > 0:
+            _rad = override.get(
+                "strain_plane_fit_rad", result.dic_para.strain_plane_fit_rad,
+            )
+            from al_dic.strain.platefit_kernel import build_neighbor_cache
+            platefit_neighbors = build_neighbor_cache(
+                ref_mesh.coordinates_fem, _rad,
+            )
+
         n_frames = len(result.result_disp)
         out: list[StrainResult] = []
         for i, frame in enumerate(result.result_disp):
@@ -119,7 +137,10 @@ class StrainController:
                 result, override, ref_mesh, U, deformed_mask,
                 img_shape, fallback_mask,
             )
-            sr = compute_strain(strain_mesh, para_strain, U, region_map)
+            sr = compute_strain(
+                strain_mesh, para_strain, U, region_map,
+                neighbors=platefit_neighbors,
+            )
             out.append(sr)
             if progress_cb is not None:
                 progress_cb(
