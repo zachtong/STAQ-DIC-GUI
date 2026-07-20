@@ -4,6 +4,78 @@ All notable user-facing changes to pyALDIC are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.7.0] — 2026-07-20
+
+Two themes: **crack-aware DIC end to end** — the mesh, the plane-fit
+neighbours, the cumulative transform, edge-trim and field rendering all
+respect a crack (including one that grows across frames) instead of smearing
+displacement / strain across the discontinuity — and a **~10× faster strain
+step** on dense meshes and long sequences.
+
+### Performance
+
+- **Plane-fit strain is ~10× faster on dense meshes / many frames.** The
+  per-node weighted least squares (previously `np.linalg.lstsq` / SVD per node)
+  is now a parallel Numba kernel solving the 3×3 normal equations; the
+  geometric neighbour search is built once per sequence and reused every frame
+  (coordinates are frame-invariant — strain is total-Lagrangian); and the
+  per-frame boundary distance is evaluated at the nodes via a boundary-pixel
+  KD-tree instead of two full-image Euclidean distance transforms. Numerically
+  identical to before (~1e-15). On a 50k-node, 5 MP, 300-frame run the strain
+  step drops from ~10 s/frame to ~1 s/frame.
+
+### Added
+
+- **Crack-aware everything.** For cracked / notched specimens: the FEM mesh is
+  cut at thin continuous mask barriers; plane-fit neighbours and the cumulative
+  transform never span an open crack; field rendering draws the two crack faces
+  independently instead of interpolating a smooth ramp across the
+  discontinuity; and a growing crack is re-trimmed at its current position every
+  frame (warped back to the reference configuration).
+- **"Fill trimmed edges (display only)" toggle** in the strain visualization
+  controls (off by default). Fills the trimmed edge band back in from reliable
+  interior nodes — interpolated in the interior, extrapolated out to the ROI
+  edge, and recovered face-by-face along a crack inner edge (each side filled
+  from its own side only, so the crack stays a sharp line). Affects the on-canvas
+  view and exported **images / animations** only; exported **data** files
+  (NPZ / MAT / CSV) always keep the trimmed edge as `NaN`.
+- **"Strain window ≈ N×N nodes" readout** under the VSG size control: shows how
+  many mesh data points the plane fit spans on a uniform mesh
+  (2·⌊radius / step⌋ + 1 per axis), updated live as VSG or the DIC step change.
+- **Cancel button for strain computation**, and **DIC Cancel now keeps the
+  already-computed frames** (partial results) instead of discarding them.
+
+### Changed
+
+- **Plane fitting is the primary default strain method** (local weighted plane
+  fitting); edge-trim validity is produced by plane fitting.
+- **Reference vs deformed geometry is now frame-consistent** in the strain
+  window: *not deformed* uses frame-0 geometry (matching the main window's
+  displacement overlay), *show on deformed* uses the current frame's geometry —
+  so edge-trim, masking and fill all follow the displayed frame.
+- **Default initial-guess method is now FFT.**
+- **BREAKING — exported variable structure unified across NPZ / MAT / CSV.**
+  Displacement / strain arrays now share one consistent naming and world-
+  coordinate convention across all three formats; scripts that parsed the old
+  per-format layout need updating (see the export section of the manual).
+
+### Fixed
+
+- Growing / per-frame cracks: displacement and strain no longer smear across an
+  open crack (crack-aware cumulative transform); the edge-trim shows in the
+  display and uses the correct reference mask; a crack thinner than one element
+  now cuts the mesh.
+- Strain export no longer silently yields an all-NaN field — it raises with an
+  actionable message when edge-trim removes every node; edge-trimmed strain is
+  blanked (not back-filled) in exported images / animations; NaN deformed node
+  positions are guarded in PNG / animation export.
+- Session robustness: **Export is enabled immediately after opening a session**
+  that already contains results (no recompute); moved image files are relocated
+  on session open (auto-find + prompt).
+- Seed propagation auto-rescues unseeded regions and keeps partial results on
+  failure. GUI: minimum window size lowered for smaller screens; the Export and
+  Batch-Import dialogs are kept on screen.
+
 ## [0.6.0] — 2026-07-02
 
 This release is about surviving big jobs: full session persistence
