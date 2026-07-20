@@ -89,13 +89,25 @@ class TestPerformance:
         assert elapsed < 1.0, f"warp_mask took {elapsed:.2f}s (limit: 1s)"
 
     def test_strain_compute_performance(self):
-        """Strain computation for ~49 nodes: < 1s."""
+        """Strain computation for ~49 nodes: < 1s (warmed, per-call).
+
+        The plane-fit strain path JIT-compiles Numba kernels on the first
+        call (~1-2s, one-time per process — and cold on a fresh CI checkout
+        where no ``.nbc`` cache exists). Production compiles once and reuses
+        the kernel for every frame, so the meaningful figure is the warmed
+        per-call time. Compile once here (untimed) before measuring, so this
+        guards the per-frame compute against regressions rather than timing
+        one-off JIT compilation.
+        """
         from al_dic.strain.comp_def_grad import comp_def_grad
         from tests.conftest import make_mesh_for_image
 
         mesh = make_mesh_for_image(128, 128, step=16)
         n = mesh.coordinates_fem.shape[0]
         U = np.random.default_rng(42).standard_normal(2 * n) * 0.01
+
+        # Warm up the Numba JIT so the timed call measures compute, not compile.
+        comp_def_grad(U, mesh.coordinates_fem, mesh.elements_fem, rad=20.0)
 
         t0 = time.perf_counter()
         F = comp_def_grad(
