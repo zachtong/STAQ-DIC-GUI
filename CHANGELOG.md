@@ -4,6 +4,46 @@ All notable user-facing changes to pyALDIC are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.7.1] — 2026-07-26
+
+Scripted batch processing, without the GUI. No changes to the DIC or strain
+algorithms, and none to the interface — results are identical to 0.7.0.
+
+### Added
+
+- **`examples/batch_process.py`** — run several samples end to end from one
+  JSON or YAML config: per-sample images, ROI, parameters and export formats.
+  A failing sample is logged and the batch continues; samples that already
+  have results are skipped, so an interrupted run resumes where it stopped.
+  ROI is optional (whole image), one mask for every frame, or one mask per
+  frame for a moving or growing region. YAML needs PyYAML; JSON works with
+  the standard library, so the package itself gains no dependency.
+- **`examples/plot_results.py`** — replot any field from an exported `.npz`
+  after the fact. A batch can export data only (faster, smaller, and free of
+  any Qt import) and plotting stays a later, repeatable decision.
+- Both example configs document the subset-size convention: the GUI shows an
+  odd subset size (DIC convention, one centre pixel) while `DICPara.winsize`
+  is the even internal value — a GUI subset of 31 px is `winsize: 32`.
+
+### Fixed
+
+- Field-image export raised `ufunc 'bitwise_and' not supported` when the ROI
+  mask needed no resizing: `_resize_mask` returned its input unconverted, and
+  masks are `float64` because that is what `run_aldic` consumes. It now always
+  returns `bool`, so the same mask array works in both calls.
+- The README's programmatic-API example failed as written — it left
+  `gridxy_roi_range` at its zero-size default (the GUI fills that in from the
+  ROI you draw) and raised `No grid points generated`. It now derives the ROI
+  from the mask bounding box and notes the power-of-2 `winstepsize` rule.
+- An empty node grid blamed `winsize` unconditionally, reporting
+  `winsize (32) too large for image (800x800)` for a 32 px subset on an
+  800×800 image whose real problem was an unset ROI. The message now
+  distinguishes an empty ROI from a genuinely oversized subset and says what
+  to set.
+- The README's adaptive-refinement animation showed an unbalanced quadtree —
+  finest cells directly abutting base cells, which would put several hanging
+  nodes on one edge. It now keeps a one-level transition ring (2:1 balance).
+
 ## [0.7.0] — 2026-07-20
 
 Two themes: **crack-aware DIC end to end** — the mesh, the plane-fit
