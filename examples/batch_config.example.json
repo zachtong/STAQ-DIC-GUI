@@ -1,0 +1,50 @@
+{
+  "output_dir": "batch_results",
+  "resume": true,
+  "compute_strain": true,
+
+  "export": ["npz", "mat", "csv", "params", "images"],
+
+  "fields": ["disp_u", "disp_v", "strain_exx", "strain_eyy", "strain_exy"],
+
+  "image_fields": ["disp_u", "strain_eyy"],
+  "colormap": "jet",
+  "image_format": "png",
+  "dpi": 150,
+  "colorbar": true,
+  "show_deformed": false,
+  "bg_mode": "ref_frame",
+  "bg_alpha": 0.7,
+
+  "params": {
+    "winsize": 32,
+    "winstepsize": 16,
+    "winsize_min": 8,
+    "reference_mode": "incremental",
+    "init_guess_mode": "fft",
+    "size_of_fft_search_region": 20,
+    "method_to_compute_strain": 2,
+    "strain_plane_fit_rad": 25.0,
+    "strain_edge_trim_alpha": 0.7,
+    "um2px": 1.0
+  },
+
+  "samples": [
+    {
+      "name": "tension_without_holes",
+      "images": "quickstart/01_tension_without_holes",
+      "pattern": "*.png"
+    },
+    {
+      "name": "tension_with_holes",
+      "images": "quickstart/02_tension_with_holes",
+      "pattern": "*.png"
+    },
+    {
+      "name": "rotation",
+      "images": "quickstart/03_rotation",
+      "pattern": "*.png",
+      "params": { "size_of_fft_search_region": 30 }
+    }
+  ]
+}

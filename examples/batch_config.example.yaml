@@ -1,0 +1,65 @@
+# pyALDIC batch config — see batch_process.py
+#
+#   python batch_process.py batch_config.example.yaml    (needs pip install pyyaml)
+#
+# Prefer no extra dependency? Use the JSON twin, batch_config.example.json —
+# identical keys, and json is in the standard library.
+
+output_dir: batch_results     # everything is written under here, one folder per sample
+resume: true                  # skip samples that already have results (re-runnable)
+compute_strain: true
+
+# What to write per sample. Drop "images" for a data-only batch (that also keeps
+# the run free of any Qt import). Plot later instead with plot_results.py.
+export: [npz, mat, csv, params, images]
+
+# Fields written into npz / mat / csv.
+#   displacement: disp_u, disp_v, disp_magnitude
+#   strain:       strain_exx, strain_eyy, strain_exy, strain_principal_max,
+#                 strain_principal_min, strain_maxshear, strain_von_mises,
+#                 strain_rotation
+fields: [disp_u, disp_v, strain_exx, strain_eyy, strain_exy]
+
+# --- field-image options (only used when "images" is in export) ---
+image_fields: [disp_u, strain_eyy]
+colormap: jet                 # jet, viridis, turbo, coolwarm, plasma, RdBu_r, seismic
+image_format: png             # png, jpeg, tiff
+dpi: 150
+colorbar: true
+show_deformed: false
+bg_mode: ref_frame            # ref_frame | deformed_frame | none
+bg_alpha: 0.7
+
+# --- DIC parameters, applied to every sample (any DICPara field works) ---
+params:
+  winsize: 32                 # subset size (px)
+  winstepsize: 16             # step (px) — MUST be a power of 2
+  winsize_min: 8
+  reference_mode: incremental # incremental | accumulative
+  init_guess_mode: fft        # fft | previous | seed_propagation | auto
+  size_of_fft_search_region: 20
+  method_to_compute_strain: 2 # 2 = plane fitting (default)
+  strain_plane_fit_rad: 25.0
+  strain_edge_trim_alpha: 0.7
+  um2px: 1.0                  # physical scale; 1.0 keeps results in pixels
+
+# --- the samples themselves ---
+# Required: images. Optional: name, pattern, roi / roi_dir, params (overrides).
+samples:
+  - name: tension_without_holes
+    images: quickstart/01_tension_without_holes
+    pattern: "*.png"
+    # no roi given -> the whole image is correlated
+
+  - name: tension_with_holes
+    images: quickstart/02_tension_with_holes
+    pattern: "*.png"
+    # roi: path/to/roi.png          # one mask for every frame
+    # roi_dir: path/to/roi_folder   # one mask PER FRAME (growing crack / moving ROI)
+    # roi_pattern: "*.png"
+
+  - name: rotation
+    images: quickstart/03_rotation
+    pattern: "*.png"
+    params:                    # per-sample overrides win over the global block
+      size_of_fft_search_region: 30

@@ -118,9 +118,15 @@ def _to_bgr(image: NDArray, H: int, W: int) -> NDArray:
 
 
 def _resize_mask(mask: NDArray, H: int, W: int) -> NDArray:
-    """Resize a boolean mask to (H, W), keeping a hard (nearest) edge."""
+    """Resize a mask to (H, W) as bool, keeping a hard (nearest) edge.
+
+    Always returns bool: callers combine the result with ``&=``, and the
+    same mask arrays are handed to ``run_aldic`` as float64, so a float
+    (or uint8) mask that happened to need no resizing used to pass through
+    unconverted and raise a bitwise-and TypeError.
+    """
     if mask.shape == (H, W):
-        return mask
+        return mask.astype(bool, copy=False)
     return cv2.resize(mask.astype(np.uint8), (W, H),
                       interpolation=cv2.INTER_NEAREST).astype(bool)
 

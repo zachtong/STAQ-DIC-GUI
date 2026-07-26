@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 
 from al_dic.export.export_png import (
-    export_png, render_field_frame, _compute_warped_mask,
+    export_png, render_field_frame, _compute_warped_mask, _resize_mask,
     colorbar_label, scale_field_values, render_colorbar_strip,
 )
 from al_dic.gui.dialogs.export_dialog import FieldImageConfig
@@ -704,3 +704,31 @@ def test_export_png_strain_unscaled_by_physical_units(tmp_path, minimal_result):
     img_phys = cv2.imread(str(paths_phys[0]))
     # Strain is dimensionless — images should be identical
     np.testing.assert_array_equal(img_px, img_phys)
+
+
+class TestResizeMaskDtype:
+    """_resize_mask must always yield bool.
+
+    Callers combine its result with ``&=``. The same mask arrays are passed to
+    ``run_aldic`` as float64, so a float mask needing no resize used to be
+    returned unconverted and blew up with a bitwise-and TypeError.
+    """
+
+    @pytest.mark.parametrize("dtype", [bool, np.float64, np.uint8])
+    @pytest.mark.parametrize("resize", [False, True])
+    def test_returns_bool_for_any_input_dtype(self, dtype, resize):
+        H = W = 16
+        src = np.zeros((H, W), dtype=dtype)
+        src[4:12, 4:12] = 1 if dtype is not np.uint8 else 255
+
+        out_h, out_w = (H // 2, W // 2) if resize else (H, W)
+        out = _resize_mask(src, out_h, out_w)
+
+        assert out.dtype == np.bool_
+        assert out.shape == (out_h, out_w)
+        # the marked region survives the round trip
+        assert out.any() and not out.all()
+        # and the result is usable with the in-place bitwise-and callers use
+        acc = np.ones((out_h, out_w), dtype=bool)
+        acc &= out
+        assert acc.sum() == out.sum()
