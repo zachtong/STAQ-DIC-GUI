@@ -1,4 +1,6 @@
 {
+  "_readme": "JSON has no comments -- see batch_config.example.yaml for the annotated version. Note: params.winsize must be EVEN. The GUI shows the subset size as an ODD number (DIC convention: a subset with one centre pixel), so a GUI subset of 31 px is winsize 32 here; the quickstart README's 'subset 31 px' means winsize 32.",
+
   "output_dir": "batch_results",
   "resume": true,
   "compute_strain": true,

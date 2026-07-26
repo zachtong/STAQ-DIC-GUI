@@ -32,7 +32,11 @@ bg_alpha: 0.7
 
 # --- DIC parameters, applied to every sample (any DICPara field works) ---
 params:
-  winsize: 32                 # subset size (px)
+  # winsize must be EVEN here. The GUI shows the subset size as an ODD number
+  # (DIC convention: a subset with one centre pixel), so a GUI subset of 31 px
+  # is winsize: 32 in this file. Halve-and-double, don't copy the odd number:
+  # the quickstart README's "subset 31 px" means winsize: 32.
+  winsize: 32                 # subset size (px), even; GUI 31 == API 32
   winstepsize: 16             # step (px) — MUST be a power of 2
   winsize_min: 8
   reference_mode: incremental # incremental | accumulative
