@@ -208,20 +208,38 @@ def integer_search(
     min_y = max(roi.gridy[0], half_w)
     max_y = min(roi.gridy[1], h - 1 - half_w)
 
-    if min_x >= max_x or min_y >= max_y:
-        logger.warning(
-            "winsize (%d) too large for image (%dx%d). "
-            "Cannot generate any mesh nodes.",
-            winsize, h, w,
+    # Distinguish the two ways this goes empty: an unset/degenerate ROI (the
+    # common scripting mistake -- gridxy_roi_range defaults to a zero-size
+    # box) versus a winsize the image genuinely cannot fit. Blaming winsize
+    # for an empty ROI sends callers chasing the wrong parameter.
+    roi_span_x = roi.gridx[1] - roi.gridx[0]
+    roi_span_y = roi.gridy[1] - roi.gridy[0]
+    if roi_span_x <= 0 or roi_span_y <= 0:
+        reason = (
+            f"ROI is empty: gridxy_roi_range spans {roi_span_x}x{roi_span_y} px "
+            f"(gridx={roi.gridx}, gridy={roi.gridy}). Set "
+            f"para.gridxy_roi_range to the region to correlate -- it defaults "
+            f"to a zero-size box, so it must be set explicitly when calling "
+            f"run_aldic() directly."
         )
+    else:
+        reason = (
+            f"winsize ({winsize}) is too large for the ROI "
+            f"({roi_span_x}x{roi_span_y} px) within image ({h}x{w}); each node "
+            f"needs a {winsize}x{winsize} subset inside the image."
+        )
+
+    if min_x >= max_x or min_y >= max_y:
+        logger.warning("Cannot generate any mesh nodes. %s", reason)
 
     x0 = _centered_arange(min_x, max_x, winstepsize)
     y0 = _centered_arange(min_y, max_y, winstepsize)
 
     if len(x0) == 0 or len(y0) == 0:
         raise ValueError(
-            f"No grid points generated. Image ({h}x{w}), winsize={winsize}, "
-            f"search={search}, ROI=({roi.gridx}, {roi.gridy})"
+            f"No grid points generated. {reason} "
+            f"(image {h}x{w}, winsize={winsize}, winstepsize={winstepsize}, "
+            f"search={search})"
         )
 
     ny, nx = len(y0), len(x0)

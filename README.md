@@ -216,7 +216,9 @@ python -m al_dic
 
 ```python
 from pathlib import Path
+import numpy as np
 from al_dic.core.config import dicpara_default
+from al_dic.core.data_structures import GridxyROIRange
 from al_dic.core.pipeline import run_aldic
 from al_dic.io.io_utils import load_images, load_masks
 from al_dic.export.export_npz import export_npz
@@ -226,8 +228,19 @@ from al_dic.export.export_mat import export_mat
 images = load_images("path/to/images", pattern="*.tif")
 masks = load_masks("path/to/masks", pattern="*.tif")
 
-# Configure and run
-para = dicpara_default(winsize=32, winstepsize=16)
+# Configure and run.  gridxy_roi_range is REQUIRED: it is the pixel box to
+# correlate, and it defaults to a zero-size box (the GUI fills it in from the
+# ROI you draw).  Here it is taken from the mask's bounding box.
+ys, xs = np.where(masks[0])
+para = dicpara_default(
+    winsize=32,
+    winstepsize=16,          # must be a power of 2
+    use_masks=True,
+    gridxy_roi_range=GridxyROIRange(
+        gridx=(int(xs.min()), int(xs.max())),
+        gridy=(int(ys.min()), int(ys.max())),
+    ),
+)
 result = run_aldic(para, images, masks, compute_strain=True)
 
 # Access results
