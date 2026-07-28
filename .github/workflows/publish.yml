@@ -1,0 +1,94 @@
+name: Publish to PyPI
+
+# Publishes when a version tag is pushed. Uses PyPI Trusted Publishing
+# (OpenID Connect), so there is no API token to paste, store or rotate:
+# PyPI verifies the workflow's short-lived identity instead.
+#
+# One-time setup on PyPI (Your projects -> al-dic -> Publishing):
+#   Owner            zachtong
+#   Repository       pyALDIC
+#   Workflow         publish.yml
+#   Environment      pypi
+#
+# Release flow after that:
+#   git tag -a v0.7.3 -m "..." && git push origin v0.7.3
+#   -> this builds, checks and publishes, then attaches the artifacts
+#      to the GitHub Release for that tag.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:          # manual re-run, e.g. after a failed publish
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build distributions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build wheel and sdist
+        run: |
+          python -m pip install --upgrade pip build twine
+          python -m build
+
+      - name: Check metadata
+        run: python -m twine check dist/*
+
+      - name: Verify the tag matches the package version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG=$(python -c "import tomllib,pathlib;print(tomllib.loads(pathlib.Path('pyproject.toml').read_text())['project']['version'])")
+          echo "tag=$TAG  pyproject=$PKG"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "::error::Tag v$TAG does not match pyproject version $PKG"
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi          # gate releases behind an environment rule if wanted
+    permissions:
+      id-token: write          # required for Trusted Publishing
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # No password / token: the action exchanges GitHub's OIDC identity
+        # for a short-lived PyPI credential.
+
+  attach:
+    name: Attach artifacts to the GitHub Release
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Upload to the release for this tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$GITHUB_REF_NAME" dist/* --clobber --repo "$GITHUB_REPOSITORY"
