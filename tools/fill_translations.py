@@ -58,6 +58,61 @@ LANGUAGES = ("zh_CN", "zh_TW", "ja", "ko", "de", "fr", "es")
 #
 # Short words / common UI labels
 TRANSLATIONS: dict[str, dict[str, str]] = {
+    # ===== MainWindow — ROI toolbar feedback after reopening a session ======
+    "Frame %1 has no Region of Interest of its own — frame 1's is used for computation. Switch to frame 1 to edit it, or import a mask to give this frame its own.": {
+        "zh_CN": "帧 %1 没有自己的感兴趣区域 — 计算时使用帧 1 的感兴趣区域。请切换到帧 1 编辑，或导入掩码为此帧单独指定。",
+        "zh_TW": "幀 %1 沒有自己的感興趣區域 — 計算時使用幀 1 的感興趣區域。請切換到幀 1 編輯，或匯入遮罩為此幀單獨指定。",
+        "ja":    "フレーム %1 には独自の関心領域がありません — 計算にはフレーム 1 の関心領域を使用します。フレーム 1 に切り替えて編集するか、マスクをインポートしてこのフレーム専用の領域を設定してください。",
+        "ko":    "프레임 %1에는 자체 관심 영역이 없습니다 — 계산에는 프레임 1의 관심 영역을 사용합니다. 프레임 1로 전환하여 편집하거나 마스크를 가져와 이 프레임 전용으로 지정하세요.",
+        "de":    "Bild %1 hat keine eigene Region of Interest — für die Berechnung wird die von Bild 1 verwendet. Wechseln Sie zu Bild 1, um sie zu bearbeiten, oder importieren Sie eine Maske, um diesem Bild eine eigene zu geben.",
+        "fr":    "L'image %1 n'a pas de région d'intérêt propre — celle de l'image 1 est utilisée pour le calcul. Passez à l'image 1 pour la modifier, ou importez un masque pour donner à cette image la sienne.",
+        "es":    "El fotograma %1 no tiene una región de interés propia — se usa la del fotograma 1 para el cálculo. Cambie al fotograma 1 para editarla, o importe una máscara para dar a este fotograma la suya.",
+    },
+    "No Region of Interest to save — load images first.": {
+        "zh_CN": "没有可保存的感兴趣区域 — 请先加载图像。",
+        "zh_TW": "沒有可儲存的感興趣區域 — 請先載入影像。",
+        "ja":    "保存できる関心領域がありません — 先に画像を読み込んでください。",
+        "ko":    "저장할 관심 영역이 없습니다 — 먼저 이미지를 불러오세요.",
+        "de":    "Keine Region of Interest zum Speichern — laden Sie zuerst Bilder.",
+        "fr":    "Aucune région d'intérêt à enregistrer — chargez d'abord des images.",
+        "es":    "No hay región de interés que guardar — cargue primero las imágenes.",
+    },
+    "No Region of Interest to invert — load images first.": {
+        "zh_CN": "没有可反选的感兴趣区域 — 请先加载图像。",
+        "zh_TW": "沒有可反選的感興趣區域 — 請先載入影像。",
+        "ja":    "反転できる関心領域がありません — 先に画像を読み込んでください。",
+        "ko":    "반전할 관심 영역이 없습니다 — 먼저 이미지를 불러오세요.",
+        "de":    "Keine Region of Interest zum Invertieren — laden Sie zuerst Bilder.",
+        "fr":    "Aucune région d'intérêt à inverser — chargez d'abord des images.",
+        "es":    "No hay región de interés que invertir — cargue primero las imágenes.",
+    },
+    "Region of Interest mask is empty.": {
+        "zh_CN": "感兴趣区域掩码为空。",
+        "zh_TW": "感興趣區域遮罩為空。",
+        "ja":    "関心領域のマスクが空です。",
+        "ko":    "관심 영역 마스크가 비어 있습니다.",
+        "de":    "Die Region-of-Interest-Maske ist leer.",
+        "fr":    "Le masque de la région d'intérêt est vide.",
+        "es":    "La máscara de la región de interés está vacía.",
+    },
+    "Define a Region of Interest on frame 1 first.": {
+        "zh_CN": "请先在帧 1 上定义感兴趣区域。",
+        "zh_TW": "請先在幀 1 上定義感興趣區域。",
+        "ja":    "まずフレーム 1 で関心領域を定義してください。",
+        "ko":    "먼저 프레임 1에서 관심 영역을 정의하세요.",
+        "de":    "Definieren Sie zuerst eine Region of Interest auf Bild 1.",
+        "fr":    "Définissez d'abord une région d'intérêt sur l'image 1.",
+        "es":    "Defina primero una región de interés en el fotograma 1.",
+    },
+    "Mask saved to %1": {
+        "zh_CN": "掩码已保存至 %1",
+        "zh_TW": "遮罩已儲存至 %1",
+        "ja":    "マスクを %1 に保存しました",
+        "ko":    "마스크를 %1에 저장했습니다",
+        "de":    "Maske gespeichert unter %1",
+        "fr":    "Masque enregistré dans %1",
+        "es":    "Máscara guardada en %1",
+    },
     # ========== MainWindow — relink moved session images (all 8 locales) ======
     "Locate Session Images": {
         "zh_CN": "定位会话图片",

@@ -231,6 +231,26 @@ _DATA_DEFAULT_SELECTED = {
 # Image export worker
 # ---------------------------------------------------------------------------
 
+# How long closing the dialog waits for a running export to notice the stop
+# request. Export checks it between frames, so this only has to cover one
+# frame's render; a worker that outlasts it is cut loose instead (see
+# ExportDialog._shutdown_workers).
+_WORKER_STOP_WAIT_MS = 5000
+
+# Workers that outlived their dialog. Holding a reference here keeps the
+# Python object alive until the thread actually finishes -- dropping it while
+# the thread runs is exactly the crash this list exists to prevent.
+_ORPHANED_WORKERS: list = []
+
+
+def _still_running(worker) -> bool:
+    """True while *worker* must be kept alive; False once it is safe to drop."""
+    try:
+        return worker.isRunning()
+    except RuntimeError:      # C++ side already deleted
+        return False
+
+
 class ExportImagesWorker(QThread):
     """Background worker that renders and writes PNG images."""
 
@@ -1673,6 +1693,61 @@ class ExportDialog(QDialog):
         self._img_worker.finished.connect(self._on_img_finished)
         self._img_worker.error.connect(self._on_img_error)
         self._img_worker.start()
+
+    # ------------------------------------------------------------------
+    # Teardown
+    # ------------------------------------------------------------------
+
+    def _shutdown_workers(self) -> None:
+        """Stop and join running export threads before this dialog goes away.
+
+        Both workers are QThreads parented to the dialog, so letting the
+        dialog be destroyed mid-export tears down a running thread and aborts
+        the whole process -- every window disappears and Python exits. Ask the
+        worker to stop (export honours the stop event between frames) and wait
+        for it. Should it outlast the wait, cut it loose instead of blocking
+        the UI: detach its signals so it cannot call back into a dialog that
+        is going away, drop the parent link so Qt will not destroy it, and
+        keep a reference until it finishes on its own.
+        """
+        for attr in ("_img_worker", "_anim_worker"):
+            worker = getattr(self, attr, None)
+            if worker is None:
+                continue
+            setattr(self, attr, None)
+            try:
+                if not worker.isRunning():
+                    continue
+                worker.request_stop()
+                if worker.wait(_WORKER_STOP_WAIT_MS):
+                    continue
+                for signal in (worker.progress, worker.finished, worker.error):
+                    try:
+                        signal.disconnect()
+                    except (RuntimeError, TypeError):
+                        pass
+                worker.setParent(None)
+                _ORPHANED_WORKERS.append(worker)
+            except RuntimeError:
+                # Underlying C++ object already gone; nothing left to join.
+                continue
+        _ORPHANED_WORKERS[:] = [
+            w for w in _ORPHANED_WORKERS if _still_running(w)
+        ]
+
+    def reject(self) -> None:
+        """Close button / Esc — never leave an export thread running."""
+        self._shutdown_workers()
+        super().reject()
+
+    def accept(self) -> None:
+        self._shutdown_workers()
+        super().accept()
+
+    def closeEvent(self, event) -> None:
+        """Window close (X) — same teardown as the Close button."""
+        self._shutdown_workers()
+        super().closeEvent(event)
 
     def _on_cancel_images(self) -> None:
         if self._img_worker is not None:

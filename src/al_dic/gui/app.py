@@ -379,6 +379,13 @@ class MainWindow(QMainWindow):
         except SessionError as e:
             QMessageBox.critical(self, self.tr("Open Session Failed"), str(e))
             return
+        # Mirror the restored ROI into the editing buffer.  apply_session
+        # assigns per_frame_rois directly and the signals it emits reach the
+        # buffer only while roi_editing is on, which it is not right after a
+        # load -- leaving the buffer empty while AppState holds the ROI.  Save
+        # would then report an empty mask, and an edit would overwrite the
+        # restored ROI with whatever was drawn on the empty buffer.
+        self._load_roi_buffer_for_current_frame()
         n_roi = len(session.per_frame_rois)
         had_results = session.results is not None
         msg = f"Session loaded from {path} ({n_roi} Region(s) of Interest"
@@ -729,16 +736,48 @@ class MainWindow(QMainWindow):
         except IOError:
             pass
 
+    def _no_own_roi_hint(self) -> str | None:
+        """Explain an empty ROI buffer when the frame itself is the reason.
+
+        The ROI toolbar acts on the current frame's *own* mask, while the
+        solver falls back to frame 1's.  Reopening a session lands on
+        whichever frame was last displayed, so a user who left off browsing
+        results finds the toolbar dead on a frame that never had its own ROI
+        -- "mask is empty" then points at the mask instead of the frame.
+
+        Returns a ready-to-log explanation in that case, or None when the
+        Region of Interest is genuinely undefined everywhere.
+        """
+        state = self._state
+        if state.current_frame == 0:
+            return None
+        if state.per_frame_rois.get(state.current_frame) is not None:
+            return None
+        if state.per_frame_rois.get(0) is None:
+            return None
+        from al_dic.i18n import tr_args
+        return tr_args(
+            self.tr(
+                "Frame %1 has no Region of Interest of its own — frame 1's is "
+                "used for computation. Switch to frame 1 to edit it, or import "
+                "a mask to give this frame its own."
+            ),
+            state.current_frame + 1,
+        )
+
     def _on_roi_save(self) -> None:
         """Save the current ROI mask to a PNG file."""
         if self._roi_ctrl is None:
             self._state.log_message.emit(
-                "No Region of Interest to save — load images first.", "warn"
+                self.tr("No Region of Interest to save — load images first."),
+                "warn",
             )
             return
         if not self._roi_ctrl.mask.any():
             self._state.log_message.emit(
-                "Region of Interest mask is empty.", "warn"
+                self._no_own_roi_hint()
+                or self.tr("Region of Interest mask is empty."),
+                "warn",
             )
             return
         self._enter_roi_editing()
@@ -752,7 +791,10 @@ class MainWindow(QMainWindow):
             return
         try:
             self._roi_ctrl.save_mask(path)
-            self._state.log_message.emit(f"Mask saved to {path}", "success")
+            from al_dic.i18n import tr_args
+            self._state.log_message.emit(
+                tr_args(self.tr("Mask saved to %1"), path), "success"
+            )
         except IOError as e:
             self._state.log_message.emit(f"Save failed: {e}", "error")
 
@@ -760,9 +802,16 @@ class MainWindow(QMainWindow):
         """Invert the ROI mask for the currently edited frame."""
         if self._roi_ctrl is None:
             self._state.log_message.emit(
-                "No Region of Interest to invert — load images first.",
+                self.tr("No Region of Interest to invert — load images first."),
                 "warn"
             )
+            return
+        # On a frame with no ROI of its own the buffer is empty, and inverting
+        # it would hand that frame the whole image as a brand-new per-frame
+        # Region of Interest -- silently changing what gets correlated.
+        hint = self._no_own_roi_hint()
+        if hint is not None:
+            self._state.log_message.emit(hint, "warn")
             return
         self._enter_roi_editing()
         self._roi_ctrl.invert()
@@ -794,7 +843,7 @@ class MainWindow(QMainWindow):
             # Fall through: ROI check and brush activation continue below
         if state.roi_mask is None:
             state.log_message.emit(
-                "Define a Region of Interest on frame 1 first.",
+                self.tr("Define a Region of Interest on frame 1 first."),
                 "warn",
             )
             return
