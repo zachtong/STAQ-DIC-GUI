@@ -61,6 +61,7 @@ class SessionData:
     image_folder: str | None
     image_files: list[str]
     per_frame_rois: dict[int, NDArray[np.bool_]] = field(default_factory=dict)
+    refine_brush_mask: NDArray[np.bool_] | None = None
     params: dict[str, Any] = field(default_factory=dict)
     physical_units: dict[str, Any] = field(default_factory=dict)
     view_state: dict[str, Any] = field(default_factory=dict)
@@ -136,6 +137,7 @@ _VIEW_SCALAR_KEYS = (
     "show_mesh",
     "mesh_line_color",
     "mesh_line_width",
+    "show_subset_window",
 )
 
 
@@ -169,8 +171,13 @@ def _apply_view_state(vs: dict[str, Any], state: AppState) -> None:
         fs.vmin = float(d.get("vmin", fs.vmin))
         fs.vmax = float(d.get("vmax", fs.vmax))
         fs.colormap = str(d.get("colormap", fs.colormap))
-    for k in ("show_deformed", "overlay_alpha",
-              "show_mesh", "mesh_line_color", "mesh_line_width"):
+    # Drive the restore off the same list the save side writes, so a key added
+    # to _VIEW_SCALAR_KEYS cannot be saved and then silently never restored.
+    # current_frame is excluded here: the caller applies it after images load
+    # so it can be clamped to the image count.
+    for k in _VIEW_SCALAR_KEYS:
+        if k in ("current_frame", "display_field"):
+            continue
         if k in vs and vs[k] is not None:
             setattr(state, k, vs[k])
     # Set the display field through its setter (after field states are
@@ -195,6 +202,13 @@ def _build_config(state: AppState, has_results: bool,
         ),
         "image_files": list(state.image_files),
         "per_frame_rois": rois_payload,
+        # The painted refinement zones feed BrushRegionCriterion, so losing
+        # them silently changes the mesh -- and the results -- on a re-run of
+        # a restored session.
+        "refine_brush_mask": (
+            _encode_mask(state.refine_brush_mask)
+            if state.refine_brush_mask is not None else None
+        ),
         "params": {k: _get_state_field(state, k) for k in _PARAM_KEYS},
         "physical_units": {k: _get_state_field(state, k) for k in _PHYSICAL_KEYS},
         "view_state": _build_view_state(state),
@@ -387,11 +401,16 @@ def _parse_config(doc: Any) -> SessionData:
             raise SessionError(f"Invalid frame index {k!r} in per_frame_rois") from e
         rois[fidx] = _decode_mask(v)
 
+    # Absent in sessions written before brush zones were persisted.
+    brush_payload = doc.get("refine_brush_mask")
+    brush = _decode_mask(brush_payload) if brush_payload else None
+
     return SessionData(
         schema_version=version,
         image_folder=doc.get("image_folder"),
         image_files=list(doc.get("image_files") or []),
         per_frame_rois=rois,
+        refine_brush_mask=brush,
         params=dict(doc.get("params") or {}),
         physical_units=dict(doc.get("physical_units") or {}),
         view_state=dict(doc.get("view_state") or {}),
@@ -489,8 +508,12 @@ def apply_session(
                 "warn",
             )
 
-    # Per-frame ROIs
+    # Per-frame ROIs, and the painted refinement zones that go with them.
     state.per_frame_rois = dict(session.per_frame_rois)
+    state.refine_brush_mask = (
+        session.refine_brush_mask.copy()
+        if session.refine_brush_mask is not None else None
+    )
 
     # Params — whitelist-driven assignment so unknown keys are dropped
     for k in _PARAM_KEYS:
