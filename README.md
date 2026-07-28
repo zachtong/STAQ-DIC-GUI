@@ -139,7 +139,7 @@ Save a whole project to a single `.aldic` file — the image list, ROIs, paramet
 | **Grid** | <mark>**Adaptive refined grid**</mark> | Uniform grid | Uniform grid | Uniform grid | Uniform grid |
 | **GUI** | <mark>**Built-in desktop**</mark> | Built-in desktop¹ | Built-in desktop | Built-in desktop | Built-in desktop |
 | **Platform** | <mark>**Windows, macOS, Linux**</mark> | Windows, macOS, Linux¹ | Windows, macOS, Linux | Windows only | Windows only |
-| **Latest release**² | <mark>**v0.7.1 (2026)**</mark> | v1.2.2 (2017) | v3.0-beta (2023) | VIC-2D 7 (2022) | MatchID 2D (2026) |
+| **Latest release**² | <mark>**v0.7.2 (2026)**</mark> | v1.2.2 (2017) | v3.0-beta (2023) | VIC-2D 7 (2022) | MatchID 2D (2026) |
 | **Cost** | <mark>**Free**</mark> | Free¹ | Free | Commercial | Commercial |
 
 <sub>¹ Requires a MATLAB license.</sub><br/>

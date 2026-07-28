@@ -4,6 +4,43 @@ All notable user-facing changes to pyALDIC are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.7.2] — 2026-07-27
+
+Session save/load fidelity, and a crash on closing the export dialog. Both came
+from user reports. No algorithm changes — results are identical to 0.7.1.
+
+### Fixed
+
+- **Closing the export dialog while an export was running killed the whole
+  application** — every window vanished and Python exited. The export workers
+  are threads owned by the dialog and nothing stopped them on close, so a
+  running thread was torn down under Qt, which aborts the process. Close, Esc,
+  the window X and OK now stop the export and wait for it; a worker that
+  outlasts the wait is detached and left to finish on its own rather than
+  freezing the interface. Affects image *and* animation export, from both the
+  main window and the strain window.
+- **A reopened session behaved as if it had no Region of Interest.** Save
+  reported an empty mask while Run computed happily, and — worse — editing
+  silently destroyed the restored ROI: Invert replaced it with the whole image,
+  and drawing a stroke replaced it with just that stroke. The editing buffer is
+  now filled from the restored state as soon as a session is applied.
+- **The refinement brush was never saved.** A session with painted refinement
+  zones came back with the refinement settings intact but the zones gone, so a
+  re-run built a different mesh and produced different results without saying
+  so. Brush zones are now stored with the session; older sessions still load.
+- `show_subset_window` was written into a session but never read back — the
+  restore path kept its own copy of the key list and had drifted from the save
+  side. Both now derive from one list.
+- **A frame with no Region of Interest of its own now says so.** A session
+  restores the frame that was on screen when it was saved, and the ROI toolbar
+  acts on the current frame while the solver falls back to frame 1's ROI — so
+  on any other frame the toolbar looked broken and blamed the mask. It now
+  names the frame, says frame 1's Region of Interest is what gets computed, and
+  offers both ways forward. Invert refuses there instead of handing that frame
+  the whole image as a new per-frame Region of Interest.
+- ROI toolbar messages are translated; they previously appeared in English
+  inside an otherwise translated interface.
+
 ## [0.7.1] — 2026-07-26
 
 Scripted batch processing, without the GUI. No changes to the DIC or strain
