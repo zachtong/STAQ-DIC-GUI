@@ -1,0 +1,48 @@
+cff-version: 1.2.0
+message: "If you use pyALDIC in your research, please cite the software paper below."
+title: "pyALDIC: Augmented Lagrangian Digital Image Correlation in Python"
+abstract: >-
+  Open-source Python implementation of augmented Lagrangian digital image
+  correlation (AL-DIC) for full-field displacement and strain measurement,
+  combining a graphical interface with a scriptable API, adaptive quadtree
+  meshing, and mask-aware subset splitting near cracks and holes.
+type: software
+authors:
+  - family-names: Tong
+    given-names: Zixiang
+    email: zachtong@utexas.edu
+    affiliation: The University of Texas at Austin
+  - family-names: Yang
+    given-names: Jin
+    affiliation: The University of Texas at Austin
+repository-code: "https://github.com/zachtong/pyALDIC"
+url: "https://github.com/zachtong/pyALDIC"
+license: BSD-3-Clause
+doi: 10.5281/zenodo.19521071
+
+# Cite this instead of the software entry itself.
+preferred-citation:
+  type: article
+  title: >-
+    pyALDIC: A Python Implementation of Augmented Lagrangian Digital Image
+    Correlation with a GUI, Adaptive Meshing, and Mask-Aware Subset Splitting
+  authors:
+    - family-names: Tong
+      given-names: Zixiang
+      affiliation: The University of Texas at Austin
+    - family-names: Yang
+      given-names: Jin
+      affiliation: The University of Texas at Austin
+  year: 2026
+  journal: "arXiv preprint arXiv:2607.22755"
+  doi: 10.48550/arXiv.2607.22755
+  url: "https://arxiv.org/abs/2607.22755"
+
+keywords:
+  - digital image correlation
+  - DIC
+  - augmented Lagrangian
+  - full-field measurement
+  - strain measurement
+  - experimental mechanics
+  - adaptive mesh refinement

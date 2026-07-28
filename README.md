@@ -12,6 +12,7 @@
   <img src="https://img.shields.io/badge/Python-3.10+-3776ab?style=flat-square&logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/GUI-PySide6-41cd52?style=flat-square" alt="PySide6"/>
   <img src="https://img.shields.io/badge/License-BSD--3--Clause-22c55e?style=flat-square" alt="License"/>
+  <a href="https://arxiv.org/abs/2607.22755"><img src="https://img.shields.io/badge/arXiv-2607.22755-b31b1b?style=flat-square&logo=arxiv&logoColor=white" alt="arXiv"/></a>
   <a href="https://doi.org/10.5281/zenodo.19521061"><img src="https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19521061-blue?style=flat-square" alt="DOI"/></a>
   <a href="https://pypi.org/project/al-dic/"><img src="https://img.shields.io/pypi/v/al-dic?style=flat-square&label=PyPI" alt="PyPI"/></a>
 </p>
@@ -154,6 +155,13 @@ pyALDIC implements the Augmented Lagrangian DIC (AL-DIC) method. Quantitative ac
 - **Yang, J. & Bhattacharya, K.** *Augmented Lagrangian Digital Image Correlation.* **Experimental Mechanics** 59, 187–205 (2019). [doi:10.1007/s11340-018-00457-0](https://doi.org/10.1007/s11340-018-00457-0)  _— original AL-DIC paper, 145+ citations._
 
 - **Tong, Z. et al.** *3D Stereo Adaptive Mesh Augmented Lagrangian Digital Image Correlation.* **Experimental Mechanics** (2025). [doi:10.1007/s11340-025-01225-7](https://doi.org/10.1007/s11340-025-01225-7)  _— 3D stereo extension of the AL-DIC framework._
+
+The software itself — its architecture, the adaptive quadtree meshing and
+mask-aware subset splitting, and verification against synthetic displacement
+fields, rigid-body motion, Mode-I cracking and experimental uniaxial tension —
+is described in the pyALDIC paper (preprint, under review):
+
+- **Tong, Z. & Yang, J.** *pyALDIC: A Python Implementation of Augmented Lagrangian Digital Image Correlation with a GUI, Adaptive Meshing, and Mask-Aware Subset Splitting.* **arXiv:2607.22755** (2026). [arxiv.org/abs/2607.22755](https://arxiv.org/abs/2607.22755)
 
 The AL-DIC method was also independently evaluated in the community benchmark **DIC Challenge 2.0** — *Reu et al., "DIC Challenge 2.0: developing images and guidelines for evaluating accuracy and resolution of 2D analyses: focus on the metrological efficiency indicator", Experimental Mechanics*. [doi:10.1007/s11340-021-00806-6](https://doi.org/10.1007/s11340-021-00806-6)
 
@@ -344,7 +352,22 @@ For research collaboration, confidential data, or one-on-one consulting: **zacht
 
 ## Citation
 
-If you use pyALDIC in your research, please cite:
+If you use pyALDIC in your research, please cite the software paper:
+
+```bibtex
+@article{tong2026pyaldic,
+  author  = {Tong, Zixiang and Yang, Jin},
+  title   = {pyALDIC: A Python Implementation of Augmented Lagrangian Digital
+             Image Correlation with a GUI, Adaptive Meshing, and Mask-Aware
+             Subset Splitting},
+  journal = {arXiv preprint arXiv:2607.22755},
+  year    = {2026},
+  doi     = {10.48550/arXiv.2607.22755},
+  url     = {https://arxiv.org/abs/2607.22755}
+}
+```
+
+To cite a specific version of the code as well:
 
 ```bibtex
 @software{tong2026pyaldic_software,
