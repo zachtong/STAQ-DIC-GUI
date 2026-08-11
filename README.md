@@ -1,3 +1,5 @@
+
+
 <p align="center">
   <img src="assets/banner.png" alt="pyALDIC Banner" width="100%"/>
 </p>
@@ -62,8 +64,8 @@ A complete desktop application built with PySide6. Three-column layout with imag
 
 <p align="center">
   <b>📘 User manual (PDF)</b> &nbsp;|&nbsp;
-  <a href="docs/pyALDIC_v0.7.0_user_guide.pdf">Full user guide</a> ·
-  <a href="docs/pyALDIC_v0.7.0_quick_guide.pdf">Quick reference</a>
+  <a href="docs/pyALDIC_v0.7.2_user_guide.pdf">Full user guide</a> ·
+  <a href="docs/pyALDIC_v0.7.2_quick_guide.pdf">Quick reference</a>
 </p>
 
 ### Adaptive Spatial Refinement
