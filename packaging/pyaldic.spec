@@ -226,7 +226,22 @@ excludes = [
 # Windows 10 1703 and later always provide System32's ICU, so dropping these
 # is safe as well as necessary.
 # Must resolve from Windows, never from the bundle.
-AMBIENT_DENY = ("icuuc", "icuin", "icudt", "icuio")
+#
+# The Universal CRT (ucrtbase.dll plus the api-ms-win-* forwarders) is an
+# operating-system component from Windows 10 onward, kept current by Windows
+# Update, and this bundle targets Windows 10 1703 and later. Shipping it is
+# only necessary for Windows 7 and 8.1.
+#
+# Leaving it collectible makes the bundle's contents depend on which unrelated
+# toolchain happens to sit on the build machine's PATH: a conda environment
+# supplies one copy, and a GitHub Windows runner supplies a different one from
+# the bundled Temurin JDK. Neither belongs to pyALDIC, and the difference is
+# invisible until it is not. Dropping them makes the build reproducible across
+# machines.
+AMBIENT_DENY = (
+    "icuuc", "icuin", "icudt", "icuio",
+    "ucrtbase", "api-ms-win",
+)
 
 # Dead weight that decides behaviour if it is allowed to load. numba ships
 # tbbpool.pyd inside its package, so PyInstaller collects it as an ordinary
