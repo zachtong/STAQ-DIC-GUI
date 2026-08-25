@@ -269,34 +269,68 @@ def _drop_ambient(binaries):
         print(f"spec: dropping {entry[0]} <- {entry[1]}")
 
     # Anything else sourced from outside the build environment is the same
-    # class of hazard, and it has already produced two distinct silent
-    # breakages here (Anaconda's ICU, Anaconda's libexpat). Fail the build
-    # rather than ship it. sys.base_prefix covers a venv, whose stdlib
-    # extension DLLs live in the base installation.
-    roots = {os.path.normcase(sys.prefix), os.path.normcase(sys.base_prefix)}
-    strays = []
-    for entry in kept:
-        src = os.path.normcase(str(entry[1] or ""))
+    # class of hazard. It has already produced three distinct instances here,
+    # each from a different unrelated toolchain that happened to be installed:
+    # Anaconda's ICU and libexpat locally, the Temurin JDK's Universal CRT on a
+    # GitHub runner, MySQL Server's OpenSSL on the same runner.
+    #
+    # Refusing outright is the wrong response when the build environment ships
+    # its own copy of the same library -- and it usually does, because that is
+    # the copy the extension module was linked against. Re-point to it. Only
+    # when there is nothing to fall back to is the build genuinely unsafe.
+    #
+    # sys.base_prefix covers a venv, whose stdlib extension DLLs and their
+    # dependencies live in the base installation.
+    roots = []
+    for base in (sys.prefix, sys.base_prefix):
+        for sub in ("", "DLLs", "Library/bin", "Library/mingw-w64/bin",
+                    "Library/usr/bin", "Scripts"):
+            path = os.path.join(base, *sub.split("/")) if sub else base
+            if os.path.isdir(path) and path not in roots:
+                roots.append(path)
+    normalised_roots = {os.path.normcase(r) for r in
+                        (sys.prefix, sys.base_prefix)}
+
+    repaired, strays = [], []
+    for index, entry in enumerate(kept):
+        src = str(entry[1] or "")
         if not src or os.path.basename(src) in AMBIENT_ALLOW:
             continue
-        if not any(src.startswith(root) for root in roots):
-            strays.append((entry[0], entry[1]))
+        if any(os.path.normcase(src).startswith(r) for r in normalised_roots):
+            continue
+        name = os.path.basename(src)
+        local = next(
+            (os.path.join(r, name) for r in roots
+             if os.path.isfile(os.path.join(r, name))),
+            None,
+        )
+        if local is None:
+            strays.append((entry[0], src))
+        else:
+            kept[index] = (entry[0], local) + tuple(entry[2:])
+            repaired.append((entry[0], src, local))
+
+    for dest, was, now in repaired:
+        print(f"spec: re-pointed {dest}\n"
+              f"        away from {was}\n"
+              f"        to        {now}")
 
     if strays and not os.environ.get("PYALDIC_ALLOW_AMBIENT"):
         listing = "\n".join(f"    {dest}  <-  {src}" for dest, src in strays)
+        searched = "\n".join(f"      {r}" for r in roots)
         raise SystemExit(
             "\nspec: refusing to build -- these binaries were resolved from "
-            "outside the build environment\n"
-            f"      ({sys.prefix}):\n{listing}\n\n"
+            "outside the build\n"
+            f"      environment ({sys.prefix}), and it has no copy of its "
+            "own:\n"
+            f"{listing}\n\n"
             "      A DLL picked up from the build machine's PATH shadows the "
             "one the\n"
             "      target machine would load, and the failure is silent: the "
             "bundle\n"
-            "      builds, starts, and loses a feature. Build in a clean venv, "
-            "or run\n"
-            "      tools/build_exe.py, which puts the environment's own DLL "
-            "directories\n"
-            "      first. Set PYALDIC_ALLOW_AMBIENT=1 to override deliberately."
+            "      builds, starts, and loses a feature.\n\n"
+            f"      Looked for a local copy in:\n{searched}\n\n"
+            "      Set PYALDIC_ALLOW_AMBIENT=1 to override deliberately."
         )
     return kept
 
