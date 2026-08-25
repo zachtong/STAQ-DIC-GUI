@@ -19,3 +19,8 @@ matplotlib==3.11.0
 imageio==2.37.3
 pillow>=10
 pyinstaller==6.19.0
+
+# The bundle is not finished until it has been driven and checked, so the test
+# runner belongs to this environment too -- `pip install -e . --no-deps` does
+# not bring the dev extras.
+pytest>=7.0
