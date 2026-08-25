@@ -202,6 +202,31 @@ excludes = [
     "matplotlib.backends.backend_webagg",
     "matplotlib.backends.backend_tkagg",
 
+    # QtNetwork: nothing links Qt6Network.dll except QtNetwork.pyd itself
+    # (verified against the PE import tables of Qt6Core/Gui/Widgets/Svg), and
+    # it arrives only because PySide6's hook offers it. Qt loads OpenSSL
+    # lazily for QSslSocket, so carrying it means carrying a TLS stack for a
+    # module the application never imports.
+    "PySide6.QtNetwork",
+
+    # TLS. Nothing under src/al_dic imports ssl, urllib, requests or http --
+    # this is a desktop application that reads images off a disk. The module
+    # graph pulls `ssl` in through the standard library, and with it an
+    # OpenSSL pair whose filenames differ between Python builds
+    # (libssl-3-x64.dll from conda, libssl-3.dll from python.org), so whether
+    # a build succeeds ends up depending on which Python built it. Shipping a
+    # TLS library that is never used and never patched is worse than not
+    # shipping one.
+    "ssl", "_ssl",
+
+    # _hashlib is OpenSSL's implementation of hashlib's algorithms. The
+    # standard library falls back to the built-in _sha1/_sha256/_md5/_blake2
+    # modules without it, and this application only ever calls
+    # hashlib.sha256 (io/session_serialize.py) and, through Numba,
+    # hashlib.sha1. Verified byte-identical digests with and without it.
+    # Excluding it removes the last reason to carry libcrypto.
+    "_hashlib",
+
     # Never imported by the application.
     "tkinter", "IPython", "jupyter", "notebook", "pytest", "hypothesis",
     "sphinx", "pandas", "setuptools", "pip",
@@ -254,8 +279,55 @@ AMBIENT_DENY = (
 # 'workqueue' behind it, which is what the source install uses.
 DEAD_EXTENSIONS = ("tbbpool", "tbb12")
 
+# Qt libraries that no reachable code loads. Excluding the Python modules is
+# not enough: PyInstaller's Qt hook collects the shared libraries anyway, and
+# these five drag in Qt6Network, which in turn wants an OpenSSL pair whose
+# filenames differ between Python distributions -- libssl-3-x64.dll from
+# conda, libssl-3.dll from python.org -- so leaving them in makes a successful
+# build depend on which machine ran it.
+#
+# Verified against the PE import tables of the bundle: Qt6Core imports no other
+# Qt library, Qt6Gui imports only Qt6Core, and Qt6Widgets and Qt6Svg import
+# only Qt6Gui and Qt6Core. Qt6Network was reached solely from Qt6Pdf, Qt6Qml,
+# Qt6Quick and the TUIO touch plugin, none of which this application uses.
+#
+# Qt6OpenGL and opengl32sw are deliberately kept: opengl32sw is Qt's software
+# rasteriser fallback, and lab machines running over remote desktop or in a VM
+# are exactly where it earns its 20 MB.
+DEAD_QT_LIBS = (
+    "qt6network", "qt6pdf", "qt6qml", "qt6quick", "qt6virtualkeyboard",
+    "qtuiotouchplugin",
+)
+
 # Sourced from outside the environment on purpose: see the vcomp140 note above.
 AMBIENT_ALLOW = {"vcomp140.dll"}
+
+
+def _find_requesters(names, binaries):
+    """Map each lowercase DLL name to the collected binaries that import it."""
+    try:
+        import pefile
+    except ImportError:  # pragma: no cover - pefile ships with PyInstaller
+        return {}
+    found = {}
+    for entry in binaries:
+        path = str(entry[1] or "")
+        if not path.lower().endswith((".dll", ".pyd")):
+            continue
+        try:
+            pe = pefile.PE(path, fast_load=True)
+            pe.parse_data_directories(
+                directories=[pefile.DIRECTORY_ENTRY[
+                    "IMAGE_DIRECTORY_ENTRY_IMPORT"]]
+            )
+            imports = {e.dll.decode("ascii", "replace").lower()
+                       for e in getattr(pe, "DIRECTORY_ENTRY_IMPORT", [])}
+            pe.close()
+        except Exception:
+            continue
+        for name in names & imports:
+            found.setdefault(name, []).append(os.path.basename(entry[0]))
+    return found
 
 
 def _drop_ambient(binaries):
@@ -263,7 +335,11 @@ def _drop_ambient(binaries):
     kept, dropped = [], []
     for entry in binaries:
         name = os.path.basename(entry[0]).lower()
-        unwanted = name.startswith(AMBIENT_DENY) or name.startswith(DEAD_EXTENSIONS)
+        unwanted = (
+            name.startswith(AMBIENT_DENY)
+            or name.startswith(DEAD_EXTENSIONS)
+            or name.startswith(DEAD_QT_LIBS)
+        )
         (dropped if unwanted else kept).append(entry)
     for entry in dropped:
         print(f"spec: dropping {entry[0]} <- {entry[1]}")
@@ -316,7 +392,18 @@ def _drop_ambient(binaries):
               f"        to        {now}")
 
     if strays and not os.environ.get("PYALDIC_ALLOW_AMBIENT"):
-        listing = "\n".join(f"    {dest}  <-  {src}" for dest, src in strays)
+        # Name whatever asked for each stray. Without this the message says a
+        # DLL is unaccounted for but not which of six hundred files wanted it,
+        # which is the difference between a fix and another build.
+        requesters = _find_requesters({os.path.basename(src).lower()
+                                       for _, src in strays}, kept)
+        listing = "\n".join(
+            f"    {dest}  <-  {src}"
+            + (f"\n        requested by: "
+               + ", ".join(requesters.get(os.path.basename(src).lower(), []))
+               if requesters.get(os.path.basename(src).lower()) else "")
+            for dest, src in strays
+        )
         searched = "\n".join(f"      {r}" for r in roots)
         raise SystemExit(
             "\nspec: refusing to build -- these binaries were resolved from "

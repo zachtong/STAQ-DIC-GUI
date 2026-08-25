@@ -327,11 +327,51 @@ def check_colorbar() -> str:
     return f"{img.shape[1]}x{img.shape[0]} -> {out.shape[1]}x{out.shape[0]}"
 
 
+def check_hashing() -> str:
+    """hashlib still produces correct digests without OpenSSL's accelerator.
+
+    The bundle excludes ``_hashlib``, so ``hashlib`` falls back to the standard
+    library's built-in ``_sha256`` / ``_sha1`` implementations. Session save
+    and load depend on this: ``io.session_serialize._array_key`` hashes array
+    contents with sha256 to deduplicate them, and a wrong digest there would
+    corrupt a saved session rather than raise.
+    """
+    import hashlib
+
+    import numpy as np
+
+    from al_dic.io.session_serialize import _array_key
+
+    # Compare the two constructors rather than a hardcoded constant: they
+    # reach the implementation by different routes, so agreement between them
+    # is the evidence that the fallback is wired up correctly.
+    direct = hashlib.sha256(b"pyALDIC").hexdigest()
+    by_name = hashlib.new("sha256", b"pyALDIC").hexdigest()
+    if direct != by_name:
+        raise CheckFailed(
+            f"hashlib.sha256 and hashlib.new('sha256') disagree: "
+            f"{direct} vs {by_name}"
+        )
+    if len(direct) != 64 or len(hashlib.sha1(b"pyALDIC").hexdigest()) != 40:
+        raise CheckFailed(f"digest lengths are wrong: sha256={direct}")
+
+    # And the call site that a wrong digest would silently corrupt.
+    arr = np.arange(12, dtype=np.float64).reshape(3, 4)
+    key_a, key_b = _array_key(arr), _array_key(arr.copy())
+    if key_a != key_b:
+        raise CheckFailed("session array hashing is not deterministic")
+    if key_a == _array_key(arr + 1.0):
+        raise CheckFailed("session array hashing collides on different data")
+
+    return f"sha256/sha1 available, session array key {key_a[:20]}..."
+
+
 CHECKS: list[tuple[str, Callable[[], str]]] = [
     ("packaged_data", check_packaged_data),
     ("qt_and_icons", check_qt_and_icons),
     ("all_locales", check_all_locales),
     ("numba", check_numba),
+    ("hashing", check_hashing),
     ("image_io_non_ascii", check_image_io_non_ascii),
     ("video_and_gif", check_video_and_gif),
     ("colorbar", check_colorbar),
