@@ -184,8 +184,12 @@ The AL-DIC method was also independently evaluated in the community benchmark **
 
 ### Installation
 
-**No Python? Download the Windows bundle.** Unzip it and double-click
-`pyALDIC.exe` — nothing to install, no administrator rights, no interpreter.
+**On Windows, with no Python?** Download the bundle — unzip and double-click.
+**On macOS or Linux,** or anywhere you want the Python API, install from PyPI.
+
+#### Windows: the standalone bundle
+
+Nothing to install, no administrator rights, no interpreter.
 
 1. Download `pyALDIC-<version>-win64.zip` from the
    [releases page](https://github.com/zachtong/pyALDIC/releases/latest).
@@ -204,13 +208,30 @@ something goes wrong there is a log at
 `%LOCALAPPDATA%\pyALDIC\logs\pyALDIC.log`, and `pyALDIC-console.exe` in the
 same folder runs the identical application with a console window attached.
 
-**Everything else needs Python >= 3.10.**
+#### macOS, Linux, and anyone who has Python
 
-**From PyPI** (recommended if you have Python, and required for the API):
+There is no macOS or Linux bundle yet — packaging one for macOS means working
+through Apple's notarization, which is a separate piece of work. Installing
+from PyPI takes one command and gets you the identical application:
 
 ```bash
 pip install al-dic
+al-dic
 ```
+
+If you do not maintain Python environments, `pipx` is the friendlier route: it
+creates an isolated environment for pyALDIC so its dependencies cannot collide
+with anything else you have installed.
+
+```bash
+pipx install al-dic     # brew install pipx, if you do not have it
+al-dic
+```
+
+Requires Python >= 3.10. Both are also how you get the programmatic API
+documented further down.
+
+#### Other install paths
 
 **From a GitHub Release wheel** (useful behind firewalls, or for
 installing a specific past version):
