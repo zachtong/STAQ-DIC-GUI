@@ -1661,7 +1661,7 @@ class ExportDialog(QDialog):
                 tr_args(self.tr("Error: %1"), str(exc))
             )
             self._data_status_lbl.setStyleSheet(
-                f"color: {COLORS.ERROR}; font-size: 11px;"
+                f"color: {COLORS.DANGER}; font-size: 11px;"
             )
 
     # ------------------------------------------------------------------
@@ -1790,7 +1790,7 @@ class ExportDialog(QDialog):
         self._img_status_lbl.setText(
             tr_args(self.tr("Error: %1"), msg)
         )
-        self._img_status_lbl.setStyleSheet(f"color: {COLORS.ERROR}; font-size: 11px;")
+        self._img_status_lbl.setStyleSheet(f"color: {COLORS.DANGER}; font-size: 11px;")
 
     def _reset_img_controls(self) -> None:
         self._export_img_btn.setEnabled(bool(self._folder_edit.text().strip()))
@@ -1851,6 +1851,16 @@ class ExportDialog(QDialog):
     def _on_anim_finished(self, paths: list) -> None:
         self._reset_anim_controls()
         self._anim_progress.setValue(100)
+        if not paths:
+            # Finishing with nothing written is a failure, not a success with
+            # a count of zero.
+            self._anim_status_lbl.setText(
+                self.tr("No animation was written. See the log for details.")
+            )
+            self._anim_status_lbl.setStyleSheet(
+                f"color: {COLORS.DANGER}; font-size: 11px;"
+            )
+            return
         folder = self._folder_edit.text().strip()
         self._anim_status_lbl.setText(
             QCoreApplication.translate(
@@ -1869,7 +1879,7 @@ class ExportDialog(QDialog):
         self._anim_status_lbl.setText(
             tr_args(self.tr("Error: %1"), msg)
         )
-        self._anim_status_lbl.setStyleSheet(f"color: {COLORS.ERROR}; font-size: 11px;")
+        self._anim_status_lbl.setStyleSheet(f"color: {COLORS.DANGER}; font-size: 11px;")
 
     def _reset_anim_controls(self) -> None:
         self._export_anim_btn.setEnabled(bool(self._folder_edit.text().strip()))
@@ -1912,7 +1922,7 @@ class ExportDialog(QDialog):
                 tr_args(self.tr("Error: %1"), str(exc))
             )
             self._report_status_lbl.setStyleSheet(
-                f"color: {COLORS.ERROR}; font-size: 11px;"
+                f"color: {COLORS.DANGER}; font-size: 11px;"
             )
 
     # ------------------------------------------------------------------

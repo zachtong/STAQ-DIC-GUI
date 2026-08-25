@@ -26,6 +26,7 @@ Directory structure:
 from __future__ import annotations
 
 import functools
+import logging
 import threading
 from dataclasses import replace
 from pathlib import Path
@@ -70,6 +71,8 @@ _COLORBAR_FIELD_LABELS: dict[str, str] = {
 
 _DISPLACEMENT_FIELDS = {"disp_u", "disp_v", "disp_magnitude"}
 
+
+logger = logging.getLogger(__name__)
 
 def colorbar_label(
     field_name: str,
@@ -174,11 +177,21 @@ def _load_frame_image(
     if not image_files:
         return None
     idx = 0 if bg_mode == "ref_frame" else min(frame, len(image_files) - 1)
+    # cv2.imread cannot open a non-ASCII path on Windows -- it returns None,
+    # which here silently produced a blank background for every export made
+    # from a folder named in Chinese, Japanese or Korean. Decode from bytes we
+    # read ourselves, the idiom used everywhere else in this codebase.
     try:
-        img = cv2.imread(image_files[idx], cv2.IMREAD_GRAYSCALE)
-        return img  # (H, W) uint8, or None if imread fails
-    except Exception:
+        buf = np.fromfile(image_files[idx], dtype=np.uint8)
+        img = cv2.imdecode(buf, cv2.IMREAD_GRAYSCALE)
+    except OSError as exc:
+        logger.warning("Background image %s could not be read: %s",
+                       image_files[idx], exc)
         return None
+    if img is None:
+        logger.warning("Background image %s could not be decoded",
+                       image_files[idx])
+    return img  # (H, W) uint8, or None
 
 
 @functools.lru_cache(maxsize=32)
@@ -684,7 +697,12 @@ def export_png(
             field_dir = images_dir / cfg.field_name
             ensure_dir(field_dir)
             out = field_dir / f"{tag}{ext}"
-            cv2.imwrite(str(out), img, enc_params)
+            # Not cv2.imwrite: it fails on non-ASCII paths and returns False
+            # rather than raising, so the caller counted images it never wrote.
+            ok, buf = cv2.imencode(ext, img, enc_params)
+            if not ok:
+                raise IOError(f"Failed to encode image {out}")
+            buf.tofile(str(out))
             paths.append(out)
 
         frames_done += 1

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "al-dic"
-version = "0.7.2"
+version = "0.8.0"
 description = "AL-DIC: Augmented Lagrangian Digital Image Correlation with adaptive quadtree mesh"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -99,6 +99,7 @@ markers = [
     "perf: performance/throughput tests -- excluded from CI (runner CPU varies)",
     "fuzz: hypothesis-based fuzz tests -- run pre-release locally only",
     "large: large-data perf tests -- maintainer machine only (>1 GB RAM)",
+    "frozen: drives a built PyInstaller bundle -- needs PYALDIC_FROZEN_EXE",
 ]
 
 [tool.coverage.run]

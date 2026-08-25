@@ -40,14 +40,42 @@ Only relevant for the FFT init-guess mode.</source>
 <context>
     <name>App</name>
     <message>
-        <location filename="../../gui/app.py" line="975"/>
+        <location filename="../../gui/app.py" line="983"/>
         <source>Imported Region of Interest for %n frame(s)</source>
         <translation>为 %n 帧导入了感兴趣区域</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="989"/>
+        <location filename="../../gui/app.py" line="997"/>
         <source>Run DIC first -- no displacement results to post-process.</source>
         <translation>请先运行 DIC —— 当前没有可后处理的位移结果。</translation>
+    </message>
+</context>
+<context>
+    <name>Application</name>
+    <message>
+        <location filename="../../gui/app.py" line="1094"/>
+        <source>pyALDIC has hit an error</source>
+        <translation>误</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="1095"/>
+        <source>An unexpected error occurred. The application may not behave correctly from here on, so saving your session and restarting is recommended.</source>
+        <translation>。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="1105"/>
+        <source>Details were written to %1</source>
+        <translation>1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="1209"/>
+        <source>Preparing compute kernels in the background. The first analysis on a new installation takes longer than the rest.</source>
+        <translation>。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="1223"/>
+        <source>Compute kernels ready (%1 s).</source>
+        <translation>。</translation>
     </message>
 </context>
 <context>
@@ -900,8 +928,8 @@ Tick labels update per frame when Auto range is enabled.</source>
     <message>
         <location filename="../../gui/dialogs/export_dialog.py" line="1661"/>
         <location filename="../../gui/dialogs/export_dialog.py" line="1791"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1870"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1912"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1880"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1922"/>
         <source>Error: %1</source>
         <translation>错误：%1</translation>
     </message>
@@ -929,7 +957,12 @@ Tick labels update per frame when Auto range is enabled.</source>
         <translation>已导出 %1 张图像 → %2</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1905"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1858"/>
+        <source>No animation was written. See the log for details.</source>
+        <translation>。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1915"/>
         <source>Report saved → %1</source>
         <translation>报告已保存 → %1</translation>
     </message>
@@ -1270,125 +1303,126 @@ Default (unchecked): lexicographic — best for zero-padded names</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../gui/app.py" line="199"/>
+        <location filename="../../gui/app.py" line="201"/>
         <source>&amp;File</source>
         <translation>文件</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="201"/>
+        <location filename="../../gui/app.py" line="203"/>
         <source>Open Session…</source>
         <translation>打开会话…</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="206"/>
+        <location filename="../../gui/app.py" line="208"/>
         <source>Save Session…</source>
         <translation>保存会话…</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="215"/>
+        <location filename="../../gui/app.py" line="217"/>
         <source>Associate .aldic files with pyALDIC…</source>
         <translation>将 .aldic 文件关联到 pyALDIC…</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="217"/>
+        <location filename="../../gui/app.py" line="219"/>
         <source>Register .aldic so double-clicking a session file opens pyALDIC (current user only, no admin rights needed).</source>
         <translation>注册 .aldic，让双击会话文件即可打开 pyALDIC（仅当前用户，无需管理员权限）。</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="223"/>
+        <location filename="../../gui/app.py" line="225"/>
         <source>Quit</source>
         <translation>退出</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="231"/>
+        <location filename="../../gui/app.py" line="233"/>
         <source>&amp;Settings</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="232"/>
+        <location filename="../../gui/app.py" line="234"/>
         <source>Language</source>
         <translation>语言</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="261"/>
+        <location filename="../../gui/app.py" line="263"/>
         <source>Language changed</source>
         <translation>语言已切换</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="264"/>
+        <location filename="../../gui/app.py" line="266"/>
         <source>Language set to %1. Please restart pyALDIC for all widgets to pick up the new language.</source>
         <translation>语言已切换至 %1。请重启 pyALDIC 以让所有界面生效。</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="278"/>
+        <location filename="../../gui/app.py" line="280"/>
         <source>Save Session</source>
         <translation>保存会话</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="280"/>
-        <location filename="../../gui/app.py" line="329"/>
+        <location filename="../../gui/app.py" line="282"/>
+        <location filename="../../gui/app.py" line="331"/>
         <source>pyALDIC Session</source>
         <translation>pyALDIC 会话</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="281"/>
-        <location filename="../../gui/app.py" line="330"/>
+        <location filename="../../gui/app.py" line="283"/>
+        <location filename="../../gui/app.py" line="332"/>
+        <location filename="../../gui/app.py" line="796"/>
         <source>All Files</source>
         <translation>全部文件</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="294"/>
+        <location filename="../../gui/app.py" line="296"/>
         <source>large</source>
         <translation>较大</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="297"/>
+        <location filename="../../gui/app.py" line="299"/>
         <source>Include Results?</source>
         <translation>包含结果？</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="299"/>
+        <location filename="../../gui/app.py" line="301"/>
         <source>Include the computed results in this session?</source>
         <translation>在此会话中包含已计算的结果吗？</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="302"/>
+        <location filename="../../gui/app.py" line="304"/>
         <source>Including results (about %1 uncompressed) lets you reopen the session without recomputing. Choose No to save a small configuration-only file for sharing.</source>
         <translation>包含结果（未压缩约 %1）可让你下次直接打开会话而无需重新计算。选择“否”则只保存一个小的仅配置文件，便于分享。</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="315"/>
+        <location filename="../../gui/app.py" line="317"/>
         <source>Saving Session</source>
         <translation>正在保存会话</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="320"/>
+        <location filename="../../gui/app.py" line="322"/>
         <source>Save Session Failed</source>
         <translation>保存会话失败</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="327"/>
+        <location filename="../../gui/app.py" line="329"/>
         <source>Open Session</source>
         <translation>打开会话</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="342"/>
+        <location filename="../../gui/app.py" line="344"/>
         <source>Loading Session</source>
         <translation>正在加载会话</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="345"/>
-        <location filename="../../gui/app.py" line="380"/>
+        <location filename="../../gui/app.py" line="347"/>
+        <location filename="../../gui/app.py" line="382"/>
         <source>Open Session Failed</source>
         <translation>打开会话失败</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="354"/>
+        <location filename="../../gui/app.py" line="356"/>
         <source>Locate Session Images</source>
         <translation>定位会话图片</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="357"/>
+        <location filename="../../gui/app.py" line="359"/>
         <source>The image folder saved with this session was not found:
 %1
 
@@ -1399,73 +1433,83 @@ Results were restored. To show the background images, select the folder that now
 结果已恢复。要显示背景图片,请选择现在包含这些图片的文件夹。</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="365"/>
+        <location filename="../../gui/app.py" line="367"/>
         <source>Select Image Folder</source>
         <translation>选择图像文件夹</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="441"/>
+        <location filename="../../gui/app.py" line="443"/>
         <source>File Association Failed</source>
         <translation>文件关联失败</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="442"/>
+        <location filename="../../gui/app.py" line="444"/>
         <source>Could not register .aldic files: </source>
         <translation>无法注册 .aldic 文件：</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="445"/>
+        <location filename="../../gui/app.py" line="447"/>
         <source>File Association</source>
         <translation>文件关联</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="446"/>
+        <location filename="../../gui/app.py" line="448"/>
         <source>Done. Double-clicking a .aldic file will now open pyALDIC and restore that session.</source>
         <translation>完成。现在双击 .aldic 文件即可打开 pyALDIC 并恢复该会话。</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="761"/>
+        <location filename="../../gui/app.py" line="763"/>
         <source>Frame %1 has no Region of Interest of its own — frame 1&apos;s is used for computation. Switch to frame 1 to edit it, or import a mask to give this frame its own.</source>
         <translation>帧 %1 没有自己的感兴趣区域 — 计算时使用帧 1 的感兴趣区域。请切换到帧 1 编辑，或导入掩码为此帧单独指定。</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="772"/>
+        <location filename="../../gui/app.py" line="774"/>
         <source>No Region of Interest to save — load images first.</source>
         <translation>没有可保存的感兴趣区域 — 请先加载图像。</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="779"/>
+        <location filename="../../gui/app.py" line="781"/>
         <source>Region of Interest mask is empty.</source>
         <translation>感兴趣区域掩码为空。</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="796"/>
+        <location filename="../../gui/app.py" line="793"/>
+        <source>Save Region of Interest Mask</source>
+        <translation>模</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="795"/>
+        <source>PNG Images</source>
+        <translation>像</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="804"/>
         <source>Mask saved to %1</source>
         <translation>掩码已保存至 %1</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="805"/>
+        <location filename="../../gui/app.py" line="813"/>
         <source>No Region of Interest to invert — load images first.</source>
         <translation>没有可反选的感兴趣区域 — 请先加载图像。</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="835"/>
-        <location filename="../../gui/app.py" line="888"/>
+        <location filename="../../gui/app.py" line="843"/>
+        <location filename="../../gui/app.py" line="896"/>
         <source>Load images first.</source>
         <translation>请先加载图像。</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="846"/>
+        <location filename="../../gui/app.py" line="854"/>
         <source>Define a Region of Interest on frame 1 first.</source>
         <translation>请先在帧 1 上定义感兴趣区域。</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="937"/>
+        <location filename="../../gui/app.py" line="945"/>
         <source>  Imported mask for frame %1</source>
         <translation>  已导入帧 %1 的掩模</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="943"/>
+        <location filename="../../gui/app.py" line="951"/>
         <source>Batch import: %n mask(s) loaded</source>
         <translation>批量导入：已加载 %n 个掩模</translation>
     </message>
@@ -1866,6 +1910,21 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <location filename="../../gui/widgets/roi_toolbar.py" line="256"/>
         <source>Circle (3-point)</source>
         <translation>圆（三点）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="350"/>
+        <source>Import Mask Image</source>
+        <translation>像</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="352"/>
+        <source>Images</source>
+        <translation>图像</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="353"/>
+        <source>All Files</source>
+        <translation>所有文件</translation>
     </message>
 </context>
 <context>

@@ -4,6 +4,61 @@ All notable user-facing changes to pyALDIC are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.8.0] — 2026-08-25
+
+pyALDIC now ships as a Windows application you unzip and double-click, and a
+round of export bugs that were losing data without saying so.
+
+### Added
+
+- **A portable Windows bundle.** Download `pyALDIC-<version>-win64.zip` from
+  the release page, unzip it, and double-click `pyALDIC.exe`. No Python, no
+  installer, no administrator rights. A `pyALDIC-console.exe` sits beside it
+  for when you need to see a traceback. The wheel and source distribution are
+  unchanged and still published to PyPI.
+- **Compute kernels now compile in the background at startup.** The solver is
+  JIT-compiled on first use and cached, so the cost is paid once per
+  installation — but it used to land on the first click of *Run DIC Analysis*,
+  freezing the interface for tens of seconds with nothing to explain it. On a
+  24-thread workstation the first correlation took 32.1 s without a warm-up and
+  0.1 s with one. Compilation now starts shortly after the window opens and
+  says so in the log; the interface is a little less responsive while it runs,
+  which is a better trade than a dead window after a button press.
+- **A log file for frozen builds**, at
+  `%LOCALAPPDATA%\pyALDIC\logs\pyALDIC.log`, and a dialog that reports an
+  unhandled error and names that file. A windowed build has no console, so
+  previously a startup failure produced no window and no message of any kind.
+
+### Fixed
+
+- **Exporting images from a folder with non-ASCII characters in its path wrote
+  nothing, and reported success.** `cv2.imwrite` cannot open such a path on
+  Windows; it returns `False` rather than raising, and the return value was
+  discarded, so the dialog counted files that were never written. The folder
+  did not have to be non-ASCII itself — the filename prefix comes from the name
+  of your image folder. Reading was affected the same way, giving every
+  exported PNG, JPEG, MP4 and GIF a blank background. Both now go through
+  `cv2.imencode`/`imdecode`, the approach used elsewhere in the codebase.
+- **Export errors were invisible.** Every handler that reports a failed image
+  or animation export referenced a palette colour that does not exist, so the
+  handler itself raised `AttributeError` before it could display anything. A
+  test now asserts that every palette token referenced anywhere is defined.
+- **A failed animation export was reported as a success**, in green, reading
+  "Exported 0 animation(s)". A video encoder that cannot open — a missing
+  FFmpeg backend, a read-only destination — now raises and is shown as an
+  error.
+- **Opening a session required write permission on the folder containing it**,
+  because the read path created its temporary file next to the input. Sessions
+  on read-only shares, mounted images and write-protected folders now open.
+- **The `.aldic` file association is registered correctly from a frozen
+  build.** It previously wrote a command containing `-m al_dic`, which only a
+  Python interpreter can honour, and reported an association as valid even when
+  it pointed at an executable that no longer exists.
+- Two file dialogs (save Region of Interest mask, import mask image) appeared
+  in English regardless of the selected language. The mask dialog also proposed
+  a bare relative filename, which resolves against the working directory —
+  which for an application launched from a shortcut is not your project folder.
+
 ## [0.7.2] — 2026-07-27
 
 Session save/load fidelity, and a crash on closing the export dialog. Both came

@@ -244,7 +244,13 @@ def export_animation(
                     fmt, anim_dir, cfg.field_name, out_fps, img.shape[:2])
                 if not w.ok:
                     w.close()
-                    break
+                    # Breaking left `paths` empty and raised nothing, which the
+                    # dialog rendered as a green "Exported 0 animation(s)".
+                    raise IOError(
+                        f"Could not open a video encoder for {anim_dir}: the "
+                        "FFmpeg backend may be missing, or the destination is "
+                        "not writable"
+                    )
                 writer = w
             writer.append(img)
 

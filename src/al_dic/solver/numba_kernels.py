@@ -10,29 +10,17 @@ from __future__ import annotations
 
 import numpy as np
 
-try:
-    from numba import njit, prange
-    HAS_NUMBA = True
-except ImportError:
-    HAS_NUMBA = False
-
-    # Stub decorators so the module can still be imported
-    def njit(*args, **kwargs):
-        def decorator(func):
-            return func
-        if args and callable(args[0]):
-            return args[0]
-        return decorator
-
-    def prange(*args):
-        return range(*args)
+# ``cache=`` is a probed value, not a literal: the JIT cache cannot always be
+# established (notably in a frozen build), and asking for it when it cannot
+# raises at decoration time.  See al_dic._numba_compat.
+from .._numba_compat import HAS_NUMBA, JIT_CACHE, njit, prange
 
 
 # ---------------------------------------------------------------------------
 # Bicubic interpolation (Catmull-Rom, a = -0.5)
 # ---------------------------------------------------------------------------
 
-@njit(cache=True)
+@njit(cache=JIT_CACHE)
 def _cubic_weight(t):
     """Catmull-Rom cubic interpolation weight."""
     at = abs(t)
@@ -43,7 +31,7 @@ def _cubic_weight(t):
     return 0.0
 
 
-@njit(cache=True)
+@njit(cache=JIT_CACHE)
 def _bicubic_interp(img, y, x, h, w):
     """Bicubic interpolation at a single point (y, x).
 
@@ -77,7 +65,7 @@ def _bicubic_interp(img, y, x, h, w):
 # Per-node IC-GN solver (6-DOF) — fully compiled
 # ---------------------------------------------------------------------------
 
-@njit(cache=True)
+@njit(cache=JIT_CACHE)
 def _icgn_6dof_single(
     x0, y0, u0, v0,
     ref_subset, gx_subset, gy_subset, bw_mask,
@@ -280,7 +268,7 @@ def _icgn_6dof_single(
 # Per-node IC-GN solver (2-DOF for ADMM subpb1) — fully compiled
 # ---------------------------------------------------------------------------
 
-@njit(cache=True)
+@njit(cache=JIT_CACHE)
 def _icgn_2dof_single(
     x0, y0, u_old0, u_old1, f0, f1, f2, f3,
     udual0, udual1,
@@ -428,7 +416,7 @@ def _icgn_2dof_single(
 # Parallel dispatch via prange
 # ---------------------------------------------------------------------------
 
-@njit(parallel=True, cache=True)
+@njit(parallel=True, cache=JIT_CACHE)
 def icgn_6dof_parallel(
     coords, u0s, v0s,
     ref_subsets, gx_subsets, gy_subsets, bw_masks,
@@ -482,7 +470,7 @@ def icgn_6dof_parallel(
     return P_out, conv_iter
 
 
-@njit(parallel=True, cache=True)
+@njit(parallel=True, cache=JIT_CACHE)
 def icgn_2dof_parallel(
     coords, U_old_2d, F_old_2d, udual_2d,
     ref_subsets, gx_subsets, gy_subsets, bw_masks,
@@ -532,7 +520,7 @@ def icgn_2dof_parallel(
 # ---------------------------------------------------------------------------
 
 
-@njit(cache=True)
+@njit(cache=JIT_CACHE)
 def _flood_fill_center(binary_mask, Sy, Sx):
     """BFS flood-fill from center pixel on binary_mask (Sy, Sx).
 
@@ -577,7 +565,7 @@ def _flood_fill_center(binary_mask, Sy, Sx):
     return result
 
 
-@njit(cache=True)
+@njit(cache=JIT_CACHE)
 def _precompute_one_6dof(
     x0, y0, half_w, Sy, Sx,
     img_ref, df_dx, df_dy, img_ref_mask,
@@ -711,7 +699,7 @@ def _precompute_one_6dof(
     return ref_sub, gx_sub, gy_sub, bw, XX, YY, H, meanf, bottomf, True, False
 
 
-@njit(parallel=True, cache=True)
+@njit(parallel=True, cache=JIT_CACHE)
 def precompute_subsets_6dof_numba(
     coords, img_ref, df_dx, df_dy, img_ref_mask, half_w, Sy, Sx,
 ):
@@ -769,7 +757,7 @@ def precompute_subsets_6dof_numba(
             valid, mark_hole)
 
 
-@njit(cache=True)
+@njit(cache=JIT_CACHE)
 def _precompute_one_2dof(
     x0, y0, half_wx, half_wy, sy, sx,
     Sy_max, Sx_max,
@@ -880,7 +868,7 @@ def _precompute_one_2dof(
     return ref_sub, gx_sub, gy_sub, bw, XX, YY, H2, meanf, bottomf, True
 
 
-@njit(parallel=True, cache=True)
+@njit(parallel=True, cache=JIT_CACHE)
 def precompute_subsets_2dof_numba(
     coords, img_ref, df_dx, df_dy, img_ref_mask,
     winsize_x_arr, winsize_y_arr, Sy_max, Sx_max,

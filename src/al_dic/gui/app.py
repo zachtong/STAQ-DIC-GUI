@@ -1,5 +1,7 @@
 """AL-DIC GUI application entry point."""
 
+import logging
+import os
 import sys
 import traceback
 from pathlib import Path
@@ -781,11 +783,17 @@ class MainWindow(QMainWindow):
             )
             return
         self._enter_roi_editing()
+        # An anchored suggestion, not a bare name: a relative path is resolved
+        # against the working directory, which for a frozen app launched from a
+        # shortcut or a file association is not the user's project folder.
+        folder = self._state.image_folder
+        suggested = str(Path(folder) / "roi_mask.png") if folder else "roi_mask.png"
         path, _ = QFileDialog.getSaveFileName(
             self,
-            "Save Region of Interest Mask",
-            "roi_mask.png",
-            "PNG Images (*.png);;All Files (*)",
+            self.tr("Save Region of Interest Mask"),
+            suggested,
+            self.tr("PNG Images") + " (*.png);;"
+            + self.tr("All Files") + " (*)",
         )
         if not path:
             return
@@ -1035,6 +1043,75 @@ class MainWindow(QMainWindow):
         super().closeEvent(event)
 
 
+def user_data_dir() -> Path:
+    """Per-user writable directory for logs and other app-owned state.
+
+    Deliberately not next to the executable: a onedir bundle is routinely
+    unzipped into Program Files, onto a network share, or anywhere else the
+    user has no write permission.
+    """
+    base = os.environ.get("LOCALAPPDATA") or os.path.expanduser("~")
+    return Path(base) / "pyALDIC"
+
+
+# Path of the log file, once one has been opened. None when not frozen.
+_LOG_FILE: Path | None = None
+
+
+def _configure_logging() -> None:
+    """Send the logging stream to a file when there is no console.
+
+    A windowed PyInstaller build has ``sys.stdout is None``, which makes every
+    ``print`` a silent no-op and leaves ``logging``'s last-resort handler with
+    nowhere to write. Without a file the application has no way at all to
+    report a startup failure -- which is precisely when it fails.
+    """
+    global _LOG_FILE
+    if not getattr(sys, "frozen", False):
+        return
+    try:
+        log_dir = user_data_dir() / "logs"
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_file = log_dir / "pyALDIC.log"
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+            handlers=[logging.FileHandler(log_file, encoding="utf-8")],
+        )
+    except OSError:
+        return  # a read-only profile is not a reason to refuse to start
+    _LOG_FILE = log_file
+
+
+def _report_crash_dialog(exc_type, exc_value, tb_str: str) -> None:
+    """Show the traceback in a dialog -- a windowed build has no other channel."""
+    if QApplication.instance() is None:
+        return
+    from al_dic.i18n import tr_args
+
+    box = QMessageBox(
+        QMessageBox.Icon.Critical,
+        QCoreApplication.translate("Application", "pyALDIC has hit an error"),
+        QCoreApplication.translate(
+            "Application",
+            "An unexpected error occurred. The application may not behave "
+            "correctly from here on, so saving your session and restarting "
+            "is recommended.",
+        ),
+    )
+    if _LOG_FILE is not None:
+        box.setInformativeText(
+            tr_args(
+                QCoreApplication.translate(
+                    "Application", "Details were written to %1"
+                ),
+                str(_LOG_FILE),
+            )
+        )
+    box.setDetailedText(f"{exc_type.__name__}: {exc_value}" + chr(10) * 2 + tb_str)
+    box.exec()
+
+
 def _global_exception_hook(exc_type, exc_value, exc_tb):
     """Catch unhandled exceptions so the GUI doesn't silently crash."""
     tb_str = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
@@ -1042,6 +1119,9 @@ def _global_exception_hook(exc_type, exc_value, exc_tb):
     print("UNHANDLED EXCEPTION — this would normally crash the GUI:", flush=True)
     print(tb_str, flush=True)
     print(f"{'='*60}\n", flush=True)
+
+    # The log file is the only channel that survives a windowed build.
+    logging.getLogger("al_dic").critical("Unhandled exception: %s", tb_str)
 
     # Also try to log to GUI console if available
     try:
@@ -1051,9 +1131,24 @@ def _global_exception_hook(exc_type, exc_value, exc_tb):
     except Exception:
         pass
 
+    # ...and a dialog, for failures that happen before the console widget
+    # exists, or that leave it unreachable.
+    try:
+        _report_crash_dialog(exc_type, exc_value, tb_str)
+    except Exception:
+        pass
+
 
 def main() -> None:
     """Launch the GUI application."""
+    # A frozen Windows build re-executes this entry point in every child
+    # process, so any future ProcessPool would fork-bomb without this. It is a
+    # no-op everywhere else.
+    import multiprocessing
+
+    multiprocessing.freeze_support()
+
+    _configure_logging()
     # Install global exception hook to prevent silent crashes
     sys.excepthook = _global_exception_hook
 
@@ -1078,6 +1173,8 @@ def main() -> None:
     window = MainWindow()
     window.show()
 
+    _start_kernel_warmup(window)
+
     # File association / command line: ``al-dic path/to/foo.aldic`` (or a
     # double-click once .aldic is registered) opens straight into that session.
     session_arg = _session_path_from_argv(sys.argv)
@@ -1088,6 +1185,51 @@ def main() -> None:
         QTimer.singleShot(0, lambda: window.open_session_path(session_arg))
 
     sys.exit(app.exec())
+
+
+def _start_kernel_warmup(window: "MainWindow") -> None:
+    """Compile the solver kernels in the background, shortly after first paint.
+
+    See al_dic.gui.kernel_warmup for why: without it, the first *Run DIC
+    Analysis* of an installation freezes the interface for tens of seconds with
+    nothing to explain it.
+    """
+    from PySide6.QtCore import QTimer
+
+    from al_dic.gui.kernel_warmup import START_DELAY_MS, KernelWarmup
+
+    state = AppState.instance()
+    warmup = KernelWarmup(window)
+    # Parented to the window so the signal carrier lives as long as the
+    # receiver. The worker itself is a daemon thread and outlives neither.
+    window._kernel_warmup = warmup  # type: ignore[attr-defined]
+
+    def _announce() -> None:
+        state.log_message.emit(
+            QCoreApplication.translate(
+                "Application",
+                "Preparing compute kernels in the background. The first "
+                "analysis on a new installation takes longer than the rest.",
+            ),
+            "info",
+        )
+        warmup.start()
+
+    def _report(seconds: float) -> None:
+        from al_dic.i18n import tr_args
+
+        state.log_message.emit(
+            tr_args(
+                QCoreApplication.translate(
+                    "Application", "Compute kernels ready (%1 s)."
+                ),
+                f"{seconds:.0f}",
+            ),
+            "info",
+        )
+
+    warmup.compiled.connect(_report)
+    QTimer.singleShot(START_DELAY_MS, _announce)
 
 
 def _session_path_from_argv(argv: list[str]) -> str | None:

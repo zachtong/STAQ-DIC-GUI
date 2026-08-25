@@ -40,14 +40,42 @@ FFT 초기 추정 모드에만 관련됩니다.</translation>
 <context>
     <name>App</name>
     <message>
-        <location filename="../../gui/app.py" line="975"/>
+        <location filename="../../gui/app.py" line="983"/>
         <source>Imported Region of Interest for %n frame(s)</source>
         <translation>%n 프레임에 관심 영역 가져옴</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="989"/>
+        <location filename="../../gui/app.py" line="997"/>
         <source>Run DIC first -- no displacement results to post-process.</source>
         <translation>DIC를 먼저 실행하세요 —— 후처리할 변위 결과가 없습니다.</translation>
+    </message>
+</context>
+<context>
+    <name>Application</name>
+    <message>
+        <location filename="../../gui/app.py" line="1094"/>
+        <source>pyALDIC has hit an error</source>
+        <translation>다</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="1095"/>
+        <source>An unexpected error occurred. The application may not behave correctly from here on, so saving your session and restarting is recommended.</source>
+        <translation>.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="1105"/>
+        <source>Details were written to %1</source>
+        <translation>다</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="1209"/>
+        <source>Preparing compute kernels in the background. The first analysis on a new installation takes longer than the rest.</source>
+        <translation>.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="1223"/>
+        <source>Compute kernels ready (%1 s).</source>
+        <translation>.</translation>
     </message>
 </context>
 <context>
@@ -900,8 +928,8 @@ Tick labels update per frame when Auto range is enabled.</source>
     <message>
         <location filename="../../gui/dialogs/export_dialog.py" line="1661"/>
         <location filename="../../gui/dialogs/export_dialog.py" line="1791"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1870"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1912"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1880"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1922"/>
         <source>Error: %1</source>
         <translation>오류: %1</translation>
     </message>
@@ -929,7 +957,12 @@ Tick labels update per frame when Auto range is enabled.</source>
         <translation>%1 개 이미지 내보냄 → %2</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1905"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1858"/>
+        <source>No animation was written. See the log for details.</source>
+        <translation>.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1915"/>
         <source>Report saved → %1</source>
         <translation>보고서 저장됨 → %1</translation>
     </message>
@@ -1270,125 +1303,126 @@ Default (unchecked): lexicographic — best for zero-padded names</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../gui/app.py" line="199"/>
+        <location filename="../../gui/app.py" line="201"/>
         <source>&amp;File</source>
         <translation>파일</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="201"/>
+        <location filename="../../gui/app.py" line="203"/>
         <source>Open Session…</source>
         <translation>세션 열기…</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="206"/>
+        <location filename="../../gui/app.py" line="208"/>
         <source>Save Session…</source>
         <translation>세션 저장…</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="215"/>
+        <location filename="../../gui/app.py" line="217"/>
         <source>Associate .aldic files with pyALDIC…</source>
         <translation>.aldic 파일을 pyALDIC에 연결…</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="217"/>
+        <location filename="../../gui/app.py" line="219"/>
         <source>Register .aldic so double-clicking a session file opens pyALDIC (current user only, no admin rights needed).</source>
         <translation>.aldic를 등록하여 세션 파일을 두 번 클릭하면 pyALDIC가 열리도록 합니다(현재 사용자만, 관리자 권한 불필요).</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="223"/>
+        <location filename="../../gui/app.py" line="225"/>
         <source>Quit</source>
         <translation>종료</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="231"/>
+        <location filename="../../gui/app.py" line="233"/>
         <source>&amp;Settings</source>
         <translation>설정</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="232"/>
+        <location filename="../../gui/app.py" line="234"/>
         <source>Language</source>
         <translation>언어</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="261"/>
+        <location filename="../../gui/app.py" line="263"/>
         <source>Language changed</source>
         <translation>언어가 변경되었습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="264"/>
+        <location filename="../../gui/app.py" line="266"/>
         <source>Language set to %1. Please restart pyALDIC for all widgets to pick up the new language.</source>
         <translation>언어가 %1(으)로 설정되었습니다. 모든 화면에 반영하려면 pyALDIC을 재시작하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="278"/>
+        <location filename="../../gui/app.py" line="280"/>
         <source>Save Session</source>
         <translation>세션 저장</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="280"/>
-        <location filename="../../gui/app.py" line="329"/>
+        <location filename="../../gui/app.py" line="282"/>
+        <location filename="../../gui/app.py" line="331"/>
         <source>pyALDIC Session</source>
         <translation>pyALDIC 세션</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="281"/>
-        <location filename="../../gui/app.py" line="330"/>
+        <location filename="../../gui/app.py" line="283"/>
+        <location filename="../../gui/app.py" line="332"/>
+        <location filename="../../gui/app.py" line="796"/>
         <source>All Files</source>
         <translation>모든 파일</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="294"/>
+        <location filename="../../gui/app.py" line="296"/>
         <source>large</source>
         <translation>큼</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="297"/>
+        <location filename="../../gui/app.py" line="299"/>
         <source>Include Results?</source>
         <translation>결과를 포함할까요?</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="299"/>
+        <location filename="../../gui/app.py" line="301"/>
         <source>Include the computed results in this session?</source>
         <translation>이 세션에 계산된 결과를 포함하시겠습니까?</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="302"/>
+        <location filename="../../gui/app.py" line="304"/>
         <source>Including results (about %1 uncompressed) lets you reopen the session without recomputing. Choose No to save a small configuration-only file for sharing.</source>
         <translation>결과를 포함하면(압축 전 약 %1) 다시 계산하지 않고 세션을 다시 열 수 있습니다. &apos;아니요&apos;를 선택하면 공유용으로 구성만 담긴 작은 파일을 저장합니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="315"/>
+        <location filename="../../gui/app.py" line="317"/>
         <source>Saving Session</source>
         <translation>세션 저장 중</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="320"/>
+        <location filename="../../gui/app.py" line="322"/>
         <source>Save Session Failed</source>
         <translation>세션 저장 실패</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="327"/>
+        <location filename="../../gui/app.py" line="329"/>
         <source>Open Session</source>
         <translation>세션 열기</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="342"/>
+        <location filename="../../gui/app.py" line="344"/>
         <source>Loading Session</source>
         <translation>세션 불러오는 중</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="345"/>
-        <location filename="../../gui/app.py" line="380"/>
+        <location filename="../../gui/app.py" line="347"/>
+        <location filename="../../gui/app.py" line="382"/>
         <source>Open Session Failed</source>
         <translation>세션 열기 실패</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="354"/>
+        <location filename="../../gui/app.py" line="356"/>
         <source>Locate Session Images</source>
         <translation>세션 이미지 위치 지정</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="357"/>
+        <location filename="../../gui/app.py" line="359"/>
         <source>The image folder saved with this session was not found:
 %1
 
@@ -1399,73 +1433,83 @@ Results were restored. To show the background images, select the folder that now
 결과는 복원되었습니다. 배경 이미지를 표시하려면 현재 이미지가 들어 있는 폴더를 선택하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="365"/>
+        <location filename="../../gui/app.py" line="367"/>
         <source>Select Image Folder</source>
         <translation>이미지 폴더 선택</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="441"/>
+        <location filename="../../gui/app.py" line="443"/>
         <source>File Association Failed</source>
         <translation>파일 연결 실패</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="442"/>
+        <location filename="../../gui/app.py" line="444"/>
         <source>Could not register .aldic files: </source>
         <translation>.aldic 파일을 등록할 수 없습니다: </translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="445"/>
+        <location filename="../../gui/app.py" line="447"/>
         <source>File Association</source>
         <translation>파일 연결</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="446"/>
+        <location filename="../../gui/app.py" line="448"/>
         <source>Done. Double-clicking a .aldic file will now open pyALDIC and restore that session.</source>
         <translation>완료되었습니다. 이제 .aldic 파일을 두 번 클릭하면 pyALDIC가 열리고 해당 세션이 복원됩니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="761"/>
+        <location filename="../../gui/app.py" line="763"/>
         <source>Frame %1 has no Region of Interest of its own — frame 1&apos;s is used for computation. Switch to frame 1 to edit it, or import a mask to give this frame its own.</source>
         <translation>프레임 %1에는 자체 관심 영역이 없습니다 — 계산에는 프레임 1의 관심 영역을 사용합니다. 프레임 1로 전환하여 편집하거나 마스크를 가져와 이 프레임 전용으로 지정하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="772"/>
+        <location filename="../../gui/app.py" line="774"/>
         <source>No Region of Interest to save — load images first.</source>
         <translation>저장할 관심 영역이 없습니다 — 먼저 이미지를 불러오세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="779"/>
+        <location filename="../../gui/app.py" line="781"/>
         <source>Region of Interest mask is empty.</source>
         <translation>관심 영역 마스크가 비어 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="796"/>
+        <location filename="../../gui/app.py" line="793"/>
+        <source>Save Region of Interest Mask</source>
+        <translation>장</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="795"/>
+        <source>PNG Images</source>
+        <translation>지</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="804"/>
         <source>Mask saved to %1</source>
         <translation>마스크를 %1에 저장했습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="805"/>
+        <location filename="../../gui/app.py" line="813"/>
         <source>No Region of Interest to invert — load images first.</source>
         <translation>반전할 관심 영역이 없습니다 — 먼저 이미지를 불러오세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="835"/>
-        <location filename="../../gui/app.py" line="888"/>
+        <location filename="../../gui/app.py" line="843"/>
+        <location filename="../../gui/app.py" line="896"/>
         <source>Load images first.</source>
         <translation>먼저 이미지를 불러오세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="846"/>
+        <location filename="../../gui/app.py" line="854"/>
         <source>Define a Region of Interest on frame 1 first.</source>
         <translation>먼저 프레임 1에서 관심 영역을 정의하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="937"/>
+        <location filename="../../gui/app.py" line="945"/>
         <source>  Imported mask for frame %1</source>
         <translation>  프레임 %1의 마스크를 가져왔습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="943"/>
+        <location filename="../../gui/app.py" line="951"/>
         <source>Batch import: %n mask(s) loaded</source>
         <translation>일괄 가져오기: 마스크 %n개를 불러왔습니다</translation>
     </message>
@@ -1866,6 +1910,21 @@ Only affects Starting Point bootstrap; other nodes use F-aware propagation (no p
         <location filename="../../gui/widgets/roi_toolbar.py" line="256"/>
         <source>Circle (3-point)</source>
         <translation>원(3점)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="350"/>
+        <source>Import Mask Image</source>
+        <translation>기</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="352"/>
+        <source>Images</source>
+        <translation>이미지</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="353"/>
+        <source>All Files</source>
+        <translation>모든 파일</translation>
     </message>
 </context>
 <context>

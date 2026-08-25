@@ -25,6 +25,8 @@ from __future__ import annotations
 
 import base64
 import json
+import os
+import tempfile
 import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -356,7 +358,12 @@ def _load_bundle(path: Path, report: ProgressFn) -> SessionData:
                 report(0.30, "Restoring results…")
                 # Extract to a temp file so np.load can read arrays lazily
                 # instead of holding the whole archive in RAM.
-                tmp = path.with_name(path.name + ".read.tmp.npz")
+                # A temp file in the system temp dir, not beside the input:
+                # reading a session must not require write permission on the
+                # folder holding it (read-only share, mounted image, USB stick).
+                _fd, _name = tempfile.mkstemp(suffix=".npz")
+                os.close(_fd)
+                tmp = Path(_name)
                 try:
                     with zf.open(_RESULTS_NAME) as src, open(tmp, "wb") as dst:
                         _copy_stream(src, dst)

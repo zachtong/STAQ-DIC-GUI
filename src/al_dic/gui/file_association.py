@@ -1,8 +1,9 @@
 """Register the ``.aldic`` file type so double-clicking opens pyALDIC.
 
 Windows-only, per-user (HKCU\\Software\\Classes) so no administrator rights are
-needed. The launch command is ``pythonw -m al_dic "%1"``; the app's ``main``
-opens any ``.aldic`` path passed on the command line.
+needed. The launch command is ``pythonw -m al_dic "%1"`` for a source install and
+simply ``pyALDIC.exe "%1"`` for a frozen build; the app's ``main`` opens
+any ``.aldic`` path passed on the command line.
 
 Only ``.aldic`` is associated -- Windows keys associations on the final
 extension, so the legacy ``.aldic.json`` would collide with plain ``.json``.
@@ -31,12 +32,43 @@ def _launcher() -> str:
 
 
 def open_command() -> str:
-    """The ``shell\\open\\command`` string used for the association."""
+    """The ``shell\\open\\command`` string used for the association.
+
+    In a frozen build ``sys.executable`` is pyALDIC.exe itself, which takes
+    the session path as a plain argument -- there is no interpreter to hand
+    ``-m al_dic`` to, and the bootloader would be within its rights to consume
+    the flag.
+    """
+    exe = Path(sys.executable)
+    if getattr(sys, "frozen", False):
+        return f'"{exe}" "%1"'
     return f'"{_launcher()}" -m al_dic "%1"'
 
 
+def _registered_command() -> str | None:
+    """The command currently stored for our ProgID, or None."""
+    import winreg
+
+    try:
+        with winreg.OpenKey(
+            winreg.HKEY_CURRENT_USER,
+            rf"Software\Classes\{PROGID}\shell\open\command",
+        ) as key:
+            value, _ = winreg.QueryValueEx(key, "")
+            return value
+    except OSError:
+        return None
+
+
 def is_associated() -> bool:
-    """True if ``.aldic`` currently points at our ProgID for this user."""
+    """True if ``.aldic`` currently opens with *this* copy of pyALDIC.
+
+    The stored command is compared too, not just the ProgID. A portable
+    onedir bundle gets unzipped, used, deleted and re-downloaded somewhere
+    else; the registry still names the old path, and reporting that as
+    "already associated" would leave the user with a dead double-click and no
+    control in the interface offering to repair it.
+    """
     if not is_supported():
         return False
     import winreg
@@ -45,9 +77,9 @@ def is_associated() -> bool:
             winreg.HKEY_CURRENT_USER, rf"Software\Classes\{EXT}"
         ) as key:
             value, _ = winreg.QueryValueEx(key, "")
-            return value == PROGID
     except OSError:
         return False
+    return value == PROGID and _registered_command() == open_command()
 
 
 def register_association() -> None:
@@ -75,6 +107,21 @@ def register_association() -> None:
     ) as key:
         winreg.SetValueEx(key, "", 0, winreg.REG_SZ, cmd)
 
+    # Explorer draws .aldic files with this icon. Best effort: a missing asset
+    # costs a generic icon, never a failed registration.
+    try:
+        from al_dic.gui.icons import app_icon_file
+
+        ico = app_icon_file("pyALDIC.ico")
+        if ico is not None:
+            with winreg.CreateKey(
+                winreg.HKEY_CURRENT_USER,
+                rf"Software\Classes\{PROGID}\DefaultIcon",
+            ) as key:
+                winreg.SetValueEx(key, "", 0, winreg.REG_SZ, f"{ico},0")
+    except Exception:
+        pass
+
     # Ask Explorer to pick up the change immediately.
     try:  # pragma: no cover - cosmetic shell refresh
         import ctypes
@@ -90,6 +137,7 @@ def unregister_association() -> None:
         return
     import winreg
     for sub in (
+        rf"Software\Classes\{PROGID}\DefaultIcon",
         rf"Software\Classes\{PROGID}\shell\open\command",
         rf"Software\Classes\{PROGID}\shell\open",
         rf"Software\Classes\{PROGID}\shell",

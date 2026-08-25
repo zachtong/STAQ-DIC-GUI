@@ -1719,6 +1719,95 @@ NUMERUS_TRANSLATIONS: dict[str, dict[str, tuple[str, ...]]] = {
     "Batch import: %n mask(s) loaded": {
         "zh_CN": ("批量导入：已加载 %n 个掩模",),
     },
+
+    # --- crash reporting (Application) -------------------------------------
+    "pyALDIC has hit an error": {
+        "zh_CN": "pyALDIC 发生错误",
+        "zh_TW": "pyALDIC 發生錯誤",
+        "ja":    "pyALDIC でエラーが発生しました",
+        "ko":    "pyALDIC에서 오류가 발생했습니다",
+        "de":    "In pyALDIC ist ein Fehler aufgetreten",
+        "fr":    "pyALDIC a rencontré une erreur",
+        "es":    "pyALDIC ha encontrado un error",
+    },
+    "An unexpected error occurred. The application may not behave correctly from here on, so saving your session and restarting is recommended.": {
+        "zh_CN": "发生了意外错误。应用程序之后的行为可能不正常，建议保存会话并重新启动。",
+        "zh_TW": "發生了非預期的錯誤。應用程式之後的行為可能不正常，建議儲存會話並重新啟動。",
+        "ja":    "予期しないエラーが発生しました。以降アプリケーションが正しく動作しない可能性があるため、セッションを保存して再起動することを推奨します。",
+        "ko":    "예기치 않은 오류가 발생했습니다. 이후 애플리케이션이 정상적으로 동작하지 않을 수 있으므로 세션을 저장하고 다시 시작하는 것을 권장합니다.",
+        "de":    "Ein unerwarteter Fehler ist aufgetreten. Die Anwendung verhält sich möglicherweise nicht mehr korrekt; es wird empfohlen, die Sitzung zu speichern und neu zu starten.",
+        "fr":    "Une erreur inattendue s'est produite. L'application risque de ne plus fonctionner correctement ; il est recommandé d'enregistrer la session et de redémarrer.",
+        "es":    "Se ha producido un error inesperado. Es posible que la aplicación no funcione correctamente a partir de ahora; se recomienda guardar la sesión y reiniciar.",
+    },
+    "Details were written to %1": {
+        "zh_CN": "详细信息已写入 %1",
+        "zh_TW": "詳細資訊已寫入 %1",
+        "ja":    "詳細を %1 に書き込みました",
+        "ko":    "자세한 내용을 %1에 기록했습니다",
+        "de":    "Details wurden nach %1 geschrieben",
+        "fr":    "Les détails ont été écrits dans %1",
+        "es":    "Los detalles se han escrito en %1",
+    },
+
+    # --- kernel warm-up (Application) --------------------------------------
+    "Preparing compute kernels in the background. The first analysis on a new installation takes longer than the rest.": {
+        "zh_CN": "正在后台准备计算内核。新安装后的首次分析会比之后的耗时更长。",
+        "zh_TW": "正在背景準備計算核心。新安裝後的首次分析會比之後的耗時更長。",
+        "ja":    "バックグラウンドで計算カーネルを準備しています。新規インストール後の最初の解析は、以降より時間がかかります。",
+        "ko":    "백그라운드에서 계산 커널을 준비하고 있습니다. 새로 설치한 후 첫 번째 분석은 이후보다 오래 걸립니다.",
+        "de":    "Rechenkernel werden im Hintergrund vorbereitet. Die erste Analyse einer neuen Installation dauert länger als die folgenden.",
+        "fr":    "Préparation des noyaux de calcul en arrière-plan. La première analyse après une nouvelle installation prend plus de temps que les suivantes.",
+        "es":    "Preparando los núcleos de cálculo en segundo plano. El primer análisis tras una instalación nueva tarda más que los siguientes.",
+    },
+    "Compute kernels ready (%1 s).": {
+        "zh_CN": "计算内核已就绪（%1 秒）。",
+        "zh_TW": "計算核心已就緒（%1 秒）。",
+        "ja":    "計算カーネルの準備が完了しました（%1 秒）。",
+        "ko":    "계산 커널 준비 완료(%1초).",
+        "de":    "Rechenkernel bereit (%1 s).",
+        "fr":    "Noyaux de calcul prêts (%1 s).",
+        "es":    "Núcleos de cálculo listos (%1 s).",
+    },
+
+    # --- export failure feedback (ExportDialog) ----------------------------
+    "No animation was written. See the log for details.": {
+        "zh_CN": "未写入任何动画。详情请查看日志。",
+        "zh_TW": "未寫入任何動畫。詳情請查看日誌。",
+        "ja":    "アニメーションは書き込まれませんでした。詳細はログを参照してください。",
+        "ko":    "애니메이션이 기록되지 않았습니다. 자세한 내용은 로그를 확인하세요.",
+        "de":    "Es wurde keine Animation geschrieben. Einzelheiten siehe Protokoll.",
+        "fr":    "Aucune animation n'a été écrite. Consultez le journal pour plus de détails.",
+        "es":    "No se ha escrito ninguna animación. Consulte el registro para más detalles.",
+    },
+
+    # --- file dialogs that were previously raw literals --------------------
+    "Save Region of Interest Mask": {
+        "zh_CN": "保存感兴趣区域掩模",
+        "zh_TW": "儲存感興趣區域遮罩",
+        "ja":    "関心領域マスクを保存",
+        "ko":    "관심 영역 마스크 저장",
+        "de":    "Region-of-Interest-Maske speichern",
+        "fr":    "Enregistrer le masque de région d'intérêt",
+        "es":    "Guardar máscara de región de interés",
+    },
+    "Import Mask Image": {
+        "zh_CN": "导入掩模图像",
+        "zh_TW": "匯入遮罩影像",
+        "ja":    "マスク画像をインポート",
+        "ko":    "마스크 이미지 가져오기",
+        "de":    "Maskenbild importieren",
+        "fr":    "Importer une image de masque",
+        "es":    "Importar imagen de máscara",
+    },
+    "PNG Images": {
+        "zh_CN": "PNG 图像",
+        "zh_TW": "PNG 影像",
+        "ja":    "PNG 画像",
+        "ko":    "PNG 이미지",
+        "de":    "PNG-Bilder",
+        "fr":    "Images PNG",
+        "es":    "Imágenes PNG",
+    },
 }
 
 

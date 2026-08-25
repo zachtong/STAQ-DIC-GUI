@@ -347,9 +347,10 @@ class ROIToolbar(QWidget):
         """Open file dialog and emit import signal with selected path."""
         path, _ = QFileDialog.getOpenFileName(
             self,
-            "Import Mask Image",
+            self.tr("Import Mask Image"),
             "",
-            "Images (*.png *.bmp *.tif *.tiff *.jpg *.jpeg);;All Files (*)",
+            self.tr("Images") + " (*.png *.bmp *.tif *.tiff *.jpg *.jpeg);;"
+            + self.tr("All Files") + " (*)",
         )
         if path:
             self.import_requested.emit(path)

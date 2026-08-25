@@ -62,8 +62,8 @@ A complete desktop application built with PySide6. Three-column layout with imag
 
 <p align="center">
   <b>📘 User manual (PDF)</b> &nbsp;|&nbsp;
-  <a href="docs/pyALDIC_v0.7.0_user_guide.pdf">Full user guide</a> ·
-  <a href="docs/pyALDIC_v0.7.0_quick_guide.pdf">Quick reference</a>
+  <a href="docs/pyALDIC_v0.8.0_user_guide.pdf">Full user guide</a> ·
+  <a href="docs/pyALDIC_v0.8.0_quick_guide.pdf">Quick reference</a>
 </p>
 
 ### Adaptive Spatial Refinement
@@ -140,7 +140,7 @@ Save a whole project to a single `.aldic` file — the image list, ROIs, paramet
 | **Grid** | <mark>**Adaptive refined grid**</mark> | Uniform grid | Uniform grid | Uniform grid | Uniform grid |
 | **GUI** | <mark>**Built-in desktop**</mark> | Built-in desktop¹ | Built-in desktop | Built-in desktop | Built-in desktop |
 | **Platform** | <mark>**Windows, macOS, Linux**</mark> | Windows, macOS, Linux¹ | Windows, macOS, Linux | Windows only | Windows only |
-| **Latest release**² | <mark>**v0.7.2 (2026)**</mark> | v1.2.2 (2017) | v3.0-beta (2023) | VIC-2D 7 (2022) | MatchID 2D (2026) |
+| **Latest release**² | <mark>**v0.8.0 (2026)**</mark> | v1.2.2 (2017) | v3.0-beta (2023) | VIC-2D 7 (2022) | MatchID 2D (2026) |
 | **Cost** | <mark>**Free**</mark> | Free¹ | Free | Commercial | Commercial |
 
 <sub>¹ Requires a MATLAB license.</sub><br/>
@@ -184,9 +184,29 @@ The AL-DIC method was also independently evaluated in the community benchmark **
 
 ### Installation
 
-Three equivalent paths; requires Python >= 3.10.
+**No Python? Download the Windows bundle.** Unzip it and double-click
+`pyALDIC.exe` — nothing to install, no administrator rights, no interpreter.
 
-**From PyPI** (recommended):
+1. Download `pyALDIC-<version>-win64.zip` from the
+   [releases page](https://github.com/zachtong/pyALDIC/releases/latest).
+2. Unzip it anywhere you can write — your Desktop or Documents folder is fine.
+3. Open the folder and run `pyALDIC.exe`.
+
+Windows 10 (1703 or later) and Windows 11, 64-bit. Roughly 500 MB unzipped.
+The bundle is not code-signed, so SmartScreen shows a "Windows protected your
+PC" notice on first launch: choose **More info → Run anyway**. Keep the folder
+together — the executable needs the files beside it.
+
+The first analysis after unzipping takes noticeably longer than the rest while
+the compute kernels compile; pyALDIC starts that in the background as soon as
+it opens, and caches the result, so it happens once per installation. If
+something goes wrong there is a log at
+`%LOCALAPPDATA%\pyALDIC\logs\pyALDIC.log`, and `pyALDIC-console.exe` in the
+same folder runs the identical application with a console window attached.
+
+**Everything else needs Python >= 3.10.**
+
+**From PyPI** (recommended if you have Python, and required for the API):
 
 ```bash
 pip install al-dic

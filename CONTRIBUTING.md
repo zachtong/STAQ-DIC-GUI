@@ -34,6 +34,48 @@ pip install -e ".[dev]"
 pytest
 ```
 
+## Building the Windows Bundle
+
+CI builds and verifies this on every tag, so you rarely need to. When you do:
+
+```bash
+# A CLEAN venv, not conda -- see the warning below
+python -m venv .venv-build
+.venv-build\Scripts\activate
+pip install -r packaging/requirements-build.txt
+pip install -e . --no-deps
+
+python tools/i18n.py compile     # the .qm catalogs are build products
+python tools/build_exe.py        # -> dist-exe/pyALDIC/ and a release zip
+```
+
+Then verify it — and do verify it, because almost everything that goes wrong
+here goes wrong quietly:
+
+```bash
+set PYALDIC_FROZEN_EXE=dist-exe\pyALDIC\pyALDIC-console.exe
+pytest tests/test_frozen_bundle.py -v
+```
+
+The application guards eleven optional pieces behind `try/except ImportError`
+or `Path.is_file()`. A bundle that has lost QtSvg, every icon, all seven
+translation catalogs, the spin-box arrows and Numba acceleration still opens a
+window that looks correct, so "it launched" proves very little. The checks live
+in `src/al_dic/gui/self_test.py` and ship inside the bundle; add one there
+whenever you add something that can fail silently.
+
+**Why a clean environment matters.** PyInstaller resolves each binary
+dependency by searching `PATH`, so any DLL your machine happens to have can be
+baked into the bundle and shadow the one a user's machine would load. This is
+not hypothetical. Anaconda's `icuuc.dll` exports versioned ICU symbols
+(`ucnv_open_73`) where the Qt in the PySide6 wheel expects the unversioned ones
+that ship in Windows' own ICU — collecting it made every PySide6 import fail
+with "The specified procedure could not be found", and the application never
+got as far as a window. A second build lost every colorbar to Anaconda's
+`libexpat.dll` in the same way. The spec now refuses to build when it finds a
+binary sourced from outside the build environment; if you hit that, fix the
+environment rather than setting `PYALDIC_ALLOW_AMBIENT`.
+
 ## Pull Request Process
 
 1. Fork the repository and create a feature branch from `main`

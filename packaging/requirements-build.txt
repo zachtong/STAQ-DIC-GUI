@@ -1,0 +1,21 @@
+# Pinned build environment for the frozen Windows bundle.
+#
+# Pinned, not floating: PyInstaller's behaviour depends on the exact library
+# versions its hooks were written against, and an unpinned build is a build
+# whose contents change without anyone deciding they should. Bump these in
+# lockstep with the pins in .github/workflows/i18n.yml -- that pin has a
+# documented history of going stale and turning every push red.
+#
+# Install into a CLEAN venv, not a conda environment: conda's Library\bin is
+# on PATH and leaks DLLs (svml_dispmd.dll among them) that exist on the build
+# machine and nowhere else.
+PySide6==6.11.1
+numpy==2.4.6
+scipy==1.17.1
+opencv-python==5.0.0.93
+numba==0.66.0
+llvmlite==0.48.0
+matplotlib==3.11.0
+imageio==2.37.3
+pillow>=10
+pyinstaller==6.19.0

@@ -3,6 +3,8 @@ association (B: double-click to open)."""
 
 from __future__ import annotations
 
+import sys
+
 import pytest
 from PySide6.QtWidgets import QApplication
 
@@ -38,8 +40,22 @@ def test_argv_ignores_missing_or_unrelated(tmp_path):
 
 def test_open_command_shape():
     cmd = fa.open_command()
-    assert "-m al_dic" in cmd and '"%1"' in cmd
+    assert '"%1"' in cmd
+    # ``-m al_dic`` is the source-install shape only. Asserting it
+    # unconditionally used to make this test pass inside a frozen build while
+    # certifying a command the bootloader cannot honour.
+    if not getattr(sys, "frozen", False):
+        assert "-m al_dic" in cmd
     assert fa.EXT == ".aldic" and fa.PROGID == "pyALDIC.Session"
+
+
+def test_open_command_frozen_shape(monkeypatch):
+    """A frozen build hands the path straight to the exe, with no -m."""
+    monkeypatch.setattr(sys, "frozen", True, raising=False)
+    monkeypatch.setattr(sys, "executable", r"D:\pyALDIC\pyALDIC.exe")
+    cmd = fa.open_command()
+    assert cmd == '"D:\\pyALDIC\\pyALDIC.exe" "%1"'
+    assert "-m al_dic" not in cmd
 
 
 @pytest.mark.skipif(not fa.is_supported(), reason="Windows-only association")

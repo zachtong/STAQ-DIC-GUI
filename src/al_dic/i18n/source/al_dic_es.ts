@@ -40,14 +40,42 @@ Solo relevante para el modo de estimación inicial FFT.</translation>
 <context>
     <name>App</name>
     <message>
-        <location filename="../../gui/app.py" line="975"/>
+        <location filename="../../gui/app.py" line="983"/>
         <source>Imported Region of Interest for %n frame(s)</source>
         <translation>Región de interés importada para %n fotogramas</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="989"/>
+        <location filename="../../gui/app.py" line="997"/>
         <source>Run DIC first -- no displacement results to post-process.</source>
         <translation>Ejecute primero el DIC — no hay resultados de desplazamiento para posprocesar.</translation>
+    </message>
+</context>
+<context>
+    <name>Application</name>
+    <message>
+        <location filename="../../gui/app.py" line="1094"/>
+        <source>pyALDIC has hit an error</source>
+        <translation>r</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="1095"/>
+        <source>An unexpected error occurred. The application may not behave correctly from here on, so saving your session and restarting is recommended.</source>
+        <translation>.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="1105"/>
+        <source>Details were written to %1</source>
+        <translation>1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="1209"/>
+        <source>Preparing compute kernels in the background. The first analysis on a new installation takes longer than the rest.</source>
+        <translation>.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="1223"/>
+        <source>Compute kernels ready (%1 s).</source>
+        <translation>.</translation>
     </message>
 </context>
 <context>
@@ -900,8 +928,8 @@ Las etiquetas se actualizan por fotograma cuando el rango auto está activo.</tr
     <message>
         <location filename="../../gui/dialogs/export_dialog.py" line="1661"/>
         <location filename="../../gui/dialogs/export_dialog.py" line="1791"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1870"/>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1912"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1880"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1922"/>
         <source>Error: %1</source>
         <translation>Error: %1</translation>
     </message>
@@ -929,7 +957,12 @@ Las etiquetas se actualizan por fotograma cuando el rango auto está activo.</tr
         <translation>%1 imágenes exportadas → %2</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="1905"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1858"/>
+        <source>No animation was written. See the log for details.</source>
+        <translation>.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="1915"/>
         <source>Report saved → %1</source>
         <translation>Informe guardado → %1</translation>
     </message>
@@ -1270,125 +1303,126 @@ Predeterminado (desmarcado): lexicográfico — ideal para nombres con ceros a l
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../gui/app.py" line="199"/>
+        <location filename="../../gui/app.py" line="201"/>
         <source>&amp;File</source>
         <translation>Archivo</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="201"/>
+        <location filename="../../gui/app.py" line="203"/>
         <source>Open Session…</source>
         <translation>Abrir sesión…</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="206"/>
+        <location filename="../../gui/app.py" line="208"/>
         <source>Save Session…</source>
         <translation>Guardar sesión…</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="215"/>
+        <location filename="../../gui/app.py" line="217"/>
         <source>Associate .aldic files with pyALDIC…</source>
         <translation>Asociar archivos .aldic con pyALDIC…</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="217"/>
+        <location filename="../../gui/app.py" line="219"/>
         <source>Register .aldic so double-clicking a session file opens pyALDIC (current user only, no admin rights needed).</source>
         <translation>Registra .aldic para que hacer doble clic en un archivo de sesión abra pyALDIC (solo el usuario actual, sin permisos de administrador).</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="223"/>
+        <location filename="../../gui/app.py" line="225"/>
         <source>Quit</source>
         <translation>Salir</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="231"/>
+        <location filename="../../gui/app.py" line="233"/>
         <source>&amp;Settings</source>
         <translation>Configuración</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="232"/>
+        <location filename="../../gui/app.py" line="234"/>
         <source>Language</source>
         <translation>Idioma</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="261"/>
+        <location filename="../../gui/app.py" line="263"/>
         <source>Language changed</source>
         <translation>Idioma cambiado</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="264"/>
+        <location filename="../../gui/app.py" line="266"/>
         <source>Language set to %1. Please restart pyALDIC for all widgets to pick up the new language.</source>
         <translation>Idioma establecido en %1. Reinicie pyALDIC para que todos los elementos adopten el nuevo idioma.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="278"/>
+        <location filename="../../gui/app.py" line="280"/>
         <source>Save Session</source>
         <translation>Guardar sesión</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="280"/>
-        <location filename="../../gui/app.py" line="329"/>
+        <location filename="../../gui/app.py" line="282"/>
+        <location filename="../../gui/app.py" line="331"/>
         <source>pyALDIC Session</source>
         <translation>Sesión de pyALDIC</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="281"/>
-        <location filename="../../gui/app.py" line="330"/>
+        <location filename="../../gui/app.py" line="283"/>
+        <location filename="../../gui/app.py" line="332"/>
+        <location filename="../../gui/app.py" line="796"/>
         <source>All Files</source>
         <translation>Todos los archivos</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="294"/>
+        <location filename="../../gui/app.py" line="296"/>
         <source>large</source>
         <translation>grande</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="297"/>
+        <location filename="../../gui/app.py" line="299"/>
         <source>Include Results?</source>
         <translation>¿Incluir resultados?</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="299"/>
+        <location filename="../../gui/app.py" line="301"/>
         <source>Include the computed results in this session?</source>
         <translation>¿Incluir los resultados calculados en esta sesión?</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="302"/>
+        <location filename="../../gui/app.py" line="304"/>
         <source>Including results (about %1 uncompressed) lets you reopen the session without recomputing. Choose No to save a small configuration-only file for sharing.</source>
         <translation>Incluir los resultados (unos %1 sin comprimir) permite reabrir la sesión sin recalcular. Elija No para guardar un pequeño archivo solo de configuración para compartir.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="315"/>
+        <location filename="../../gui/app.py" line="317"/>
         <source>Saving Session</source>
         <translation>Guardando sesión</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="320"/>
+        <location filename="../../gui/app.py" line="322"/>
         <source>Save Session Failed</source>
         <translation>Error al guardar la sesión</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="327"/>
+        <location filename="../../gui/app.py" line="329"/>
         <source>Open Session</source>
         <translation>Abrir sesión</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="342"/>
+        <location filename="../../gui/app.py" line="344"/>
         <source>Loading Session</source>
         <translation>Cargando sesión</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="345"/>
-        <location filename="../../gui/app.py" line="380"/>
+        <location filename="../../gui/app.py" line="347"/>
+        <location filename="../../gui/app.py" line="382"/>
         <source>Open Session Failed</source>
         <translation>Error al abrir la sesión</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="354"/>
+        <location filename="../../gui/app.py" line="356"/>
         <source>Locate Session Images</source>
         <translation>Localizar imágenes de la sesión</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="357"/>
+        <location filename="../../gui/app.py" line="359"/>
         <source>The image folder saved with this session was not found:
 %1
 
@@ -1399,73 +1433,83 @@ Results were restored. To show the background images, select the folder that now
 Los resultados se restauraron. Para mostrar las imágenes de fondo, seleccione la carpeta que ahora las contiene.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="365"/>
+        <location filename="../../gui/app.py" line="367"/>
         <source>Select Image Folder</source>
         <translation>Seleccionar carpeta de imágenes</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="441"/>
+        <location filename="../../gui/app.py" line="443"/>
         <source>File Association Failed</source>
         <translation>Error al asociar archivos</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="442"/>
+        <location filename="../../gui/app.py" line="444"/>
         <source>Could not register .aldic files: </source>
         <translation>No se pudieron registrar los archivos .aldic: </translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="445"/>
+        <location filename="../../gui/app.py" line="447"/>
         <source>File Association</source>
         <translation>Asociación de archivos</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="446"/>
+        <location filename="../../gui/app.py" line="448"/>
         <source>Done. Double-clicking a .aldic file will now open pyALDIC and restore that session.</source>
         <translation>Listo. Ahora, hacer doble clic en un archivo .aldic abrirá pyALDIC y restaurará esa sesión.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="761"/>
+        <location filename="../../gui/app.py" line="763"/>
         <source>Frame %1 has no Region of Interest of its own — frame 1&apos;s is used for computation. Switch to frame 1 to edit it, or import a mask to give this frame its own.</source>
         <translation>El fotograma %1 no tiene una región de interés propia — se usa la del fotograma 1 para el cálculo. Cambie al fotograma 1 para editarla, o importe una máscara para dar a este fotograma la suya.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="772"/>
+        <location filename="../../gui/app.py" line="774"/>
         <source>No Region of Interest to save — load images first.</source>
         <translation>No hay región de interés que guardar — cargue primero las imágenes.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="779"/>
+        <location filename="../../gui/app.py" line="781"/>
         <source>Region of Interest mask is empty.</source>
         <translation>La máscara de la región de interés está vacía.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="796"/>
+        <location filename="../../gui/app.py" line="793"/>
+        <source>Save Region of Interest Mask</source>
+        <translation>s</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="795"/>
+        <source>PNG Images</source>
+        <translation>G</translation>
+    </message>
+    <message>
+        <location filename="../../gui/app.py" line="804"/>
         <source>Mask saved to %1</source>
         <translation>Máscara guardada en %1</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="805"/>
+        <location filename="../../gui/app.py" line="813"/>
         <source>No Region of Interest to invert — load images first.</source>
         <translation>No hay región de interés que invertir — cargue primero las imágenes.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="835"/>
-        <location filename="../../gui/app.py" line="888"/>
+        <location filename="../../gui/app.py" line="843"/>
+        <location filename="../../gui/app.py" line="896"/>
         <source>Load images first.</source>
         <translation>Cargue primero las imágenes.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="846"/>
+        <location filename="../../gui/app.py" line="854"/>
         <source>Define a Region of Interest on frame 1 first.</source>
         <translation>Defina primero una región de interés en el fotograma 1.</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="937"/>
+        <location filename="../../gui/app.py" line="945"/>
         <source>  Imported mask for frame %1</source>
         <translation>  Máscara importada para el fotograma %1</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="943"/>
+        <location filename="../../gui/app.py" line="951"/>
         <source>Batch import: %n mask(s) loaded</source>
         <translation>Importación por lotes: %n máscara(s) cargada(s)</translation>
     </message>
@@ -1866,6 +1910,21 @@ Solo afecta a la inicialización de los puntos de inicio; los demás nodos usan 
         <location filename="../../gui/widgets/roi_toolbar.py" line="256"/>
         <source>Circle (3-point)</source>
         <translation>Círculo (3 puntos)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="350"/>
+        <source>Import Mask Image</source>
+        <translation>a</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="352"/>
+        <source>Images</source>
+        <translation>Imágenes</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="353"/>
+        <source>All Files</source>
+        <translation>Todos los archivos</translation>
     </message>
 </context>
 <context>

@@ -1,0 +1,142 @@
+name: Build Windows Bundle
+
+# Builds the portable Windows bundle a user unzips and double-clicks, then
+# proves it works before attaching it to the release.
+#
+# The bundle is never committed. It lives only as a release asset, which does
+# not count against repository size and is not fetched by `git clone`.
+#
+# Kept out of publish.yml on purpose: a bundle failure must never block the
+# PyPI release. The two run independently off the same tag.
+#
+# Three ways in:
+#   * push a v* tag        -> build, test, attach to that tag's release
+#   * dispatch with a tag  -> same, for re-attaching after a failed run or
+#                             after creating the release late
+#   * dispatch with no tag -> build and test only, no upload. Use this to
+#                             check a dependency bump before cutting a tag.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: >-
+          Existing tag whose release should receive the bundle
+          (e.g. v0.7.3). Leave empty to build and test without uploading.
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-exe-${{ github.event.inputs.tag || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-exe:
+    name: Build the onedir bundle
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # A dispatch names the tag to build; a tag push is already on it.
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install the pinned build environment
+        # A clean runner venv, never conda: PyInstaller resolves binary
+        # dependencies through PATH, so any DLL the build machine happens to
+        # have can be baked into the bundle and shadow the one the user's
+        # machine would load. That failure is silent -- it has already cost
+        # this project a bundle whose Qt could not load at all. The spec fails
+        # the build if it detects one, and these pins keep the collected
+        # library versions from drifting under us.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r packaging/requirements-build.txt
+          pip install -e . --no-deps
+
+      - name: Verify the tag matches the package version
+        if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.tag != ''
+        shell: bash
+        run: |
+          REF="${{ github.event.inputs.tag || github.ref_name }}"
+          TAG="${REF#v}"
+          PKG=$(python -c "import al_dic; print(al_dic.__version__)")
+          echo "tag=$TAG  al_dic.__version__=$PKG"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "::error::Tag v$TAG does not match al_dic.__version__ $PKG"
+            exit 1
+          fi
+
+      - name: Compile translation catalogs
+        # The .qm files are build products and are not in the repository. The
+        # spec asserts all seven are present, so this must run first or the
+        # build fails rather than shipping a monolingual application.
+        run: python tools/i18n.py compile
+
+      - name: Build
+        run: python tools/build_exe.py
+
+      - name: Self-test the bundle
+        # Not a launch check: the application guards eleven optional pieces
+        # behind try/except, so a bundle missing QtSvg, every icon, all the
+        # translations and Numba still opens a window and looks correct.
+        env:
+          PYALDIC_FROZEN_EXE: dist-exe/pyALDIC/pyALDIC-console.exe
+        run: pytest tests/test_frozen_bundle.py -v
+
+      - name: Test the .aldic file association
+        # These registry round-trip tests have never run in CI -- every other
+        # job is ubuntu-latest and they are skipif(not is_supported()). The
+        # double-click association is the headline feature of this
+        # distribution, so this is the one place it can be covered.
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: pytest tests/test_gui/test_session_launch.py -v
+
+      - name: Upload the bundle as a workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pyALDIC-win64
+          path: dist-exe/*.zip
+          retention-days: 14
+
+  attach-exe:
+    name: Attach the bundle to the GitHub Release
+    needs: build-exe
+    if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.tag != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: pyALDIC-win64
+          path: dist-exe/
+
+      - name: Upload to the release for this tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        run: |
+          # `gh release upload` needs the release to already exist. Releases
+          # here are written by hand -- the notes are prose, not a changelog
+          # dump -- so say plainly what to do rather than creating an empty one.
+          if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::No release exists for $TAG. Publish the release" \
+                 "first, then re-run this workflow with tag=$TAG."
+            exit 1
+          fi
+          gh release upload "$TAG" dist-exe/*.zip \
+            --clobber --repo "$GITHUB_REPOSITORY"
+          echo "Attached to https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG"

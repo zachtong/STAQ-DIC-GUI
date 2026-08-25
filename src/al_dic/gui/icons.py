@@ -152,6 +152,19 @@ def icon_maximize() -> QIcon:
 
 # -- Application icon -------------------------------------------------------
 
+def app_icon_file(name: str = "pyALDIC.ico"):
+    """Absolute path of a packaged application icon, or None if absent.
+
+    ``__file__`` resolves inside the bundle in a frozen build, so this works
+    unchanged there -- provided the spec ships the assets under the matching
+    ``al_dic/gui/assets/icon`` destination.
+    """
+    from pathlib import Path
+
+    path = Path(__file__).parent / "assets" / "icon" / name
+    return path if path.is_file() else None
+
+
 def icon_app() -> QIcon:
     """Load the packaged pyALDIC application icon.
 
@@ -161,12 +174,9 @@ def icon_app() -> QIcon:
     missing and finally to an empty QIcon so a broken asset never
     crashes startup.
     """
-    from pathlib import Path
-
-    asset_dir = Path(__file__).parent / "assets" / "icon"
     for name in ("pyALDIC.ico", "pyALDIC-256.png", "pyALDIC.svg"):
-        path = asset_dir / name
-        if path.is_file():
+        path = app_icon_file(name)
+        if path is not None:
             icon = QIcon(str(path))
             if not icon.isNull():
                 return icon

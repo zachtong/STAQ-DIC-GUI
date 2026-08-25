@@ -85,3 +85,8 @@ desktop.ini
 docs/community/
 docs/marketing/
 assets/qq_group_qr.png
+
+# PyInstaller bundle output (kept out of dist/, which PyPI publishes from)
+dist-exe/
+build-exe/
+packaging/version_info.txt

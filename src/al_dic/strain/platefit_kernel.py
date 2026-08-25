@@ -18,24 +18,13 @@ from __future__ import annotations
 import numpy as np
 from numpy.typing import NDArray
 
-try:
-    from numba import njit, prange
-    HAS_NUMBA = True
-except ImportError:  # pragma: no cover - numba is a core dependency
-    HAS_NUMBA = False
-
-    def njit(*args, **kwargs):
-        def decorator(func):
-            return func
-        if args and callable(args[0]):
-            return args[0]
-        return decorator
-
-    def prange(*args):
-        return range(*args)
+# ``cache=`` is a probed value, not a literal: the JIT cache cannot always be
+# established (notably in a frozen build), and asking for it when it cannot
+# raises at decoration time.  See al_dic._numba_compat.
+from .._numba_compat import HAS_NUMBA, JIT_CACHE, njit, prange
 
 
-@njit(cache=True)
+@njit(cache=JIT_CACHE)
 def _seg_hits_mask(x0, y0, x1, y1, mask, h, w):
     """True if the open segment (x0,y0)->(x1,y1) passes through mask < 0.5.
 
@@ -62,7 +51,7 @@ def _seg_hits_mask(x0, y0, x1, y1, mask, h, w):
     return False
 
 
-@njit(cache=True)
+@njit(cache=JIT_CACHE)
 def _solve_normal_eq(s00, s0x, s0y, sxx, sxy, syy,
                      bu0, bu1, bu2, bv0, bv1, bv2):
     """Solve the symmetric 3x3 weighted normal equations for u and v.
@@ -87,7 +76,7 @@ def _solve_normal_eq(s00, s0x, s0y, sxx, sxy, syy,
     return du_dx, du_dy, dv_dx, dv_dy, True
 
 
-@njit(parallel=True, cache=True)
+@njit(parallel=True, cache=JIT_CACHE)
 def _platefit_kernel(coords, vc, vu, vv, indptr, indices, rad,
                      mask, near_barrier):
     """Parallel weighted plane fit -> deformation gradient F (4*n,).
@@ -154,7 +143,7 @@ def _platefit_kernel(coords, vc, vu, vv, indptr, indices, rad,
     return F
 
 
-@njit(parallel=True, cache=True)
+@njit(parallel=True, cache=JIT_CACHE)
 def _platefit_kernel_cached(coords, u, v, valid, indptr, indices, rad,
                             mask, near_barrier):
     """Like :func:`_platefit_kernel` but over a FRAME-INVARIANT all-node

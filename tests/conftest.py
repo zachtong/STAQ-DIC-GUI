@@ -467,6 +467,18 @@ def pytest_addoption(parser):
 
 
 def pytest_collection_modifyitems(config, items):
+    # `frozen` tests drive a built PyInstaller bundle, which most runs do not
+    # have. Skipping them here rather than only inside the fixture keeps a
+    # plain `pytest` on a fresh clone from reporting anything unexpected.
+    if not os.environ.get("PYALDIC_FROZEN_EXE"):
+        skip_frozen = pytest.mark.skip(
+            reason="no built bundle; set PYALDIC_FROZEN_EXE to the executable "
+                   "produced by tools/build_exe.py",
+        )
+        for item in items:
+            if "frozen" in item.keywords:
+                item.add_marker(skip_frozen)
+
     if config.getoption("--run-perf") or os.environ.get("PYALDIC_RUN_PERF"):
         return
     skip_perf = pytest.mark.skip(
