@@ -97,12 +97,13 @@ def test_probe_rejects_malformed_colour():
 
 # --- reductions ----------------------------------------------------------
 
-def test_point_probes_take_no_reduction():
-    """A point yields one value; a reduction over one sample is meaningless.
+def test_point_probes_take_only_the_identity_reduction():
+    """A point yields one sample, so averaging it is not a thing.
 
-    The reference silently ignores the metric parameter for points.
+    It still needs a name for the CSV column, hence "value". The reference
+    accepts any metric for a point and silently ignores it.
     """
-    assert allowed_reductions("point") == frozenset()
+    assert allowed_reductions("point") == frozenset({"value"})
 
 
 def test_line_reductions_include_gauge_measurements():

@@ -29,6 +29,8 @@ AreaShape = Literal["rect", "circle", "polygon"]
 _SPATIAL_REDUCTIONS = frozenset(
     {"mean", "median", "max", "min", "std", "valid_fraction"}
 )
+#: The identity reduction, for probes that yield exactly one sample.
+_POINT_REDUCTIONS = frozenset({"value"})
 #: Reductions computed from a line's two endpoints rather than from samples.
 _GAUGE_REDUCTIONS = frozenset({"strain", "cod"})
 
@@ -170,11 +172,14 @@ _GEOM_FOR_KIND: dict[str, type] = {
 def allowed_reductions(kind: ProbeKind) -> frozenset[str]:
     """Reductions that mean something for *kind*.
 
-    A point yields a single sample, so no reduction applies -- asking for one is
-    an error rather than something to ignore, which is what the reference does.
+    Asking for one that does not is an error rather than something to ignore
+    silently, which is what the reference does.
     """
     if kind == "point":
-        return frozenset()
+        # A point yields one sample, so the only meaningful "reduction" is the
+        # sample itself. Naming it rather than quietly accepting "mean" keeps
+        # the CSV column honest about what it holds.
+        return _POINT_REDUCTIONS
     if kind == "line":
         return _SPATIAL_REDUCTIONS | _GAUGE_REDUCTIONS
     if kind == "area":
