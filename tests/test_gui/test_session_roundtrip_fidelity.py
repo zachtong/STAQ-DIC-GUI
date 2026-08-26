@@ -87,6 +87,7 @@ TRANSIENT = {
     "image_folder": "top-level key",
     "per_frame_rois": "top-level key",
     "refine_brush_mask": "top-level key",
+    "probes": "top-level key",
 }
 
 
@@ -228,6 +229,52 @@ def test_results_survive_with_strain(tmp_path, qapp):
     # the parameters the results were computed with come back too
     assert state2.results.dic_para.winsize == 16
     assert state2.results.dic_para.strain_plane_fit_rad == 10.0
+
+
+def test_probes_survive(tmp_path, qapp):
+    """A placed, renamed, recoloured probe comes back intact.
+
+    "top-level key" in TRANSIENT records an intention; only a round trip shows
+    it was honoured. The refinement brush was registered as saved for a whole
+    release while not being saved at all.
+    """
+    from al_dic.analysis.probes import AreaGeom, LineGeom, PointGeom
+
+    win, state, folder, roi0, roi2, brush = _make_project(tmp_path, qapp)
+    state.probes.add("point", PointGeom(12.5, 30.25), label="crack tip",
+                     color="#ef4444")
+    state.probes.add("line", LineGeom(4.0, 20.0, 36.0, 20.0), label="gauge")
+    state.probes.add("area", AreaGeom.polygon([(0, 0), (9, 1), (4, 7)]),
+                     label="区域")
+    before = state.probes.to_list()
+
+    path = tmp_path / "probes.aldic"
+    save_session(path, state, include_results=False)
+    _, state2 = _reload(tmp_path, qapp, path)
+
+    assert state2.probes.to_list() == before
+    # Ids must not restart, or a restored session collides with itself.
+    assert state2.probes.add("point", PointGeom(1.0, 1.0)).id == 4
+
+
+def test_a_session_without_probes_still_loads(tmp_path, qapp):
+    """Schema 1 and 2 sessions predate probes and must open with none."""
+    win, state, folder, roi0, roi2, brush = _make_project(tmp_path, qapp)
+    path = tmp_path / "old.aldic"
+    save_session(path, state, include_results=False)
+
+    import json
+    import zipfile
+
+    doc = json.loads(zipfile.ZipFile(path).read("session.json").decode("utf-8"))
+    doc["schema_version"] = 2
+    doc.pop("probes", None)
+    rewritten = tmp_path / "v2.aldic"
+    with zipfile.ZipFile(rewritten, "w") as zf:
+        zf.writestr("session.json", json.dumps(doc))
+
+    _, state2 = _reload(tmp_path, qapp, rewritten)
+    assert len(state2.probes) == 0
 
 
 def test_every_state_field_is_accounted_for(qapp):

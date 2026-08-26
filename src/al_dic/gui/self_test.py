@@ -366,6 +366,53 @@ def check_hashing() -> str:
     return f"sha256/sha1 available, session array key {key_a[:20]}..."
 
 
+def check_embedded_chart() -> str:
+    """The analysis tab's matplotlib canvas imports and renders.
+
+    Charts are the one place the application needs matplotlib's *Qt* backend
+    rather than headless Agg. A bundle that dropped it would open, show every
+    field correctly, and fail only when someone opened the analysis tab -- so
+    this is checked here rather than trusted to the spec.
+    """
+    from PySide6.QtWidgets import QApplication
+
+    QApplication.instance() or QApplication(["pyALDIC-self-test"])
+
+    import matplotlib
+
+    matplotlib.use("QtAgg")
+    from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+
+    from al_dic.analysis.probes import PointGeom, Probe
+    from al_dic.analysis.sampling import SampleSet
+    from al_dic.analysis.series import TimeSeries
+    from al_dic.gui.widgets.mpl_chart import MplChart
+
+    import numpy as np
+
+    chart = MplChart()
+    if not isinstance(chart._canvas, FigureCanvasQTAgg):
+        raise CheckFailed("the chart is not backed by matplotlib's Qt canvas")
+
+    samples = [
+        SampleSet(np.array([float(i)]), np.array([True]), frozenset())
+        for i in range(4)
+    ]
+    ts = TimeSeries.from_samples(
+        frames=[0, 1, 2, 3], samples=samples, reduction="value",
+        min_valid_fraction=0.0, unit="px",
+    )
+    chart.plot_series([("probe", "#ef4444", ts)], y_label="u (px)")
+    chart.figure.canvas.draw()
+    width, height = chart.figure.canvas.get_width_height()
+    if width <= 0 or height <= 0:
+        raise CheckFailed(f"the chart rendered at {width}x{height}")
+
+    _ = Probe(id=1, kind="point", geometry=PointGeom(0.0, 0.0),
+              label="p", color="#ef4444")
+    return f"QtAgg canvas renders at {width}x{height}"
+
+
 CHECKS: list[tuple[str, Callable[[], str]]] = [
     ("packaged_data", check_packaged_data),
     ("qt_and_icons", check_qt_and_icons),
@@ -375,6 +422,7 @@ CHECKS: list[tuple[str, Callable[[], str]]] = [
     ("image_io_non_ascii", check_image_io_non_ascii),
     ("video_and_gif", check_video_and_gif),
     ("colorbar", check_colorbar),
+    ("embedded_chart", check_embedded_chart),
     ("mini_dic", check_mini_dic),  # slowest; last so failures surface sooner
 ]
 

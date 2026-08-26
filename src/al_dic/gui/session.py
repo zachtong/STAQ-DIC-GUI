@@ -40,7 +40,7 @@ from al_dic.core.data_structures import PipelineResult
 from al_dic.gui.app_state import AppState, RunState
 from al_dic.io.session_serialize import load_result_npz, save_result_npz
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 _CONFIG_NAME = "session.json"
 _RESULTS_NAME = "results.npz"
 
@@ -68,6 +68,8 @@ class SessionData:
     physical_units: dict[str, Any] = field(default_factory=dict)
     view_state: dict[str, Any] = field(default_factory=dict)
     fingerprint: dict[str, Any] = field(default_factory=dict)
+    # Serialised probe definitions; empty for sessions written before schema 3.
+    probes: list[dict[str, Any]] = field(default_factory=list)
     results: PipelineResult | None = None
 
 
@@ -211,6 +213,10 @@ def _build_config(state: AppState, has_results: bool,
             _encode_mask(state.refine_brush_mask)
             if state.refine_brush_mask is not None else None
         ),
+        # Post-processing probes. A probe someone placed and named is work,
+        # and losing it on save/reopen would be as surprising as losing a
+        # Region of Interest.
+        "probes": state.probes.to_list(),
         "params": {k: _get_state_field(state, k) for k in _PARAM_KEYS},
         "physical_units": {k: _get_state_field(state, k) for k in _PHYSICAL_KEYS},
         "view_state": _build_view_state(state),
@@ -395,10 +401,10 @@ def _parse_config(doc: Any) -> SessionData:
     if not isinstance(doc, dict):
         raise SessionError("Session config must be a JSON object.")
     version = doc.get("schema_version")
-    if version not in (1, 2):
+    if version not in (1, 2, 3):
         raise SessionError(
             f"Unsupported session schema version {version!r}; "
-            f"this build reads versions 1 and 2."
+            f"this build reads versions 1 to 3."
         )
     rois: dict[int, NDArray[np.bool_]] = {}
     for k, v in (doc.get("per_frame_rois") or {}).items():
@@ -412,12 +418,19 @@ def _parse_config(doc: Any) -> SessionData:
     brush_payload = doc.get("refine_brush_mask")
     brush = _decode_mask(brush_payload) if brush_payload else None
 
+    # Absent before schema 3. A malformed entry is worth reporting rather
+    # than dropping: the geometry is user work, not a derived cache.
+    probes_payload = doc.get("probes") or []
+    if not isinstance(probes_payload, list):
+        raise SessionError("Session 'probes' must be a list.")
+
     return SessionData(
         schema_version=version,
         image_folder=doc.get("image_folder"),
         image_files=list(doc.get("image_files") or []),
         per_frame_rois=rois,
         refine_brush_mask=brush,
+        probes=probes_payload,
         params=dict(doc.get("params") or {}),
         physical_units=dict(doc.get("physical_units") or {}),
         view_state=dict(doc.get("view_state") or {}),
@@ -487,6 +500,15 @@ def apply_session(
     """
     state.set_run_state(RunState.IDLE)
     state.results = None
+
+    # Probes first: they are plain geometry with no dependency on images or
+    # results, so restoring them cannot fail for reasons the user has to fix.
+    from al_dic.analysis.probes import ProbeSet
+
+    try:
+        state.probes = ProbeSet.from_list(session.probes)
+    except (ValueError, KeyError, TypeError) as exc:
+        raise SessionError(f"Session contains an unreadable probe: {exc}") from exc
 
     # Image folder re-load.  Locate the images (they may have moved with the
     # project) and load them BEFORE results are restored below: image loading

@@ -164,6 +164,11 @@ class AppState(QObject):
         # When set, BrushRegionCriterion is added to the refinement policy
         # and is auto-warped to subsequent reference frames inside pipeline.
         self.refine_brush_mask: NDArray[np.bool_] | None = None
+        # Post-processing probes. Geometry is in frame-0 image pixels, so a
+        # probe survives a change of physical units; see al_dic.analysis.
+        from al_dic.analysis.probes import ProbeSet
+
+        self.probes: ProbeSet = ProbeSet()
         # Refinement level: 1=light, 2=medium, 3=heavy.
         # min_element_size = max(4, subset_step // 2**level)
         self.refinement_level: int = 1

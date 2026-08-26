@@ -38,6 +38,335 @@ Only relevant for the FFT init-guess mode.</source>
     </message>
 </context>
 <context>
+    <name>AnalysisChart</name>
+    <message>
+        <location filename="../../gui/widgets/mpl_chart.py" line="135"/>
+        <location filename="../../gui/widgets/mpl_chart.py" line="182"/>
+        <source>Frame</source>
+        <extracomment>Shading for frames a probe could not measure.</extracomment>
+        <translation>影格</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/mpl_chart.py" line="148"/>
+        <source>Shaded frames: %1</source>
+        <translation>1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/mpl_chart.py" line="184"/>
+        <source>Distance along line (%1)</source>
+        <translation>）</translation>
+    </message>
+</context>
+<context>
+    <name>AnalysisTab</name>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="218"/>
+        <source>Click once to place a point probe.</source>
+        <translation>。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="219"/>
+        <source>Click twice: start and end of the gauge.</source>
+        <translation>。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="220"/>
+        <source>Click twice: opposite corners.</source>
+        <translation>。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="221"/>
+        <source>Click twice: centre, then the edge.</source>
+        <translation>。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="223"/>
+        <source>Click each vertex, then double-click to close.</source>
+        <translation>。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="236"/>
+        <source>Colour…</source>
+        <translation>…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="238"/>
+        <source>Clear All</source>
+        <translation>除</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="239"/>
+        <source>Compare:</source>
+        <translation>：</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="240"/>
+        <source>Field:</source>
+        <translation>：</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="241"/>
+        <source>Statistic:</source>
+        <translation>：</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="242"/>
+        <source>Minimum valid fraction:</source>
+        <translation>：</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="244"/>
+        <source>A frame is left blank when fewer than this fraction of the probe&apos;s points are reliable. Guards against a curve that stays smooth while its sample shrinks away.</source>
+        <translation>。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="248"/>
+        <source>Export CSV…</source>
+        <translation>…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="249"/>
+        <source>Export Chart…</source>
+        <translation>…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="250"/>
+        <source>Esc cancels placement</source>
+        <translation>置</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="265"/>
+        <source>Point probes</source>
+        <translation>針</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="266"/>
+        <source>Line probes</source>
+        <translation>針</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="267"/>
+        <source>Region probes</source>
+        <translation>針</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="299"/>
+        <source>Standard deviation</source>
+        <translation>差</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="300"/>
+        <source>Valid fraction</source>
+        <translation>例</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="301"/>
+        <source>Engineering strain</source>
+        <translation>變</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="302"/>
+        <source>Crack opening</source>
+        <translation>移</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="332"/>
+        <source>Added probe &apos;%1&apos;.</source>
+        <translation>。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="391"/>
+        <source>Clear All Probes</source>
+        <translation>針</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="392"/>
+        <source>Delete every probe? This cannot be undone.</source>
+        <translation>。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="211"/>
+        <source>Point</source>
+        <comment>Placement tool: a single location</comment>
+        <extracomment>Tool button label, tool token, and the probe kind it produces.</extracomment>
+        <translation>點</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="212"/>
+        <source>Line</source>
+        <comment>Placement tool: a two-point gauge</comment>
+        <translation>段</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="213"/>
+        <source>Rectangle</source>
+        <comment>Placement tool</comment>
+        <translation>形</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="214"/>
+        <source>Circle</source>
+        <comment>Placement tool</comment>
+        <translation>形</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="215"/>
+        <source>Polygon</source>
+        <comment>Placement tool</comment>
+        <translation>形</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="231"/>
+        <source>Show</source>
+        <comment>Probe list column: visibility checkbox</comment>
+        <translation>示</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="232"/>
+        <source>Name</source>
+        <comment>Probe list column: the probe&apos;s label</comment>
+        <translation>稱</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="233"/>
+        <source>Type</source>
+        <comment>Probe list column: point, line or region</comment>
+        <translation>型</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="234"/>
+        <source>Colour</source>
+        <comment>Probe list column: colour swatch</comment>
+        <translation>色</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="237"/>
+        <source>Delete</source>
+        <comment>Button: delete the selected probe</comment>
+        <translation>除</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="294"/>
+        <source>Value</source>
+        <comment>Statistic: the sample itself, for a point probe</comment>
+        <translation>值</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="295"/>
+        <source>Mean</source>
+        <comment>Statistic: arithmetic mean</comment>
+        <translation>值</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="296"/>
+        <source>Median</source>
+        <comment>Statistic</comment>
+        <translation>數</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="297"/>
+        <source>Maximum</source>
+        <comment>Statistic</comment>
+        <translation>值</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="298"/>
+        <source>Minimum</source>
+        <comment>Statistic</comment>
+        <translation>值</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="432"/>
+        <source>Point</source>
+        <comment>Probe type</comment>
+        <translation>點</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="433"/>
+        <source>Line</source>
+        <comment>Probe type</comment>
+        <translation>段</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="434"/>
+        <source>Region</source>
+        <comment>Probe type: an enclosed area</comment>
+        <translation>區域</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="473"/>
+        <source>Run a DIC analysis to plot probes.</source>
+        <translation>。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="484"/>
+        <source>Place a probe on the reference image to begin.</source>
+        <translation>。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="502"/>
+        <source>This statistic does not apply here.</source>
+        <translation>。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="538"/>
+        <location filename="../../gui/panels/analysis_tab.py" line="543"/>
+        <source>Export Probe Data</source>
+        <translation>料</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="539"/>
+        <source>There is nothing to export yet.</source>
+        <translation>。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="544"/>
+        <source>CSV Files</source>
+        <translation>案</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="544"/>
+        <location filename="../../gui/panels/analysis_tab.py" line="570"/>
+        <source>All Files</source>
+        <translation>所有檔案</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="557"/>
+        <source>Probe export failed: %1</source>
+        <translation>1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="562"/>
+        <source>Probe data written to %1</source>
+        <translation>1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="567"/>
+        <source>Export Chart</source>
+        <translation>表</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="568"/>
+        <source>PNG Images</source>
+        <translation>像</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="569"/>
+        <source>PDF Documents</source>
+        <translation>件</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="578"/>
+        <source>Chart export failed: %1</source>
+        <translation>1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/analysis_tab.py" line="583"/>
+        <source>Chart written to %1</source>
+        <translation>1</translation>
+    </message>
+</context>
+<context>
     <name>App</name>
     <message>
         <location filename="../../gui/app.py" line="983"/>
@@ -2309,143 +2638,153 @@ Only applies when Method = Plane fitting.</source>
 <context>
     <name>StrainWindow</name>
     <message>
-        <location filename="../../gui/strain_window.py" line="153"/>
+        <location filename="../../gui/strain_window.py" line="154"/>
         <source>Strain Post-Processing</source>
         <translation>應變後處理</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="201"/>
+        <location filename="../../gui/strain_window.py" line="202"/>
         <source>Fit</source>
         <translation>適配</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="202"/>
+        <location filename="../../gui/strain_window.py" line="203"/>
         <source>Fit image to viewport</source>
         <translation>將影像適配到視口</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="208"/>
+        <location filename="../../gui/strain_window.py" line="209"/>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="209"/>
+        <location filename="../../gui/strain_window.py" line="210"/>
         <source>Zoom to 100% (1:1)</source>
         <translation>縮放到 100%（1:1）</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="212"/>
+        <location filename="../../gui/strain_window.py" line="213"/>
         <source>Zoom in</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="217"/>
+        <location filename="../../gui/strain_window.py" line="218"/>
         <source>–</source>
         <translation>–</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="270"/>
+        <location filename="../../gui/strain_window.py" line="271"/>
         <source>STRAIN PARAMETERS</source>
         <translation>應變參數</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="289"/>
+        <location filename="../../gui/strain_window.py" line="290"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="293"/>
+        <location filename="../../gui/strain_window.py" line="294"/>
         <source>Cancel the running strain computation. The previous strain result is kept.</source>
         <translation>取消正在進行的應變計算。保留先前的應變結果。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="305"/>
+        <location filename="../../gui/strain_window.py" line="306"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV / PNG</source>
         <translation>將位移和應變結果匯出為 NPZ / MAT / CSV / PNG</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="338"/>
+        <location filename="../../gui/strain_window.py" line="339"/>
         <source>FIELD</source>
         <translation>場變量</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="347"/>
+        <location filename="../../gui/strain_window.py" line="348"/>
         <source>VISUALIZATION</source>
         <translation>可視化</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="357"/>
+        <location filename="../../gui/strain_window.py" line="358"/>
         <source>PHYSICAL UNITS</source>
         <translation>物理單位</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="366"/>
+        <location filename="../../gui/strain_window.py" line="367"/>
         <source>LOG</source>
         <translation>日誌</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="463"/>
+        <location filename="../../gui/strain_window.py" line="396"/>
+        <source>Strain Field</source>
+        <translation>場</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="398"/>
+        <source>Analysis</source>
+        <translation>析</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="473"/>
         <source>Strain compute failed: %1: %2</source>
         <translation>應變計算失敗：%1：%2</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="471"/>
-        <location filename="../../gui/strain_window.py" line="530"/>
+        <location filename="../../gui/strain_window.py" line="481"/>
+        <location filename="../../gui/strain_window.py" line="540"/>
         <source>Strain computation complete.</source>
         <translation>應變計算完成。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="482"/>
+        <location filename="../../gui/strain_window.py" line="492"/>
         <source>Strain window: no displacement results to post-process.</source>
         <translation>應變視窗：沒有可後處理的位移結果。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="513"/>
+        <location filename="../../gui/strain_window.py" line="523"/>
         <source>Cancelling…</source>
         <translation>正在取消…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="547"/>
+        <location filename="../../gui/strain_window.py" line="557"/>
         <source>Strain computation cancelled.</source>
         <translation>應變計算已取消。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="556"/>
+        <location filename="../../gui/strain_window.py" line="566"/>
         <source>Strain compute failed: %1</source>
         <translation>應變計算失敗：%1</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="563"/>
+        <location filename="../../gui/strain_window.py" line="573"/>
         <source>Strain Computation Failed</source>
         <translation>應變計算失敗</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="600"/>
+        <location filename="../../gui/strain_window.py" line="610"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ 參數已變更 — 請點擊“計算應變”</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="218"/>
+        <location filename="../../gui/strain_window.py" line="219"/>
         <source>Zoom out</source>
         <translation>縮小</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="280"/>
+        <location filename="../../gui/strain_window.py" line="281"/>
         <source>Compute Strain</source>
         <translation>計算應變</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="302"/>
+        <location filename="../../gui/strain_window.py" line="303"/>
         <source>Export Results</source>
         <translation>匯出結果</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="493"/>
+        <location filename="../../gui/strain_window.py" line="503"/>
         <source>Starting…</source>
         <translation>啟動中…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="526"/>
+        <location filename="../../gui/strain_window.py" line="536"/>
         <source>Complete</source>
         <translation>完成</translation>
     </message>

@@ -118,6 +118,8 @@ hiddenimports = [
 
     # Named only as the string "Agg" in export/colorbar.py.
     "matplotlib.backends.backend_agg",
+    # Resolved through matplotlib.use("QtAgg") in gui/widgets/mpl_chart.py.
+    "matplotlib.backends.backend_qtagg",
 
     # GIF export resolves the "GIF" plugin string to this at runtime.
     "imageio.plugins.pillow",
@@ -196,8 +198,10 @@ excludes = [
     "imageio.plugins.rawpy", "imageio.plugins.simpleitk",
     "imageio.plugins.dicom", "imageio.plugins.fits",
 
-    # No matplotlib canvas is embedded; rendering goes through Agg.
-    "matplotlib.backends.backend_qtagg",
+    # backend_qtagg is NOT excluded: the analysis tab embeds a live figure
+    # (gui/widgets/mpl_chart.py), and screen and export deliberately share one
+    # rendering path. Excluding it produced a bundle whose chart tab failed
+    # silently, which is why self_test checks that it imports and renders.
     "matplotlib.backends.backend_qtcairo",
     "matplotlib.backends.backend_webagg",
     "matplotlib.backends.backend_tkagg",

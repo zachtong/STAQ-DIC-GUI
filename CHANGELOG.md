@@ -4,6 +4,30 @@ All notable user-facing changes to pyALDIC are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versioning follows [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- **Post-processing analysis.** A second tab in the strain window: place point,
+  line and region probes on the reference image and plot how a quantity evolves
+  across the sequence. Several probes of the same kind chart together, and the
+  series export to a self-describing CSV.
+  - Statistics: value, mean, median, maximum, minimum, standard deviation, and
+    the fraction of the probe's points that were reliable. A line probe adds
+    engineering strain and crack opening, measured from its two endpoints --
+    a virtual extensometer and a crack-opening gauge.
+  - Probes are saved with the session (schema 3). Sessions written by older
+    versions still open, with no probes.
+  - Everything is available from Python as well as the interface:
+    `from al_dic.analysis import Probe, extract_series`.
+- **Curves stop where the data does.** A probe that a growing crack cuts
+  reports nothing from that frame on, shaded on the chart and labelled in the
+  CSV with the reason. A region whose reliable points fall below an adjustable
+  fraction is left blank rather than averaged: a region losing three quarters
+  of its nodes otherwise keeps drawing a smooth, entirely plausible curve.
+  Crack opening is the deliberate exception -- separation across a crack is what
+  that gauge is for, while `(L - L0)/L0` stops being a strain.
+
 ## [0.8.0] — 2026-08-25
 
 pyALDIC now ships as a Windows application you unzip and double-click, and a
