@@ -271,6 +271,10 @@ solver settings to start from for each one.
 
 Nothing else needs downloading: those images are complete as they stand.
 
+To drive pyALDIC from Python instead — batch-processing many samples from one
+config file, or replotting exported results without repeating the correlation —
+see [`examples/scripting/`](examples/scripting/).
+
 <details>
 <summary><b>Programmatic API</b></summary>
 

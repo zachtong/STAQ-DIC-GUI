@@ -2,8 +2,12 @@
 
 Point it at a JSON or YAML config listing your samples and run:
 
-    python batch_process.py my_batch.json
-    python batch_process.py my_batch.yaml      # needs: pip install pyyaml
+    python examples/scripting/batch_process.py my_batch.json
+    python examples/scripting/batch_process.py my_batch.yaml   # needs pyyaml
+
+Paths inside the config are resolved against your working directory, not
+against the config file, so run the command from wherever those paths make
+sense. The bundled example expects the repository root.
 
 Each sample is loaded, correlated, strain-computed and exported on its own; a
 sample that fails is logged and the batch moves on to the next one. See
