@@ -260,6 +260,17 @@ al-dic
 python -m al_dic
 ```
 
+### Try it on the included examples
+
+Three short real-experiment sequences ship with the repository, under
+[`examples/quickstart/`](examples/quickstart/) — uniaxial tension, tension
+around holes, and a rigid-body rotation. Each folder holds a reference frame and
+four loaded frames, and
+[its README](examples/quickstart/README.md) gives the subset size, step and
+solver settings to start from for each one.
+
+Nothing else needs downloading: those images are complete as they stand.
+
 <details>
 <summary><b>Programmatic API</b></summary>
 
