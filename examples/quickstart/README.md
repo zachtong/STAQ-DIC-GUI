@@ -10,14 +10,6 @@ experiments, chosen to cover a few typical displacement fields, and all three
 examples below run on what is in this folder — there is nothing further to
 download. The full-resolution originals are not published.
 
-For larger, independently published sequences to test against — the iDICs DIC
-Challenge 2.0, the SEM DIC Challenge, and the Ncorr and 2D_ALDIC sample data —
-see what is available with:
-
-```bash
-python tools/download_validation_data.py list
-```
-
 To run one: launch the GUI (`al-dic`), open the folder, draw a region of interest
 on the reference frame, set the parameters below, and press **Run**. The initial
 guess defaults to **FFT**, which is the recommended setting for all three cases.
