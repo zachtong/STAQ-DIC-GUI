@@ -5,14 +5,20 @@ decision — large files, license uncertainty). Run this script to fetch
 them locally before manual UAT.
 
 Usage:
-    python tools/download_validation_data.py --list
-    python tools/download_validation_data.py --get idics_2_0
-    python tools/download_validation_data.py --get all
+    python tools/download_validation_data.py list
+    python tools/download_validation_data.py get ncorr_samples
+    python tools/download_validation_data.py get all
 
 Datasets are written to ``datasets/public/<name>/`` (gitignored).
 
-Security note: each entry is verified against an SHA-256 digest. If
-the digest mismatches we abort — never silently overwrite.
+Not everything can be fetched automatically. The iDICs challenge data
+moved to Google Drive folders, which no plain HTTP download can walk, so
+those entries carry a landing page instead of a URL and ``get`` prints
+where to click rather than failing. ``list`` says which is which.
+
+Security note: an entry with a recorded SHA-256 is verified against it and
+a mismatch aborts rather than silently overwriting. ``None`` means nobody
+has verified that file yet -- treat what you get accordingly.
 """
 
 from __future__ import annotations
@@ -34,11 +40,19 @@ DEST_ROOT = PROJECT_ROOT / "datasets" / "public"
 @dataclass(frozen=True)
 class Dataset:
     name: str
-    url: str
+    #: Direct download. ``None`` when the data is only reachable by hand --
+    #: a Google Drive folder, a login wall, a page that re-hosts on its own
+    #: schedule. Pretending to download one of those is how a tool ends up
+    #: 404-ing at the user instead of telling them where to click.
+    url: Optional[str]
     sha256: Optional[str]   # None = informational only (manual verify)
     description: str
     license: str
     landing_page: str
+
+    @property
+    def automatic(self) -> bool:
+        return self.url is not None
 
 
 # NOTE: `sha256=None` means the maintainer must manually verify the file
@@ -46,39 +60,65 @@ class Dataset:
 # digest. Keeping a placeholder is safer than copy-pasting an unverified
 # digest from elsewhere.
 DATASETS: dict[str, Dataset] = {
-    "idics_2_0": Dataset(
-        name="iDICs DIC Challenge 2.0",
-        # The Challenge 2.0 page hosts a zipped dataset; URL needs to be
-        # confirmed against the live page since they occasionally re-host.
-        url="https://idics.org/challenge/Sample14.zip",
-        sha256=None,  # TODO: fill after first manual verification
-        description="14 standard DIC validation cases with ground truth.",
-        license="CC-BY (verify on idics.org)",
-        landing_page="https://idics.org/challenge/",
-    ),
-    "sem_dic_challenge_1": Dataset(
-        name="SEM DIC Challenge 1.0 (Reu 2018)",
-        url="https://sem.org/dic-challenge/Sample-data.zip",
+    # Both challenge datasets are distributed as Google Drive folders, which a
+    # plain HTTP fetch cannot walk. They are listed for their landing pages,
+    # not downloaded. The former direct URLs here (idics.org/challenge/
+    # Sample14.zip and sem.org/dic-challenge/Sample-data.zip) both 404 -- and
+    # sem.org no longer serves the challenge at all; it lives on idics.org now.
+    "dic_challenge_2_0": Dataset(
+        name="iDICs 2D DIC Challenge 2.0",
+        url=None,
         sha256=None,
-        description="14 canonical 2D-DIC test cases with ground truth.",
-        license="Open access (Society for Experimental Mechanics)",
-        landing_page="https://sem.org/dic-challenge/",
+        description="Standard 2D DIC validation cases with ground truth.",
+        license="See idics.org for terms",
+        landing_page=(
+            "https://drive.google.com/drive/folders/"
+            "1ASWZZZjV1SPnjiFncb5ofOtfrrRfFhSw"
+        ),
+    ),
+    "dic_challenge_1_0": Dataset(
+        name="iDICs 2D DIC Challenge 1.0 (Reu et al.)",
+        url=None,
+        sha256=None,
+        description="The original 2D DIC challenge cases with ground truth.",
+        license="See idics.org for terms",
+        landing_page=(
+            "https://drive.google.com/drive/folders/"
+            "1tNUKPJ7UJOm23JhERtkrIy5gSBiwV3Dj"
+        ),
     ),
     "ncorr_samples": Dataset(
         name="Ncorr 2D MATLAB sample data",
-        url="https://github.com/justinblaber/ncorr_2D_matlab/archive/refs/heads/master.zip",
-        sha256=None,
+        # Pinned to a tag, not a branch: GitHub regenerates a branch archive on
+        # every upstream commit, so a digest recorded against one would fail
+        # for the next person rather than protect them.
+        url=(
+            "https://github.com/justinblaber/ncorr_2D_matlab"
+            "/archive/refs/tags/v1.2.2.zip"
+        ),
+        sha256=(
+            "88eb1c808152524b3f0c33bd7d95b6c62c648784bd17eb15a18e5290fd8d11fd"
+        ),
         description="Reference data shipped with Ncorr; useful for cross-tool comparison.",
         license="GPL-3.0",
         landing_page="https://github.com/justinblaber/ncorr_2D_matlab",
     ),
     "aldic_matlab_samples": Dataset(
         name="2D AL-DIC MATLAB samples (Jin Yang)",
-        url="https://github.com/JinYangUTAustin/2D_ALDIC/archive/refs/heads/master.zip",
-        sha256=None,
-        description="Reference inputs from the original MATLAB AL-DIC implementation.",
+        # The JinYangUTAustin account was renamed; the old URL 404s.
+        url=(
+            "https://github.com/YangMechanicsGroupUTAustin/2D_ALDIC"
+            "/archive/refs/tags/4.1.zip"
+        ),
+        sha256=(
+            "dd895c76458b39c742f8a7c475b0ff02181cef31182467ed720216a7005cdff1"
+        ),
+        description=(
+            "Reference inputs from the original MATLAB AL-DIC implementation, "
+            "including the DIC Challenge Sample 14 images."
+        ),
         license="MIT",
-        landing_page="https://github.com/JinYangUTAustin/2D_ALDIC",
+        landing_page="https://github.com/YangMechanicsGroupUTAustin/2D_ALDIC",
     ),
 }
 
@@ -143,14 +183,17 @@ def _verify(path: Path, expected: Optional[str]) -> None:
 # ---------- Subcommands ----------------------------------------------------
 
 def cmd_list(_args: argparse.Namespace) -> None:
-    print(f"{'KEY':<24} {'NAME':<48} {'LICENSE'}")
-    print("-" * 100)
+    print(f"{'KEY':<24} {'NAME':<44} {'FETCH':<10} {'LICENSE'}")
+    print("-" * 108)
     for key, ds in DATASETS.items():
         marker = "✓" if (DEST_ROOT / key).is_dir() else " "
-        print(f"{marker} {key:<22} {ds.name:<48} {ds.license}")
+        how = "auto" if ds.automatic else "manual"
+        print(f"{marker} {key:<22} {ds.name:<44} {how:<10} {ds.license}")
     print()
     print(f"Datasets stored under: {DEST_ROOT.relative_to(PROJECT_ROOT)}")
-    print("✓ = already downloaded; blank = available to fetch")
+    print("✓ = already downloaded")
+    print("auto   = 'get <key>' downloads it")
+    print("manual = 'get <key>' prints where to download it by hand")
 
 
 def cmd_get(args: argparse.Namespace) -> None:
@@ -167,6 +210,14 @@ def cmd_get(args: argparse.Namespace) -> None:
         print(f"[get] {key}: {ds.name}")
         print(f"      License: {ds.license}")
         print(f"      Landing: {ds.landing_page}")
+
+        if not ds.automatic:
+            # Say so and move on. Attempting a download that cannot work is
+            # how this tool used to 404 at four users out of four.
+            print(f"      This dataset is not downloadable from a script.")
+            print(f"      Open the link above and save it under "
+                  f"{(DEST_ROOT / key).relative_to(PROJECT_ROOT)}")
+            continue
 
         # Stage to a temp file so we never half-write the destination.
         staging = DEST_ROOT / "_staging"
